@@ -1,0 +1,65 @@
+{
+    "city": "london",
+    "times": {
+        "2025-12-31": {
+            "date": "2025-12-31",
+            "fajr": "06:26",
+            "fajr_jamat": "06:46",
+            "sunrise": "08:03",
+            "dhuhr": "12:09",
+            "dhuhr_jamat": "12:45",
+            "asr": "13:45",
+            "asr_2": "14:16",
+            "asr_jamat": "14:30",
+            "magrib": "16:04",
+            "magrib_jamat": "16:11",
+            "isha": "17:41",
+            "isha_jamat": "19:30"
+        },
+        "2025-12-30": {
+            "date": "2025-12-30",
+            "fajr": "06:26",
+            "fajr_jamat": "06:46",
+            "sunrise": "08:03",
+            "dhuhr": "12:08",
+            "dhuhr_jamat": "12:45",
+            "asr": "13:45",
+            "asr_2": "14:15",
+            "asr_jamat": "14:30",
+            "magrib": "16:03",
+            "magrib_jamat": "16:10",
+            "isha": "17:40",
+            "isha_jamat": "19:30"
+        },
+        "2025-12-29": {
+            "date": "2025-12-29",
+            "fajr": "06:26",
+            "fajr_jamat": "06:46",
+            "sunrise": "08:03",
+            "dhuhr": "12:08",
+            "dhuhr_jamat": "12:45",
+            "asr": "13:44",
+            "asr_2": "14:14",
+            "asr_jamat": "14:30",
+            "magrib": "16:02",
+            "magrib_jamat": "16:09",
+            "isha": "17:39",
+            "isha_jamat": "19:30"
+        },
+        "2025-12-28": {
+            "date": "2025-12-28",
+            "fajr": "06:25",
+            "fajr_jamat": "06:45",
+            "sunrise": "08:03",
+            "dhuhr": "12:07",
+            "dhuhr_jamat": "12:45",
+            "asr": "13:43",
+            "asr_2": "14:13",
+            "asr_jamat": "14:30",
+            "magrib": "16:02",
+            "magrib_jamat": "16:09",
+            "isha": "17:39",
+            "isha_jamat": "19:30"
+        }
+    }
+}
