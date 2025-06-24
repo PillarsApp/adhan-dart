@@ -9,3 +9,4 @@ export 'prayer_adjustments.dart';
 export 'qibla.dart';
 export 'sunnah_times.dart';
 export 'data/date_components.dart';
+export 'data/london_times_lookup.dart';

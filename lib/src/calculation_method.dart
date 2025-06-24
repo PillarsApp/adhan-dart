@@ -52,6 +52,10 @@ enum CalculationMethod {
   /// Calculates Maghrib based on the sun reaching an angle of 4.5° below the horizon.
   tehran,
 
+  /// Unified London Times
+  /// Uses pre-calculated prayer times from a JSON lookup table specifically for London
+  unified_london_times,
+
   /// The default value for [CalculationParameters.method] when initializing a
   /// [CalculationParameters] object. Sets a Fajr angle of 0 and an Isha angle of 0.
   other
@@ -141,6 +145,11 @@ extension CalculationMethodExtensions on CalculationMethod {
             maghribAngle: 4.5,
             method: this,
           );
+        }
+      case CalculationMethod.unified_london_times:
+        {
+          return CalculationParameters(
+              fajrAngle: 0.0, ishaAngle: 0.0, method: this);
         }
       case CalculationMethod.other:
         {
