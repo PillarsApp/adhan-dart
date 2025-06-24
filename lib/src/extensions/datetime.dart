@@ -32,7 +32,7 @@ extension AdhanDateTimeExtensions on DateTime {
   }
 
   int get dayOfYear {
-    final yearStartDate = DateTime(year);
+    final yearStartDate = isUtc ? DateTime.utc(year) : DateTime(year);
     return difference(yearStartDate).inDays + 1;
   }
 }
