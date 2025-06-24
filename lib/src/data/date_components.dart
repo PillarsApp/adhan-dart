@@ -11,6 +11,12 @@ class DateComponents {
         day == other.day;
   }
 
+  @override
+  int get hashCode => year.hashCode ^ month.hashCode ^ day.hashCode;
+
+  @override
+  String toString() => 'DateComponents($year, $month, $day)';
+
   DateComponents(this.year, this.month, this.day);
 
   /// Convenience method that returns a [DateComponents] from a given [DateTime]
