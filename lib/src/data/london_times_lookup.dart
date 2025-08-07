@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import '../data/date_components.dart';
+import 'london_times_data.dart';
 
 /// Service for looking up pre-calculated London prayer times from JSON data
 class LondonTimesLookup {
@@ -16,10 +17,11 @@ class LondonTimesLookup {
     _cachedData = data;
   }
   
-  /// Synchronous version that uses cached data or throws if not loaded
+  /// Synchronous version that uses cached data or auto-initializes from embedded data
   static Map<String, dynamic> _getCachedData() {
     if (_cachedData == null) {
-      throw StateError('London times data not initialized. Call initializeWithData() or initializeWithParsedData() first.');
+      // Auto-initialize from embedded data
+      _cachedData = json.decode(londonPrayerTimesData) as Map<String, dynamic>;
     }
     return _cachedData!;
   }

@@ -133,6 +133,7 @@ params.adjustments.fajr = 2;
 | `north_america` | Referred to as the ISNA method. This method is included for completeness but is not recommended. Fajr angle: 15, Isha angle: 15 |
 | `turkey` | Turkey. Fajr angle: 18, Isha angle: 17 |
 | `tehran` | Tehran. Fajr angle: 17.7, Isha angle: 14, Maghrib Angle: 4.5 |
+| `unified_london_times` | Unified London Prayer Times. Uses pre-calculated prayer times for London from embedded JSON data. No astronomical calculations are performed. |
 | `other` | Fajr angle: 0, Isha angle: 0. This is the default value for `method` when initializing a `CalculationParameters` object. |
 
 **Madhab**
@@ -193,6 +194,22 @@ final qibla = Qibla(coordinates);
 /// Qibla direction degree (Compass/Clockwise)
 qibla.direction
 ```
+
+### Unified London Prayer Times
+
+The library includes embedded prayer times data for London, which can be used instead of astronomical calculations:
+
+```dart
+// Using the unified London times calculation method
+final londonCoordinates = Coordinates(51.5074, -0.1278);
+final params = CalculationMethod.unified_london_times.getParameters();
+final prayerTimes = PrayerTimes.today(londonCoordinates, params);
+
+// The prayer times are automatically loaded from embedded JSON data
+// No manual initialization required!
+```
+
+This method is useful when you need consistent prayer times that match a specific timetable for London, rather than calculated times. The data covers the entire year and is embedded directly in the library.
 
 ## Features and bugs
 
