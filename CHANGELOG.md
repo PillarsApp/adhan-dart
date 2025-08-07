@@ -1,3 +1,10 @@
+## 2.1.0
+
+- feat: Add embedded London prayer times data for `unified_london_times` calculation method
+- feat: Auto-initialize London times from embedded data - no manual setup required
+- feat: Maintain backward compatibility with manual initialization methods
+- test: Add comprehensive tests for auto-initialization functionality
+
 ## 2.0.0+1
 
 - chore: update readme.
