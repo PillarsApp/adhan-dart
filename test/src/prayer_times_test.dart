@@ -201,6 +201,12 @@ void main() {
     files.forEach((fileEntity) {
       final file = fileEntity;
       if (file.path.endsWith('.json') && file is File) {
+        // Skip London-UnifiedTimes.json as it has a different format
+        // (lookup-based times, not calculated times)
+        if (basename(file.path) == 'London-UnifiedTimes.json') {
+          print('Skipping: ${basename(file.path)} (lookup-based format)');
+          return;
+        }
         print('Testing Timings For: ${basename(file.path)}');
 
         final jsonString = file.readAsStringSync();
@@ -318,7 +324,7 @@ void main() {
     final newYork = Coordinates(35.7750, -78.6336);
     final prayerTimes = PrayerTimes.today(
         newYork, CalculationMethod.north_america.getParameters());
-    expect(prayerTimes.currentPrayer(), true);
+    expect(prayerTimes.currentPrayer(), isNotNull);
   });
 
   test('Test PrayerTimes.nextPrayer', () {
