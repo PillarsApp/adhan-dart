@@ -1,3 +1,10 @@
+## Unreleased
+
+- Add the Wifaqul Ulama calculation method with last-valid-day Aqrab and annual longest-day sunset +65-minute Isha defaults.
+- Offer explicit Nisf-al-Layl and seventh-of-night alternatives, preserving method identity and all existing enum ordinals.
+- Isolate Wifaqul's near-tangent twilight solver, date-line correction, and UTC rounding from existing calculation methods.
+- Add independent astronomy fixtures and regressions for full seasons, DST folds, polar failures, madhabs, adjustments, and bounded reference caches.
+
 ## 2.3.0
 
 - Rebase the Pillars fork onto upstream master.

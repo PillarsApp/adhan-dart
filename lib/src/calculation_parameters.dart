@@ -2,6 +2,7 @@ import 'calculation_method.dart';
 import 'high_latitude_rule.dart';
 import 'madhab.dart';
 import 'prayer_adjustments.dart';
+import 'wifaqul_options.dart';
 
 /// Parameters used for PrayerTime calculation customization
 ///
@@ -36,6 +37,11 @@ class CalculationParameters {
   /// Used for method adjustments
   PrayerAdjustments methodAdjustments;
 
+  /// Options for Wifaqul only. Null selects the approved default profile.
+  /// Named Wifaqul requires its preset angles and interval; use `other` for
+  /// custom angles. Madhab and adjustments remain independently configurable.
+  WifaqulOptions? wifaqulOptions;
+
   CalculationParameters(
       {this.method = CalculationMethod.other,
       required this.fajrAngle,
@@ -44,6 +50,7 @@ class CalculationParameters {
       this.ishaInterval = 0,
       this.madhab = Madhab.shafi,
       this.highLatitudeRule = HighLatitudeRule.middle_of_the_night,
+      this.wifaqulOptions,
       PrayerAdjustments? adjustments,
       PrayerAdjustments? methodAdjustments})
       : adjustments = adjustments ?? PrayerAdjustments(),

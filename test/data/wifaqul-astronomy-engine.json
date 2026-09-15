@@ -1,0 +1,911 @@
+{
+  "schemaVersion": 1,
+  "profile": "Wifaqul selected variants: last-valid-day Aqrab; longest-day sunset +65 minutes; UTC reference clocks",
+  "provenance": {
+    "engine": "Astronomy Engine",
+    "version": "2.1.19",
+    "source": "https://github.com/cosinekitty/astronomy/tree/v2.1.19",
+    "documentation": "https://github.com/cosinekitty/astronomy/blob/v2.1.19/source/js/README.md",
+    "generatedAt": "2026-09-15",
+    "claim": "Independent astronomical reference with the explicit selected policy applied; NOT Wifaqul app or PDF timetable outputs. No Adhan implementation was used to generate expected instants.",
+    "altitudeDefinition": "Geocentric apparent Sun centre via GeoVector, EQJ-to-EQD rotation and Horizon without refraction; no topocentric solar parallax, matching Adhan's geometric convention. Search locates the altitude derivative zero and then the rising/falling crossing. Horizon -50/60 degrees; Fajr -18; Isha -15 at >=48N otherwise -18. Transit SearchHourAngle=0; Asr uses independent geocentric declination at transit.",
+    "referenceDefinition": "Last available raw 18-degree Fajr UTC offset; longest daylight among June15-25, raw sunset UTC offset+65 minutes. No intermediate rounding.",
+    "toleranceSeconds": 120,
+    "toleranceReason": "Compare distinct astronomical models plus final minute rounding, not bit-identical ephemerides. Boundary-selection behavior is additionally tested against each engine raw events."
+  },
+  "cases": [
+    {
+      "name": "London ordinary winter",
+      "date": "2026-01-15",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "madhab": "shafi",
+      "fajrRule": "aqrabul_ayyam",
+      "ishaRule": "longest_day",
+      "fajrReferenceDate": null,
+      "ishaReferenceDate": "2026-06-21",
+      "expected": {
+        "fajr": "2026-01-15T05:59:07.750Z",
+        "sunrise": "2026-01-15T07:59:26.213Z",
+        "dhuhr": "2026-01-15T12:13:54.413Z",
+        "asr": "2026-01-15T14:01:23.831Z",
+        "maghrib": "2026-01-15T16:25:47.691Z",
+        "isha": "2026-01-15T18:01:20.036Z"
+      }
+    },
+    {
+      "name": "London Hanafi winter",
+      "date": "2026-01-15",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "madhab": "hanafi",
+      "fajrRule": "aqrabul_ayyam",
+      "ishaRule": "longest_day",
+      "fajrReferenceDate": null,
+      "ishaReferenceDate": "2026-06-21",
+      "expected": {
+        "fajr": "2026-01-15T05:59:07.750Z",
+        "sunrise": "2026-01-15T07:59:26.213Z",
+        "dhuhr": "2026-01-15T12:13:54.413Z",
+        "asr": "2026-01-15T14:33:36.327Z",
+        "maghrib": "2026-01-15T16:25:47.691Z",
+        "isha": "2026-01-15T18:01:20.036Z"
+      }
+    },
+    {
+      "name": "Aberdeen ordinary winter",
+      "date": "2026-01-15",
+      "latitude": 57.1497,
+      "longitude": -2.0943,
+      "madhab": "shafi",
+      "fajrRule": "aqrabul_ayyam",
+      "ishaRule": "longest_day",
+      "fajrReferenceDate": null,
+      "ishaReferenceDate": "2026-06-21",
+      "expected": {
+        "fajr": "2026-01-15T06:14:46.853Z",
+        "sunrise": "2026-01-15T08:36:21.357Z",
+        "dhuhr": "2026-01-15T12:21:46.488Z",
+        "asr": "2026-01-15T13:42:40.069Z",
+        "maghrib": "2026-01-15T16:04:41.116Z",
+        "isha": "2026-01-15T17:58:34.802Z"
+      }
+    },
+    {
+      "name": "Cairo below northern boundary",
+      "date": "2026-01-15",
+      "latitude": 30.0444,
+      "longitude": 31.2357,
+      "madhab": "hanafi",
+      "fajrRule": "aqrabul_ayyam",
+      "ishaRule": "longest_day",
+      "fajrReferenceDate": null,
+      "ishaReferenceDate": null,
+      "expected": {
+        "fajr": "2026-01-15T03:27:41.673Z",
+        "sunrise": "2026-01-15T04:51:45.964Z",
+        "dhuhr": "2026-01-15T10:08:25.334Z",
+        "asr": "2026-01-15T13:40:30.438Z",
+        "maghrib": "2026-01-15T15:22:17.658Z",
+        "isha": "2026-01-15T16:41:21.787Z"
+      }
+    },
+    {
+      "name": "Cape Town ordinary southern summer",
+      "date": "2026-01-15",
+      "latitude": -33.9249,
+      "longitude": 18.4241,
+      "madhab": "shafi",
+      "fajrRule": "aqrabul_ayyam",
+      "ishaRule": "longest_day",
+      "fajrReferenceDate": null,
+      "ishaReferenceDate": null,
+      "expected": {
+        "fajr": "2026-01-15T02:10:31.758Z",
+        "sunrise": "2026-01-15T03:50:50.133Z",
+        "dhuhr": "2026-01-15T10:59:40.870Z",
+        "asr": "2026-01-15T14:40:28.251Z",
+        "maghrib": "2026-01-15T18:05:10.222Z",
+        "isha": "2026-01-15T19:40:09.934Z"
+      }
+    },
+    {
+      "name": "Below 48 north",
+      "date": "2026-04-01",
+      "latitude": 47.999,
+      "longitude": 0,
+      "madhab": "shafi",
+      "fajrRule": "aqrabul_ayyam",
+      "ishaRule": "longest_day",
+      "fajrReferenceDate": null,
+      "ishaReferenceDate": null,
+      "expected": {
+        "fajr": "2026-04-01T03:50:10.023Z",
+        "sunrise": "2026-04-01T05:38:36.167Z",
+        "dhuhr": "2026-04-01T12:07:50.020Z",
+        "asr": "2026-04-01T15:37:53.971Z",
+        "maghrib": "2026-04-01T18:34:59.707Z",
+        "isha": "2026-04-01T20:18:58.169Z"
+      }
+    },
+    {
+      "name": "Exactly 48 north",
+      "date": "2026-04-01",
+      "latitude": 48,
+      "longitude": 0,
+      "madhab": "shafi",
+      "fajrRule": "aqrabul_ayyam",
+      "ishaRule": "longest_day",
+      "fajrReferenceDate": null,
+      "ishaReferenceDate": "2026-06-21",
+      "expected": {
+        "fajr": "2026-04-01T03:50:09.825Z",
+        "sunrise": "2026-04-01T05:38:36.118Z",
+        "dhuhr": "2026-04-01T12:07:50.020Z",
+        "asr": "2026-04-01T15:37:53.956Z",
+        "maghrib": "2026-04-01T18:34:59.758Z",
+        "isha": "2026-04-01T19:58:45.175Z"
+      }
+    },
+    {
+      "name": "Above 48 north",
+      "date": "2026-04-01",
+      "latitude": 48.001,
+      "longitude": 0,
+      "madhab": "shafi",
+      "fajrRule": "aqrabul_ayyam",
+      "ishaRule": "longest_day",
+      "fajrReferenceDate": null,
+      "ishaReferenceDate": "2026-06-21",
+      "expected": {
+        "fajr": "2026-04-01T03:50:09.626Z",
+        "sunrise": "2026-04-01T05:38:36.070Z",
+        "dhuhr": "2026-04-01T12:07:50.020Z",
+        "asr": "2026-04-01T15:37:53.941Z",
+        "maghrib": "2026-04-01T18:34:59.809Z",
+        "isha": "2026-04-01T19:58:45.344Z"
+      }
+    },
+    {
+      "name": "London before BST",
+      "date": "2026-03-28",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "madhab": "shafi",
+      "fajrRule": "aqrabul_ayyam",
+      "ishaRule": "longest_day",
+      "fajrReferenceDate": null,
+      "ishaReferenceDate": "2026-06-21",
+      "expected": {
+        "fajr": "2026-03-28T03:48:46.471Z",
+        "sunrise": "2026-03-28T05:45:07.939Z",
+        "dhuhr": "2026-03-28T12:09:32.815Z",
+        "asr": "2026-03-28T15:33:35.842Z",
+        "maghrib": "2026-03-28T18:32:00.513Z",
+        "isha": "2026-03-28T20:02:09.349Z"
+      }
+    },
+    {
+      "name": "London after BST",
+      "date": "2026-03-29",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "madhab": "shafi",
+      "fajrRule": "aqrabul_ayyam",
+      "ishaRule": "longest_day",
+      "fajrReferenceDate": null,
+      "ishaReferenceDate": "2026-06-21",
+      "expected": {
+        "fajr": "2026-03-29T03:46:02.177Z",
+        "sunrise": "2026-03-29T05:42:51.294Z",
+        "dhuhr": "2026-03-29T12:09:14.695Z",
+        "asr": "2026-03-29T15:34:31.721Z",
+        "maghrib": "2026-03-29T18:33:41.181Z",
+        "isha": "2026-03-29T20:04:09.551Z"
+      }
+    },
+    {
+      "name": "London before GMT",
+      "date": "2026-10-24",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "madhab": "shafi",
+      "fajrRule": "aqrabul_ayyam",
+      "ishaRule": "longest_day",
+      "fajrReferenceDate": null,
+      "ishaReferenceDate": "2026-06-21",
+      "expected": {
+        "fajr": "2026-10-24T04:47:53.319Z",
+        "sunrise": "2026-10-24T06:39:52.951Z",
+        "dhuhr": "2026-10-24T11:48:42.590Z",
+        "asr": "2026-10-24T14:17:49.916Z",
+        "maghrib": "2026-10-24T16:53:44.888Z",
+        "isha": "2026-10-24T18:21:16.195Z"
+      }
+    },
+    {
+      "name": "London after GMT",
+      "date": "2026-10-25",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "madhab": "shafi",
+      "fajrRule": "aqrabul_ayyam",
+      "ishaRule": "longest_day",
+      "fajrReferenceDate": null,
+      "ishaReferenceDate": "2026-06-21",
+      "expected": {
+        "fajr": "2026-10-25T04:49:29.142Z",
+        "sunrise": "2026-10-25T06:41:37.539Z",
+        "dhuhr": "2026-10-25T11:48:35.290Z",
+        "asr": "2026-10-25T14:16:16.552Z",
+        "maghrib": "2026-10-25T16:51:46.194Z",
+        "isha": "2026-10-25T18:19:26.866Z"
+      }
+    },
+    {
+      "name": "London late existing Isha",
+      "date": "2026-05-01",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "madhab": "shafi",
+      "fajrRule": "aqrabul_ayyam",
+      "ishaRule": "longest_day",
+      "fajrReferenceDate": null,
+      "ishaReferenceDate": "2026-06-21",
+      "expected": {
+        "fajr": "2026-05-01T02:03:54.328Z",
+        "sunrise": "2026-05-01T04:32:31.151Z",
+        "dhuhr": "2026-05-01T12:01:35.246Z",
+        "asr": "2026-05-01T16:00:25.732Z",
+        "maghrib": "2026-05-01T19:28:44.580Z",
+        "isha": "2026-05-01T21:20:39.409Z"
+      }
+    },
+    {
+      "name": "London last valid Fajr",
+      "date": "2026-05-22",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "madhab": "shafi",
+      "fajrRule": "aqrabul_ayyam",
+      "ishaRule": "longest_day",
+      "fajrReferenceDate": null,
+      "ishaReferenceDate": "2026-06-21",
+      "expected": {
+        "fajr": "2026-05-22T00:17:56.988Z",
+        "sunrise": "2026-05-22T03:59:15.170Z",
+        "dhuhr": "2026-05-22T12:01:10.683Z",
+        "asr": "2026-05-22T16:13:11.405Z",
+        "maghrib": "2026-05-22T20:00:57.890Z",
+        "isha": "2026-05-22T21:26:34.402Z"
+      }
+    },
+    {
+      "name": "London first absent Fajr",
+      "date": "2026-05-23",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "madhab": "shafi",
+      "fajrRule": "aqrabul_ayyam",
+      "ishaRule": "longest_day",
+      "fajrReferenceDate": "2026-05-22",
+      "ishaReferenceDate": "2026-06-21",
+      "expected": {
+        "fajr": "2026-05-23T00:17:56.988Z",
+        "sunrise": "2026-05-23T03:58:02.593Z",
+        "dhuhr": "2026-05-23T12:01:15.612Z",
+        "asr": "2026-05-23T16:13:43.732Z",
+        "maghrib": "2026-05-23T20:02:19.191Z",
+        "isha": "2026-05-23T21:26:34.402Z"
+      }
+    },
+    {
+      "name": "London early frozen season",
+      "date": "2026-06-01",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "madhab": "shafi",
+      "fajrRule": "aqrabul_ayyam",
+      "ishaRule": "longest_day",
+      "fajrReferenceDate": "2026-05-22",
+      "ishaReferenceDate": "2026-06-21",
+      "expected": {
+        "fajr": "2026-06-01T00:17:56.988Z",
+        "sunrise": "2026-06-01T03:49:03.408Z",
+        "dhuhr": "2026-06-01T12:02:20.892Z",
+        "asr": "2026-06-01T16:18:13.043Z",
+        "maghrib": "2026-06-01T20:13:16.568Z",
+        "isha": "2026-06-01T21:26:34.402Z"
+      }
+    },
+    {
+      "name": "London solstice default",
+      "date": "2026-06-21",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "madhab": "shafi",
+      "fajrRule": "aqrabul_ayyam",
+      "ishaRule": "longest_day",
+      "fajrReferenceDate": "2026-05-22",
+      "ishaReferenceDate": "2026-06-21",
+      "expected": {
+        "fajr": "2026-06-21T00:17:56.988Z",
+        "sunrise": "2026-06-21T03:43:04.521Z",
+        "dhuhr": "2026-06-21T12:06:19.622Z",
+        "asr": "2026-06-21T16:25:10.800Z",
+        "maghrib": "2026-06-21T20:26:34.402Z",
+        "isha": "2026-06-21T21:26:34.402Z"
+      }
+    },
+    {
+      "name": "London solstice Hanafi",
+      "date": "2026-06-21",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "madhab": "hanafi",
+      "fajrRule": "aqrabul_ayyam",
+      "ishaRule": "longest_day",
+      "fajrReferenceDate": "2026-05-22",
+      "ishaReferenceDate": "2026-06-21",
+      "expected": {
+        "fajr": "2026-06-21T00:17:56.988Z",
+        "sunrise": "2026-06-21T03:43:04.521Z",
+        "dhuhr": "2026-06-21T12:06:19.622Z",
+        "asr": "2026-06-21T17:39:55.404Z",
+        "maghrib": "2026-06-21T20:26:34.402Z",
+        "isha": "2026-06-21T21:26:34.402Z"
+      }
+    },
+    {
+      "name": "London late frozen season",
+      "date": "2026-07-15",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "madhab": "shafi",
+      "fajrRule": "aqrabul_ayyam",
+      "ishaRule": "longest_day",
+      "fajrReferenceDate": "2026-05-22",
+      "ishaReferenceDate": "2026-06-21",
+      "expected": {
+        "fajr": "2026-07-15T00:17:56.988Z",
+        "sunrise": "2026-07-15T04:00:51.817Z",
+        "dhuhr": "2026-07-15T12:10:31.392Z",
+        "asr": "2026-07-15T16:24:40.436Z",
+        "maghrib": "2026-07-15T20:16:26.730Z",
+        "isha": "2026-07-15T21:26:34.402Z"
+      }
+    },
+    {
+      "name": "London restored twilight",
+      "date": "2026-08-01",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "madhab": "shafi",
+      "fajrRule": "aqrabul_ayyam",
+      "ishaRule": "longest_day",
+      "fajrReferenceDate": null,
+      "ishaReferenceDate": "2026-06-21",
+      "expected": {
+        "fajr": "2026-08-01T01:31:59.416Z",
+        "sunrise": "2026-08-01T04:24:07.183Z",
+        "dhuhr": "2026-08-01T12:10:52.058Z",
+        "asr": "2026-08-01T16:16:19.333Z",
+        "maghrib": "2026-08-01T19:53:36.477Z",
+        "isha": "2026-08-01T21:26:34.402Z"
+      }
+    },
+    {
+      "name": "London solstice Nisf",
+      "date": "2026-06-21",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "madhab": "shafi",
+      "fajrRule": "nisf_al_layl",
+      "ishaRule": "longest_day",
+      "fajrReferenceDate": null,
+      "ishaReferenceDate": "2026-06-21",
+      "expected": {
+        "fajr": "2026-06-21T00:02:12.899Z",
+        "sunrise": "2026-06-21T03:43:04.521Z",
+        "dhuhr": "2026-06-21T12:06:19.622Z",
+        "asr": "2026-06-21T16:25:10.800Z",
+        "maghrib": "2026-06-21T20:26:34.402Z",
+        "isha": "2026-06-21T21:26:34.402Z"
+      }
+    },
+    {
+      "name": "London early Nisf",
+      "date": "2026-05-23",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "madhab": "shafi",
+      "fajrRule": "nisf_al_layl",
+      "ishaRule": "longest_day",
+      "fajrReferenceDate": null,
+      "ishaReferenceDate": "2026-06-21",
+      "expected": {
+        "fajr": "2026-05-22T23:57:00.241Z",
+        "sunrise": "2026-05-23T03:58:02.593Z",
+        "dhuhr": "2026-05-23T12:01:15.612Z",
+        "asr": "2026-05-23T16:13:43.732Z",
+        "maghrib": "2026-05-23T20:02:19.191Z",
+        "isha": "2026-05-23T21:26:34.402Z"
+      }
+    },
+    {
+      "name": "London existing seventh Isha",
+      "date": "2026-05-01",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "madhab": "shafi",
+      "fajrRule": "aqrabul_ayyam",
+      "ishaRule": "seventh_of_night",
+      "fajrReferenceDate": null,
+      "ishaReferenceDate": "2026-06-21",
+      "expected": {
+        "fajr": "2026-05-01T02:03:54.328Z",
+        "sunrise": "2026-05-01T04:32:31.151Z",
+        "dhuhr": "2026-05-01T12:01:35.246Z",
+        "asr": "2026-05-01T16:00:25.732Z",
+        "maghrib": "2026-05-01T19:28:44.580Z",
+        "isha": "2026-05-01T20:41:52.362Z"
+      }
+    },
+    {
+      "name": "London existing midsummer seventh Isha",
+      "date": "2026-06-21",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "madhab": "shafi",
+      "fajrRule": "aqrabul_ayyam",
+      "ishaRule": "seventh_of_night",
+      "fajrReferenceDate": "2026-05-22",
+      "ishaReferenceDate": "2026-06-21",
+      "expected": {
+        "fajr": "2026-06-21T00:17:56.988Z",
+        "sunrise": "2026-06-21T03:43:04.521Z",
+        "dhuhr": "2026-06-21T12:06:19.622Z",
+        "asr": "2026-06-21T16:25:10.800Z",
+        "maghrib": "2026-06-21T20:26:34.402Z",
+        "isha": "2026-06-21T21:24:40.707Z"
+      }
+    },
+    {
+      "name": "Aberdeen solstice default",
+      "date": "2026-06-21",
+      "latitude": 57.1497,
+      "longitude": -2.0943,
+      "madhab": "shafi",
+      "fajrRule": "aqrabul_ayyam",
+      "ishaRule": "longest_day",
+      "fajrReferenceDate": "2026-04-30",
+      "ishaReferenceDate": "2026-06-21",
+      "expected": {
+        "fajr": "2026-06-21T00:26:45.664Z",
+        "sunrise": "2026-06-21T03:12:12.251Z",
+        "dhuhr": "2026-06-21T12:14:11.654Z",
+        "asr": "2026-06-21T16:45:18.802Z",
+        "maghrib": "2026-06-21T21:13:10.551Z",
+        "isha": "2026-06-21T22:13:10.551Z"
+      }
+    },
+    {
+      "name": "Aberdeen solstice Nisf Hanafi",
+      "date": "2026-06-21",
+      "latitude": 57.1497,
+      "longitude": -2.0943,
+      "madhab": "hanafi",
+      "fajrRule": "nisf_al_layl",
+      "ishaRule": "longest_day",
+      "fajrReferenceDate": null,
+      "ishaReferenceDate": "2026-06-21",
+      "expected": {
+        "fajr": "2026-06-21T00:10:04.906Z",
+        "sunrise": "2026-06-21T03:12:12.251Z",
+        "dhuhr": "2026-06-21T12:14:11.654Z",
+        "asr": "2026-06-21T18:02:27.399Z",
+        "maghrib": "2026-06-21T21:13:10.551Z",
+        "isha": "2026-06-21T22:13:10.551Z"
+      }
+    },
+    {
+      "name": "Aberdeen early missing season",
+      "date": "2026-05-01",
+      "latitude": 57.1497,
+      "longitude": -2.0943,
+      "madhab": "shafi",
+      "fajrRule": "aqrabul_ayyam",
+      "ishaRule": "longest_day",
+      "fajrReferenceDate": "2026-04-30",
+      "ishaReferenceDate": "2026-06-21",
+      "expected": {
+        "fajr": "2026-05-01T00:26:45.664Z",
+        "sunrise": "2026-05-01T04:19:51.246Z",
+        "dhuhr": "2026-05-01T12:09:27.166Z",
+        "asr": "2026-05-01T16:13:40.658Z",
+        "maghrib": "2026-05-01T19:57:30.577Z",
+        "isha": "2026-05-01T22:13:10.551Z"
+      }
+    },
+    {
+      "name": "Aberdeen restored twilight",
+      "date": "2026-08-20",
+      "latitude": 57.1497,
+      "longitude": -2.0943,
+      "madhab": "shafi",
+      "fajrRule": "aqrabul_ayyam",
+      "ishaRule": "longest_day",
+      "fajrReferenceDate": null,
+      "ishaReferenceDate": "2026-06-21",
+      "expected": {
+        "fajr": "2026-08-20T01:40:25.545Z",
+        "sunrise": "2026-08-20T04:45:13.132Z",
+        "dhuhr": "2026-08-20T12:15:47.066Z",
+        "asr": "2026-08-20T16:09:24.980Z",
+        "maghrib": "2026-08-20T19:41:54.970Z",
+        "isha": "2026-08-20T21:53:16.777Z"
+      }
+    },
+    {
+      "name": "Leap day",
+      "date": "2024-02-29",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "madhab": "shafi",
+      "fajrRule": "aqrabul_ayyam",
+      "ishaRule": "longest_day",
+      "fajrReferenceDate": null,
+      "ishaReferenceDate": "2024-06-20",
+      "expected": {
+        "fajr": "2024-02-29T04:56:04.911Z",
+        "sunrise": "2024-02-29T06:46:54.872Z",
+        "dhuhr": "2024-02-29T12:16:54.247Z",
+        "asr": "2024-02-29T15:03:23.774Z",
+        "maghrib": "2024-02-29T17:44:46.904Z",
+        "isha": "2024-02-29T19:11:22.589Z"
+      }
+    },
+    {
+      "name": "Leap year solstice",
+      "date": "2024-06-21",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "madhab": "shafi",
+      "fajrRule": "aqrabul_ayyam",
+      "ishaRule": "longest_day",
+      "fajrReferenceDate": "2024-05-22",
+      "ishaReferenceDate": "2024-06-20",
+      "expected": {
+        "fajr": "2024-06-21T00:09:28.351Z",
+        "sunrise": "2024-06-21T03:43:10.801Z",
+        "dhuhr": "2024-06-21T12:06:25.966Z",
+        "asr": "2024-06-21T16:25:16.823Z",
+        "maghrib": "2024-06-21T20:26:39.799Z",
+        "isha": "2024-06-21T21:26:28.295Z"
+      }
+    },
+    {
+      "name": "Following year solstice",
+      "date": "2027-06-21",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "madhab": "shafi",
+      "fajrRule": "aqrabul_ayyam",
+      "ishaRule": "longest_day",
+      "fajrReferenceDate": "2027-05-22",
+      "ishaReferenceDate": "2027-06-21",
+      "expected": {
+        "fajr": "2027-06-21T00:21:05.978Z",
+        "sunrise": "2027-06-21T03:43:02.192Z",
+        "dhuhr": "2027-06-21T12:06:16.725Z",
+        "asr": "2027-06-21T16:25:07.882Z",
+        "maghrib": "2027-06-21T20:26:31.447Z",
+        "isha": "2027-06-21T21:26:31.447Z"
+      }
+    },
+    {
+      "name": "Year end",
+      "date": "2026-12-31",
+      "latitude": 57.1497,
+      "longitude": -2.0943,
+      "madhab": "shafi",
+      "fajrRule": "aqrabul_ayyam",
+      "ishaRule": "longest_day",
+      "fajrReferenceDate": null,
+      "ishaReferenceDate": "2026-06-21",
+      "expected": {
+        "fajr": "2026-12-31T06:20:38.368Z",
+        "sunrise": "2026-12-31T08:47:45.643Z",
+        "dhuhr": "2026-12-31T12:15:20.829Z",
+        "asr": "2026-12-31T13:23:24.305Z",
+        "maghrib": "2026-12-31T15:40:07.963Z",
+        "isha": "2026-12-31T17:39:06.848Z"
+      }
+    },
+    {
+      "name": "Western longitude Isha next UTC date",
+      "date": "2026-06-21",
+      "latitude": 61.2181,
+      "longitude": -149.9003,
+      "madhab": "shafi",
+      "fajrRule": "aqrabul_ayyam",
+      "ishaRule": "longest_day",
+      "fajrReferenceDate": "2026-04-17",
+      "ishaReferenceDate": "2026-06-20",
+      "expected": {
+        "fajr": "2026-06-21T10:27:57.758Z",
+        "sunrise": "2026-06-21T12:20:14.432Z",
+        "dhuhr": "2026-06-21T22:05:30.470Z",
+        "asr": "2026-06-22T02:46:25.693Z",
+        "maghrib": "2026-06-22T07:47:43.606Z",
+        "isha": "2026-06-22T08:47:33.492Z"
+      }
+    },
+    {
+      "name": "Eastern longitude Fajr prior UTC date",
+      "date": "2026-06-21",
+      "latitude": 62.0355,
+      "longitude": 129.6755,
+      "madhab": "shafi",
+      "fajrRule": "aqrabul_ayyam",
+      "ishaRule": "longest_day",
+      "fajrReferenceDate": "2026-04-16",
+      "ishaReferenceDate": "2026-06-21",
+      "expected": {
+        "fajr": "2026-06-20T15:33:37.402Z",
+        "sunrise": "2026-06-20T17:29:57.601Z",
+        "dhuhr": "2026-06-21T03:27:02.100Z",
+        "asr": "2026-06-21T08:10:05.994Z",
+        "maghrib": "2026-06-21T13:21:07.821Z",
+        "isha": "2026-06-21T14:21:07.821Z"
+      }
+    },
+    {
+      "name": "Sydney southern ordinary winter",
+      "date": "2026-06-21",
+      "latitude": -33.8688,
+      "longitude": 151.2093,
+      "madhab": "hanafi",
+      "fajrRule": "aqrabul_ayyam",
+      "ishaRule": "longest_day",
+      "fajrReferenceDate": null,
+      "ishaReferenceDate": null,
+      "expected": {
+        "fajr": "2026-06-20T19:30:29.346Z",
+        "sunrise": "2026-06-20T20:59:56.679Z",
+        "dhuhr": "2026-06-21T02:00:53.203Z",
+        "asr": "2026-06-21T05:15:54.689Z",
+        "maghrib": "2026-06-21T06:58:49.575Z",
+        "isha": "2026-06-21T08:23:16.908Z"
+      }
+    },
+    {
+      "name": "Southern near twilight boundary ordinary",
+      "date": "2026-03-21",
+      "latitude": -54.8,
+      "longitude": -68.3,
+      "madhab": "shafi",
+      "fajrRule": "aqrabul_ayyam",
+      "ishaRule": "longest_day",
+      "fajrReferenceDate": null,
+      "ishaReferenceDate": null,
+      "expected": {
+        "fajr": "2026-03-21T08:32:40.503Z",
+        "sunrise": "2026-03-21T10:36:25.809Z",
+        "dhuhr": "2026-03-21T16:44:17.045Z",
+        "asr": "2026-03-21T19:52:04.000Z",
+        "maghrib": "2026-03-21T22:48:00.472Z",
+        "isha": "2026-03-22T00:46:07.096Z"
+      }
+    },
+    {
+      "name": "Aberdeen absent seventh Isha",
+      "date": "2026-06-21",
+      "latitude": 57.1497,
+      "longitude": -2.0943,
+      "madhab": "shafi",
+      "fajrRule": "aqrabul_ayyam",
+      "ishaRule": "seventh_of_night",
+      "fajrReferenceDate": "2026-04-30",
+      "ishaReferenceDate": "2026-06-21",
+      "expected": {
+        "fajr": "2026-06-21T00:26:45.664Z",
+        "sunrise": "2026-06-21T03:12:12.251Z",
+        "dhuhr": "2026-06-21T12:14:11.654Z",
+        "asr": "2026-06-21T16:45:18.802Z",
+        "maghrib": "2026-06-21T21:13:10.551Z",
+        "isha": "2026-06-21T22:13:10.551Z"
+      }
+    },
+    {
+      "name": "London during New York repeated hour 2024",
+      "date": "2024-11-03",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "madhab": "shafi",
+      "fajrRule": "aqrabul_ayyam",
+      "ishaRule": "longest_day",
+      "fajrReferenceDate": null,
+      "ishaReferenceDate": "2024-06-20",
+      "expected": {
+        "fajr": "2024-11-03T05:04:18.250Z",
+        "sunrise": "2024-11-03T06:58:17.619Z",
+        "dhuhr": "2024-11-03T11:48:03.678Z",
+        "asr": "2024-11-03T14:02:24.016Z",
+        "maghrib": "2024-11-03T16:34:08.008Z",
+        "isha": "2024-11-03T18:03:39.802Z"
+      }
+    },
+    {
+      "name": "London during New York repeated hour 2026",
+      "date": "2026-11-01",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "madhab": "shafi",
+      "fajrRule": "aqrabul_ayyam",
+      "ishaRule": "longest_day",
+      "fajrReferenceDate": null,
+      "ishaReferenceDate": "2026-06-21",
+      "expected": {
+        "fajr": "2026-11-01T05:00:29.154Z",
+        "sunrise": "2026-11-01T06:53:55.019Z",
+        "dhuhr": "2026-11-01T11:48:05.211Z",
+        "asr": "2026-11-01T14:05:51.626Z",
+        "maghrib": "2026-11-01T16:38:32.260Z",
+        "isha": "2026-11-01T18:07:31.394Z"
+      }
+    },
+    {
+      "name": "Near western date line winter",
+      "date": "2026-01-01",
+      "latitude": 48,
+      "longitude": -179.9,
+      "madhab": "shafi",
+      "fajrRule": "aqrabul_ayyam",
+      "ishaRule": "longest_day",
+      "fajrReferenceDate": null,
+      "ishaReferenceDate": "2026-06-20",
+      "expected": {
+        "fajr": "2026-01-01T17:56:08.611Z",
+        "sunrise": "2026-01-01T19:49:25.806Z",
+        "dhuhr": "2026-01-02T00:07:24.004Z",
+        "asr": "2026-01-02T02:00:00.452Z",
+        "maghrib": "2026-01-02T04:22:33.070Z",
+        "isha": "2026-01-02T05:52:10.301Z"
+      }
+    },
+    {
+      "name": "Near eastern date line autumn",
+      "date": "2026-09-21",
+      "latitude": 48,
+      "longitude": 179.9,
+      "madhab": "shafi",
+      "fajrRule": "aqrabul_ayyam",
+      "ishaRule": "longest_day",
+      "fajrReferenceDate": null,
+      "ishaReferenceDate": "2026-06-21",
+      "expected": {
+        "fajr": "2026-09-20T15:59:09.873Z",
+        "sunrise": "2026-09-20T17:44:51.169Z",
+        "dhuhr": "2026-09-20T23:57:39.445Z",
+        "asr": "2026-09-21T03:16:24.715Z",
+        "maghrib": "2026-09-21T06:06:34.690Z",
+        "isha": "2026-09-21T07:27:45.290Z"
+      }
+    },
+    {
+      "name": "Western date line meridian winter",
+      "date": "2026-01-01",
+      "latitude": 48,
+      "longitude": -180,
+      "madhab": "shafi",
+      "fajrRule": "aqrabul_ayyam",
+      "ishaRule": "longest_day",
+      "fajrReferenceDate": null,
+      "ishaReferenceDate": "2026-06-20",
+      "expected": {
+        "fajr": "2026-01-01T17:56:32.613Z",
+        "sunrise": "2026-01-01T19:49:49.806Z",
+        "dhuhr": "2026-01-02T00:07:48.012Z",
+        "asr": "2026-01-02T02:00:24.467Z",
+        "maghrib": "2026-01-02T04:22:57.086Z",
+        "isha": "2026-01-02T05:52:34.315Z"
+      }
+    },
+    {
+      "name": "Eastern date line meridian autumn",
+      "date": "2026-09-21",
+      "latitude": 48,
+      "longitude": 180,
+      "madhab": "shafi",
+      "fajrRule": "aqrabul_ayyam",
+      "ishaRule": "longest_day",
+      "fajrReferenceDate": null,
+      "ishaReferenceDate": "2026-06-21",
+      "expected": {
+        "fajr": "2026-09-20T15:58:45.846Z",
+        "sunrise": "2026-09-20T17:44:27.146Z",
+        "dhuhr": "2026-09-20T23:57:15.450Z",
+        "asr": "2026-09-21T03:16:00.740Z",
+        "maghrib": "2026-09-21T06:06:10.725Z",
+        "isha": "2026-09-21T07:27:21.327Z"
+      }
+    },
+    {
+      "name": "Near western date line solstice",
+      "date": "2026-06-21",
+      "latitude": 60,
+      "longitude": -179.9,
+      "madhab": "shafi",
+      "fajrRule": "aqrabul_ayyam",
+      "ishaRule": "longest_day",
+      "fajrReferenceDate": "2026-04-21",
+      "ishaReferenceDate": "2026-06-20",
+      "expected": {
+        "fajr": "2026-06-21T12:09:55.259Z",
+        "sunrise": "2026-06-21T14:35:26.843Z",
+        "dhuhr": "2026-06-22T00:05:31.488Z",
+        "asr": "2026-06-22T04:43:22.764Z",
+        "maghrib": "2026-06-22T09:32:33.313Z",
+        "isha": "2026-06-22T10:32:23.218Z"
+      }
+    },
+    {
+      "name": "Near eastern date line solstice",
+      "date": "2026-06-21",
+      "latitude": 60,
+      "longitude": 179.9,
+      "madhab": "shafi",
+      "fajrRule": "aqrabul_ayyam",
+      "ishaRule": "longest_day",
+      "fajrReferenceDate": "2026-04-22",
+      "ishaReferenceDate": "2026-06-21",
+      "expected": {
+        "fajr": "2026-06-20T12:10:41.581Z",
+        "sunrise": "2026-06-20T14:36:03.062Z",
+        "dhuhr": "2026-06-21T00:06:06.388Z",
+        "asr": "2026-06-21T04:43:58.447Z",
+        "maghrib": "2026-06-21T09:33:11.226Z",
+        "isha": "2026-06-21T10:33:11.226Z"
+      }
+    },
+    {
+      "name": "Western date line meridian solstice",
+      "date": "2026-06-21",
+      "latitude": 60,
+      "longitude": -180,
+      "madhab": "shafi",
+      "fajrRule": "aqrabul_ayyam",
+      "ishaRule": "longest_day",
+      "fajrReferenceDate": "2026-04-21",
+      "ishaReferenceDate": "2026-06-20",
+      "expected": {
+        "fajr": "2026-06-21T12:10:18.421Z",
+        "sunrise": "2026-06-21T14:35:50.847Z",
+        "dhuhr": "2026-06-22T00:05:55.492Z",
+        "asr": "2026-06-22T04:43:46.767Z",
+        "maghrib": "2026-06-22T09:32:57.315Z",
+        "isha": "2026-06-22T10:32:47.222Z"
+      }
+    },
+    {
+      "name": "Eastern date line meridian solstice",
+      "date": "2026-06-21",
+      "latitude": 60,
+      "longitude": 180,
+      "madhab": "shafi",
+      "fajrRule": "aqrabul_ayyam",
+      "ishaRule": "longest_day",
+      "fajrReferenceDate": "2026-04-22",
+      "ishaReferenceDate": "2026-06-21",
+      "expected": {
+        "fajr": "2026-06-20T12:10:18.421Z",
+        "sunrise": "2026-06-20T14:35:39.059Z",
+        "dhuhr": "2026-06-21T00:05:42.385Z",
+        "asr": "2026-06-21T04:43:34.444Z",
+        "maghrib": "2026-06-21T09:32:47.222Z",
+        "isha": "2026-06-21T10:32:47.222Z"
+      }
+    }
+  ]
+}
