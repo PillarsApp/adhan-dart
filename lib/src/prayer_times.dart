@@ -8,6 +8,7 @@ import 'data/date_components.dart';
 import 'data/london_times_lookup.dart';
 import 'data/time_components.dart';
 import 'internal/solar_time.dart';
+import 'internal/wifaqul_twilight.dart';
 import 'madhab.dart';
 import 'prayer.dart';
 
@@ -113,7 +114,8 @@ class PrayerTimes {
     _dateComponents = DateComponents.from(date);
 
     // Special handling for London lookup times
-    if (calculationParameters.method == CalculationMethod.unified_london_times) {
+    if (calculationParameters.method ==
+        CalculationMethod.unified_london_times) {
       _initializeFromLondonLookup(date);
       return;
     }
@@ -132,7 +134,10 @@ class PrayerTimes {
     final year = date.year;
     final dayOfYear = date.dayOfYear;
 
-    final solarTime = SolarTime(date, coordinates);
+    final isWifaqul =
+        calculationParameters.method == CalculationMethod.wifaqul_ulama;
+    final solarTime =
+        SolarTime(date, coordinates, preserveSolarDate: isWifaqul);
 
     var timeComponents = TimeComponents.fromDouble(solarTime.transit);
     final transit = timeComponents.dateComponents(date);
@@ -143,11 +148,6 @@ class PrayerTimes {
     timeComponents = TimeComponents.fromDouble(solarTime.sunset);
     final sunsetComponents = timeComponents.dateComponents(date);
 
-    final tomorrow = date.add(Duration(days: 1));
-    final tomorrowSolarTime = SolarTime(tomorrow, coordinates);
-    final tomorrowSunriseComponents =
-        TimeComponents.fromDouble(tomorrowSolarTime.sunrise);
-
     tempDhuhr = transit;
     tempSunrise = sunriseComponents;
 
@@ -155,74 +155,91 @@ class PrayerTimes {
         solarTime.afternoon(calculationParameters.madhab.getShadowLength()));
     tempAsr = timeComponents.dateComponents(date);
 
-    // get night length
-    final tomorrowSunrise = tomorrowSunriseComponents.dateComponents(tomorrow);
-    final night = tomorrowSunrise.millisecondsSinceEpoch -
-        sunsetComponents.millisecondsSinceEpoch;
-
-    _value = solarTime.hourAngle(-calculationParameters.fajrAngle, false);
-
-    if (_valid(_value)) {
-      timeComponents = TimeComponents.fromDouble(_value);
-      tempFajr = timeComponents.dateComponents(date);
-    }
-
-    if (calculationParameters.method ==
-            CalculationMethod.moon_sighting_committee &&
-        coordinates.latitude >= 55) {
-      tempFajr = sunriseComponents.add(Duration(seconds: -1 * night ~/ 7000));
-    }
-
-    final nightPortions = calculationParameters.nightPortions();
-
-    DateTime safeFajr;
-    if (calculationParameters.method ==
-        CalculationMethod.moon_sighting_committee) {
-      safeFajr = _seasonAdjustedMorningTwilight(
-          coordinates.latitude, dayOfYear, year, sunriseComponents);
+    if (isWifaqul) {
+      final twilight = WifaqulTwilight.calculate(
+          date,
+          coordinates,
+          calculationParameters,
+          solarTime,
+          sunriseComponents,
+          sunsetComponents);
+      tempFajr = twilight.fajr;
+      tempIsha = twilight.isha;
     } else {
-      final portion = nightPortions.fajr;
-      final nightFraction = portion * night ~/ 1000;
-      safeFajr = sunriseComponents.add(Duration(seconds: -1 * nightFraction));
-    }
+      final tomorrow = date.add(Duration(days: 1));
+      final tomorrowSolarTime = SolarTime(tomorrow, coordinates);
+      final tomorrowSunriseComponents =
+          TimeComponents.fromDouble(tomorrowSolarTime.sunrise);
+      // get night length
+      final tomorrowSunrise =
+          tomorrowSunriseComponents.dateComponents(tomorrow);
+      final night = tomorrowSunrise.millisecondsSinceEpoch -
+          sunsetComponents.millisecondsSinceEpoch;
 
-    if (tempFajr == null || tempFajr.isBefore(safeFajr)) {
-      tempFajr = safeFajr;
-    }
+      _value = solarTime.hourAngle(-calculationParameters.fajrAngle, false);
 
-    // Isha calculation with check against safe value
-    if (calculationParameters.ishaInterval > 0) {
-      tempIsha = sunsetComponents
-          .add(Duration(seconds: calculationParameters.ishaInterval * 60));
-    } else {
-      _value = solarTime.hourAngle(-calculationParameters.ishaAngle!, true);
-
-      if (calculationParameters.ishaAngle != null && _valid(_value)) {
-        timeComponents = TimeComponents.fromDouble(
-            solarTime.hourAngle(-calculationParameters.ishaAngle!, true));
-        tempIsha = timeComponents.dateComponents(date);
+      if (_valid(_value)) {
+        timeComponents = TimeComponents.fromDouble(_value);
+        tempFajr = timeComponents.dateComponents(date);
       }
 
       if (calculationParameters.method ==
               CalculationMethod.moon_sighting_committee &&
           coordinates.latitude >= 55) {
-        final nightFraction = night ~/ 7000;
-        tempIsha = sunsetComponents.add(Duration(seconds: nightFraction));
+        tempFajr = sunriseComponents.add(Duration(seconds: -1 * night ~/ 7000));
       }
 
-      DateTime safeIsha;
+      final nightPortions = calculationParameters.nightPortions();
+
+      DateTime safeFajr;
       if (calculationParameters.method ==
           CalculationMethod.moon_sighting_committee) {
-        safeIsha = PrayerTimes._seasonAdjustedEveningTwilight(
-            coordinates.latitude, dayOfYear, year, sunsetComponents);
+        safeFajr = _seasonAdjustedMorningTwilight(
+            coordinates.latitude, dayOfYear, year, sunriseComponents);
       } else {
-        final portion = nightPortions.isha;
+        final portion = nightPortions.fajr;
         final nightFraction = portion * night ~/ 1000;
-        safeIsha = sunsetComponents.add(Duration(seconds: nightFraction));
+        safeFajr = sunriseComponents.add(Duration(seconds: -1 * nightFraction));
       }
 
-      if (tempIsha == null || (tempIsha.isAfter(safeIsha))) {
-        tempIsha = safeIsha;
+      if (tempFajr == null || tempFajr.isBefore(safeFajr)) {
+        tempFajr = safeFajr;
+      }
+
+      // Isha calculation with check against safe value
+      if (calculationParameters.ishaInterval > 0) {
+        tempIsha = sunsetComponents
+            .add(Duration(seconds: calculationParameters.ishaInterval * 60));
+      } else {
+        _value = solarTime.hourAngle(-calculationParameters.ishaAngle!, true);
+
+        if (calculationParameters.ishaAngle != null && _valid(_value)) {
+          timeComponents = TimeComponents.fromDouble(
+              solarTime.hourAngle(-calculationParameters.ishaAngle!, true));
+          tempIsha = timeComponents.dateComponents(date);
+        }
+
+        if (calculationParameters.method ==
+                CalculationMethod.moon_sighting_committee &&
+            coordinates.latitude >= 55) {
+          final nightFraction = night ~/ 7000;
+          tempIsha = sunsetComponents.add(Duration(seconds: nightFraction));
+        }
+
+        DateTime safeIsha;
+        if (calculationParameters.method ==
+            CalculationMethod.moon_sighting_committee) {
+          safeIsha = PrayerTimes._seasonAdjustedEveningTwilight(
+              coordinates.latitude, dayOfYear, year, sunsetComponents);
+        } else {
+          final portion = nightPortions.isha;
+          final nightFraction = portion * night ~/ 1000;
+          safeIsha = sunsetComponents.add(Duration(seconds: nightFraction));
+        }
+
+        if (tempIsha == null || (tempIsha.isAfter(safeIsha))) {
+          tempIsha = safeIsha;
+        }
       }
     }
 
@@ -238,30 +255,30 @@ class PrayerTimes {
     }
 
     // Assign final times to public struct members with all offsets
-    _fajr = CalendarUtil.roundedMinute(tempFajr
+    DateTime roundTime(DateTime time) => isWifaqul
+        ? CalendarUtil.roundedMinute(time).toLocal()
+        : CalendarUtil.roundedMinute(time.toLocal());
+
+    _fajr = roundTime(tempFajr
         .add(Duration(minutes: calculationParameters.adjustments.fajr))
-        .add(Duration(minutes: calculationParameters.methodAdjustments.fajr))
-        .toLocal());
-    _sunrise = CalendarUtil.roundedMinute(tempSunrise
+        .add(Duration(minutes: calculationParameters.methodAdjustments.fajr)));
+    _sunrise = roundTime(tempSunrise
         .add(Duration(minutes: calculationParameters.adjustments.sunrise))
-        .add(Duration(minutes: calculationParameters.methodAdjustments.sunrise))
-        .toLocal());
-    _dhuhr = CalendarUtil.roundedMinute(tempDhuhr
+        .add(Duration(
+            minutes: calculationParameters.methodAdjustments.sunrise)));
+    _dhuhr = roundTime(tempDhuhr
         .add(Duration(minutes: calculationParameters.adjustments.dhuhr))
-        .add(Duration(minutes: calculationParameters.methodAdjustments.dhuhr))
-        .toLocal());
-    _asr = CalendarUtil.roundedMinute(tempAsr
+        .add(Duration(minutes: calculationParameters.methodAdjustments.dhuhr)));
+    _asr = roundTime(tempAsr
         .add(Duration(minutes: calculationParameters.adjustments.asr))
-        .add(Duration(minutes: calculationParameters.methodAdjustments.asr))
-        .toLocal());
-    _maghrib = CalendarUtil.roundedMinute(tempMaghrib
+        .add(Duration(minutes: calculationParameters.methodAdjustments.asr)));
+    _maghrib = roundTime(tempMaghrib
         .add(Duration(minutes: calculationParameters.adjustments.maghrib))
-        .add(Duration(minutes: calculationParameters.methodAdjustments.maghrib))
-        .toLocal());
-    _isha = CalendarUtil.roundedMinute(tempIsha
+        .add(Duration(
+            minutes: calculationParameters.methodAdjustments.maghrib)));
+    _isha = roundTime(tempIsha
         .add(Duration(minutes: calculationParameters.adjustments.isha))
-        .add(Duration(minutes: calculationParameters.methodAdjustments.isha))
-        .toLocal());
+        .add(Duration(minutes: calculationParameters.methodAdjustments.isha)));
 
     if (utcOffset != null) {
       _fajr = fajr.toUtc().add(utcOffset!);
@@ -416,19 +433,26 @@ class PrayerTimes {
   void _initializeFromLondonLookup(DateTime date) {
     final dateComponents = DateComponents.from(date);
     final londonTimes = LondonTimesLookup.getTimesForDate(dateComponents);
-    
+
     if (londonTimes == null) {
-      throw ArgumentError('No London prayer times available for date ${dateComponents.year}-${dateComponents.month.toString().padLeft(2, '0')}-${dateComponents.day.toString().padLeft(2, '0')}');
+      throw ArgumentError(
+          'No London prayer times available for date ${dateComponents.year}-${dateComponents.month.toString().padLeft(2, '0')}-${dateComponents.day.toString().padLeft(2, '0')}');
     }
 
-    // Parse times from JSON and create DateTime objects  
+    // Parse times from JSON and create DateTime objects
     // These represent London local times, which need to be converted to UTC for processing
-    final tempFajr = londonTimes.parseTime(londonTimes.fajr, dateComponents).toUtc();
-    final tempSunrise = londonTimes.parseTime(londonTimes.sunrise, dateComponents).toUtc();
-    final tempDhuhr = londonTimes.parseTime(londonTimes.dhuhr, dateComponents).toUtc();
-    final tempAsr = londonTimes.parseTime(londonTimes.asr, dateComponents).toUtc();
-    final tempMaghrib = londonTimes.parseTime(londonTimes.maghrib, dateComponents).toUtc();
-    final tempIsha = londonTimes.parseTime(londonTimes.isha, dateComponents).toUtc();
+    final tempFajr =
+        londonTimes.parseTime(londonTimes.fajr, dateComponents).toUtc();
+    final tempSunrise =
+        londonTimes.parseTime(londonTimes.sunrise, dateComponents).toUtc();
+    final tempDhuhr =
+        londonTimes.parseTime(londonTimes.dhuhr, dateComponents).toUtc();
+    final tempAsr =
+        londonTimes.parseTime(londonTimes.asr, dateComponents).toUtc();
+    final tempMaghrib =
+        londonTimes.parseTime(londonTimes.maghrib, dateComponents).toUtc();
+    final tempIsha =
+        londonTimes.parseTime(londonTimes.isha, dateComponents).toUtc();
 
     // Apply any adjustments and convert to local time
     _fajr = CalendarUtil.roundedMinute(tempFajr

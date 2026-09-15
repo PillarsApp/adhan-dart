@@ -3,3 +3,4 @@
 library adhan;
 
 export 'src/adhan_base.dart';
+export 'src/wifaqul_options.dart';

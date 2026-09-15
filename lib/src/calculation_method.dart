@@ -58,7 +58,10 @@ enum CalculationMethod {
 
   /// The default value for [CalculationParameters.method] when initializing a
   /// [CalculationParameters] object. Sets a Fajr angle of 0 and an Isha angle of 0.
-  other
+  other,
+
+  /// Selected Wifaqul profile; see WifaqulOptions for policies and limitations.
+  wifaqul_ulama
 }
 
 extension CalculationMethodExtensions on CalculationMethod {
@@ -151,6 +154,9 @@ extension CalculationMethodExtensions on CalculationMethod {
           return CalculationParameters(
               fajrAngle: 0.0, ishaAngle: 0.0, method: this);
         }
+      case CalculationMethod.wifaqul_ulama:
+        return CalculationParameters(fajrAngle: 18, ishaAngle: 18, method: this)
+            .withMethodAdjustments(PrayerAdjustments(dhuhr: 4, maghrib: 5));
       case CalculationMethod.other:
         {
           return CalculationParameters(
