@@ -1,8 +1,9 @@
-## Unreleased
+## 2.3.0
 
 - Rebase the Pillars fork onto upstream master.
 - Interpret London timetables in Europe/London rather than the device timezone, including GMT/BST transitions.
 - Preserve native local and explicit UTC-offset output when using London timetables.
+- Preserve the caller's initialized timezone database and selected local timezone.
 - Support Dart 2.19 through Dart 3 and timezone 0.9.4 through 0.10.x.
 - Cover London absolute instants and daylight-saving boundaries independently of the host timezone.
 
