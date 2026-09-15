@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'package:timezone/data/latest.dart' as timezone_data;
+import 'package:timezone/timezone.dart' as timezone;
 
 import '../data/date_components.dart';
 import 'london_times_data.dart';
@@ -6,48 +8,46 @@ import 'london_times_data.dart';
 /// Service for looking up pre-calculated London prayer times from JSON data
 class LondonTimesLookup {
   static Map<String, dynamic>? _cachedData;
-  
+
   /// Initialize with JSON data (call this first before using getTimesForDate)
   static void initializeWithData(String jsonString) {
     _cachedData = json.decode(jsonString) as Map<String, dynamic>;
   }
-  
+
   /// Initialize with pre-parsed data
   static void initializeWithParsedData(Map<String, dynamic> data) {
     _cachedData = data;
   }
-  
+
   /// Synchronous version that uses cached data or auto-initializes from embedded data
   static Map<String, dynamic> _getCachedData() {
-    if (_cachedData == null) {
-      // Auto-initialize from embedded data
-      _cachedData = json.decode(londonPrayerTimesData) as Map<String, dynamic>;
-    }
-    return _cachedData!;
+    return _cachedData ??=
+        json.decode(londonPrayerTimesData) as Map<String, dynamic>;
   }
-  
+
   /// Check if data has been loaded
   static bool get isInitialized => _cachedData != null;
-  
+
   /// Get prayer times for a specific date
   /// Returns null if date not found in lookup table
   static LondonPrayerTimes? getTimesForDate(DateComponents date) {
     try {
       final data = _getCachedData();
-      final dateKey = '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-      
+      final dateKey =
+          '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+
       final times = data['times'] as Map<String, dynamic>?;
       if (times == null) return null;
-      
+
       final dayData = times[dateKey] as Map<String, dynamic>?;
       if (dayData == null) return null;
-      
+
       return LondonPrayerTimes.fromJson(dayData);
     } catch (e) {
       return null;
     }
   }
-  
+
   /// Check if data is available for a specific date
   static bool hasDataForDate(DateComponents date) {
     return getTimesForDate(date) != null;
@@ -56,6 +56,13 @@ class LondonTimesLookup {
 
 /// Represents prayer times from the London lookup table
 class LondonPrayerTimes {
+  static final timezone.Location _londonLocation = _initializeLondonLocation();
+
+  static timezone.Location _initializeLondonLocation() {
+    timezone_data.initializeTimeZones();
+    return timezone.getLocation('Europe/London');
+  }
+
   final String date;
   final String fajr;
   final String sunrise;
@@ -63,7 +70,7 @@ class LondonPrayerTimes {
   final String asr;
   final String maghrib;
   final String isha;
-  
+
   LondonPrayerTimes({
     required this.date,
     required this.fajr,
@@ -73,7 +80,7 @@ class LondonPrayerTimes {
     required this.maghrib,
     required this.isha,
   });
-  
+
   factory LondonPrayerTimes.fromJson(Map<String, dynamic> json) {
     return LondonPrayerTimes(
       date: json['date'] as String,
@@ -85,20 +92,29 @@ class LondonPrayerTimes {
       isha: json['isha'] as String,
     );
   }
-  
+
   /// Parse time string (HH:MM) and create DateTime for given date
-  /// The returned DateTime represents the time in London timezone
+  /// The returned DateTime is the UTC instant for the London wall-clock time.
   DateTime parseTime(String timeStr, DateComponents date) {
     final parts = timeStr.split(':');
     if (parts.length != 2) {
       throw FormatException('Invalid time format: $timeStr');
     }
-    
+
     final hour = int.parse(parts[0]);
     final minute = int.parse(parts[1]);
-    
-    // Create as local DateTime representing London time
-    // The JSON times are assumed to be in London local time
-    return DateTime(date.year, date.month, date.day, hour, minute);
+
+    final londonTime = timezone.TZDateTime(
+      _londonLocation,
+      date.year,
+      date.month,
+      date.day,
+      hour,
+      minute,
+    );
+    return DateTime.fromMillisecondsSinceEpoch(
+      londonTime.millisecondsSinceEpoch,
+      isUtc: true,
+    );
   }
 }

@@ -3,26 +3,31 @@ name: tests
 on:
   workflow_dispatch:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    branches: [ master ]
+    branches: [master]
+
+permissions:
+  contents: read
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    strategy:
+      fail-fast: false
+      matrix:
+        sdk: ['3.5.3', stable]
+        timezone: [UTC, Europe/London, America/New_York, Asia/Kathmandu]
+    env:
+      TZ: ${{ matrix.timezone }}
     steps:
-    - uses: actions/checkout@v4
-    - uses: dart-lang/setup-dart@v1
-      with:
-        sdk: '2.19'  # Last stable Dart 2.x version
-    - name: Install dependencies
-      run: dart pub get
-    - name: Run test with coverage 
-      run: dart test --coverage coverage
-    - name: Generate lcov.info for test coverage
-      run: dart pub global activate coverage && dart pub global run coverage:format_coverage -i coverage/test -o coverage/lcov.info --lcov
-    - name: upload reports to codecov
-      run: curl -s https://codecov.io/bash | bash
-      env:
-        CODECOV_TOKEN: '${{ secrets.CODECOV_TOKEN }}'
+      - uses: actions/checkout@v4
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: ${{ matrix.sdk }}
+      - name: Install dependencies
+        run: dart pub get
+      - name: Analyze
+        run: dart analyze
+      - name: Run tests
+        run: dart test --reporter expanded
