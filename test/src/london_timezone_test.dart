@@ -1,7 +1,27 @@
 import 'package:adhan/adhan.dart';
 import 'package:test/test.dart';
+import 'package:timezone/data/latest.dart' as timezone_data;
+import 'package:timezone/timezone.dart' as timezone;
 
 void main() {
+  test('London lookup preserves the caller-selected local timezone', () {
+    timezone_data.initializeTimeZones();
+    timezone.setLocalLocation(timezone.getLocation('America/New_York'));
+
+    PrayerTimes.utc(
+      Coordinates(51.5074, -0.1278),
+      DateComponents(2026, 7, 15),
+      CalculationMethod.unified_london_times.getParameters(),
+    );
+
+    final localNoon = timezone.TZDateTime.from(
+      DateTime.utc(2026, 7, 15, 12),
+      timezone.local,
+    );
+    expect(localNoon.hour, 8);
+    expect(localNoon.timeZoneOffset, Duration(hours: -4));
+  });
+
   group('London timetable instants', () {
     final expectedNoonInstants = [
       DateTime.utc(2026, 1, 15, 12),

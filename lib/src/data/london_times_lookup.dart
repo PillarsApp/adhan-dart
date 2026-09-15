@@ -59,7 +59,9 @@ class LondonPrayerTimes {
   static final timezone.Location _londonLocation = _initializeLondonLocation();
 
   static timezone.Location _initializeLondonLocation() {
-    timezone_data.initializeTimeZones();
+    if (!timezone.timeZoneDatabase.isInitialized) {
+      timezone_data.initializeTimeZones();
+    }
     return timezone.getLocation('Europe/London');
   }
 
