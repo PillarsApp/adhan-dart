@@ -11,6 +11,9 @@ final regularCoordinates = Coordinates(31.947351, 35.227163);
 final arjeplogSweden = Coordinates(66.7222444, 17.7189);
 final amundsenScottAntarctic = Coordinates(-84.996, 0.01013);
 final london = Coordinates(51.5074, -0.1278);
+final tromso = Coordinates(69.6492, 18.9553);
+final suva = Coordinates(-18.1416, 178.4419);
+final chatham = Coordinates(-43.95, -176.55);
 
 DateTime utcMidnight(DateComponents components) =>
     DateTime.utc(components.year, components.month, components.day);
@@ -50,6 +53,15 @@ void expectOrdered(PrayerTimes p) {
   expect(p.asr.isBefore(p.maghrib), isTrue);
   expect(p.maghrib.isBefore(p.isha), isTrue);
 }
+
+List<String> utcMinutes(PrayerTimes p) => [
+      p.fajr,
+      p.sunrise,
+      p.dhuhr,
+      p.asr,
+      p.maghrib,
+      p.isha
+    ].map((time) => time.toUtc().toIso8601String().substring(0, 16)).toList();
 
 void expectDhuhrOnRequestedDate(PrayerTimes p, DateComponents date) {
   expect(DateComponents.from(p.dhuhr.toUtc()), date);
@@ -133,6 +145,95 @@ void main() {
       expect(single.asr, iterative.asr);
       expect(single.maghrib, iterative.maghrib);
     });
+
+    CalculationParameters unresolved(HourAngleCorrection correction) =>
+        muslimWorldLeague(
+            correction: correction,
+            polar: PolarCircleResolution.unresolved,
+            rule: HighLatitudeRule.middle_of_the_night);
+    final tromsoWinterDay = DateComponents(2026, 1, 15);
+    final suvaDayWhoseTransitWraps = DateComponents(2026, 9, 20);
+    final chathamDayWhoseTransitWraps = DateComponents(2026, 2, 4);
+
+    test('singlePass keeps the unordered 2.3.0 times of a Tromso winter day',
+        () {
+      expect(
+          utcMinutes(PrayerTimes.utc(tromso, tromsoWinterDay,
+              unresolved(HourAngleCorrection.singlePass))),
+          [
+            '2026-01-15T05:14',
+            '2026-01-15T10:22',
+            '2026-01-15T10:55',
+            '2026-01-15T11:32',
+            '2026-01-15T11:26',
+            '2026-01-15T16:22',
+          ]);
+    });
+
+    test('iterative with unresolved rejects the same Tromso winter day', () {
+      expect(
+          () => PrayerTimes.utc(tromso, tromsoWinterDay,
+              unresolved(HourAngleCorrection.iterative)),
+          throwsArgumentError);
+    });
+
+    test('singlePass keeps the 2.3.0 day at Suva when the transit wraps', () {
+      expect(
+          utcMinutes(PrayerTimes.utc(suva, suvaDayWhoseTransitWraps,
+              unresolved(HourAngleCorrection.singlePass))),
+          [
+            '2026-09-20T16:45',
+            '2026-09-20T17:57',
+            '2026-09-21T00:00',
+            '2026-09-21T03:23',
+            '2026-09-21T06:02',
+            '2026-09-21T07:10',
+          ]);
+    });
+
+    test('iterative keeps the date line correction at Suva', () {
+      expect(
+          utcMinutes(PrayerTimes.utc(suva, suvaDayWhoseTransitWraps,
+              unresolved(HourAngleCorrection.iterative))),
+          [
+            '2026-09-19T16:46',
+            '2026-09-19T17:58',
+            '2026-09-20T00:01',
+            '2026-09-20T03:23',
+            '2026-09-20T06:02',
+            '2026-09-20T07:10',
+          ]);
+    });
+
+    test(
+        'singlePass keeps the 2.3.0 day at the Chatham Islands when the '
+        'transit wraps', () {
+      expect(
+          utcMinutes(PrayerTimes.utc(chatham, chathamDayWhoseTransitWraps,
+              unresolved(HourAngleCorrection.singlePass))),
+          [
+            '2026-02-03T14:52',
+            '2026-02-03T16:49',
+            '2026-02-04T00:01',
+            '2026-02-04T03:57',
+            '2026-02-04T07:10',
+            '2026-02-04T08:59',
+          ]);
+    });
+
+    test('iterative keeps the date line correction at the Chatham Islands', () {
+      expect(
+          utcMinutes(PrayerTimes.utc(chatham, chathamDayWhoseTransitWraps,
+              unresolved(HourAngleCorrection.iterative))),
+          [
+            '2026-02-04T14:54',
+            '2026-02-04T16:51',
+            '2026-02-05T00:01',
+            '2026-02-05T03:55',
+            '2026-02-05T07:09',
+            '2026-02-05T08:57',
+          ]);
+    });
   });
 
   group('host time zone', () {
@@ -149,7 +250,6 @@ void main() {
 
     test('a daylight saving day in the host zone does not move a time', () {
       final reykjavik = Coordinates(64.1466, -21.9426);
-      final tromso = Coordinates(69.6492, 18.9553);
       final transitionDay = DateComponents(2026, 11, 1);
       final msc = CalculationMethod.moon_sighting_committee.getParameters()
         ..hourAngleCorrection = HourAngleCorrection.singlePass
@@ -349,8 +449,6 @@ void main() {
   });
 
   group('date line', () {
-    final suva = Coordinates(-18.1416, 178.4419);
-    final chatham = Coordinates(-43.95, -176.55);
     DateTime epoch(int seconds) =>
         DateTime.fromMillisecondsSinceEpoch(seconds * 1000, isUtc: true);
 
