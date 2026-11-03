@@ -1,5 +1,6 @@
 import 'calculation_method.dart';
 import 'high_latitude_rule.dart';
+import 'hour_angle_correction.dart';
 import 'madhab.dart';
 import 'prayer_adjustments.dart';
 import 'rounding.dart';
@@ -40,6 +41,9 @@ class CalculationParameters {
   /// How each computed time is rounded to the minute
   Rounding rounding;
 
+  /// How the hour angle correction runs and how strictly the times are validated
+  HourAngleCorrection hourAngleCorrection;
+
   CalculationParameters(
       {this.method = CalculationMethod.other,
       required this.fajrAngle,
@@ -50,7 +54,8 @@ class CalculationParameters {
       this.highLatitudeRule = HighLatitudeRule.middle_of_the_night,
       PrayerAdjustments? adjustments,
       PrayerAdjustments? methodAdjustments,
-      this.rounding = Rounding.nearest})
+      this.rounding = Rounding.nearest,
+      this.hourAngleCorrection = HourAngleCorrection.iterative})
       : adjustments = adjustments ?? PrayerAdjustments(),
         methodAdjustments = methodAdjustments ?? PrayerAdjustments();
 

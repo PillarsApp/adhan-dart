@@ -5,6 +5,7 @@ export 'madhab.dart' show Madhab;
 export 'calculation_method.dart';
 export 'calculation_parameters.dart';
 export 'high_latitude_rule.dart';
+export 'hour_angle_correction.dart';
 export 'prayer_adjustments.dart';
 export 'rounding.dart';
 export 'qibla.dart';
