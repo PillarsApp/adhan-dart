@@ -2,10 +2,6 @@ import 'dart:math' as math;
 
 import 'date_components.dart';
 
-/// Decodes `malaysia_zones.txt` and resolves a point and date to a zone code.
-///
-/// docs/MALAYSIA_TIMES_MAINTENANCE.md describes the format and the resolution
-/// order.
 class MalaysiaZoneMap {
   final List<MalaysiaZone> zones;
   final List<MalaysiaSpecialArea> specialAreas;
@@ -64,8 +60,6 @@ class MalaysiaZoneMap {
 
   MalaysiaZone? zone(String code) => _zonesByCode[code];
 
-  /// Indices of every region that encloses the point. More than one means
-  /// the source polygons overlap there; the resolver takes the first.
   List<int> regionsAt(double latitude, double longitude) {
     final lat = quantize(latitude);
     final lon = quantize(longitude);
