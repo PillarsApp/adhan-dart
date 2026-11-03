@@ -9,7 +9,7 @@ import '../internal/present.dart';
 import '../internal/shadow_length.dart';
 import '../internal/solar_time.dart';
 import '../madhab.dart';
-import '../prayer_times.dart';
+import '../prayer_times_source.dart';
 import 'malaysia_zones.dart';
 
 const Duration _malaysiaOffset = Duration(hours: 8);
