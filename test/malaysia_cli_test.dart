@@ -135,6 +135,25 @@ void main() {
     });
   }
 
+  for (final stored in {
+    '$_esolatDir/JHR02_2026.json.gz': 'JHR02 2026',
+    'tool/malaysia/raw/selangor/SGRGBK_2027.txt.gz': 'SGRGBK 2027',
+  }.entries) {
+    final fileName = stored.key.split('/').last;
+    test('build fails and names $fileName when it is not gzip', () async {
+      final root = _copyOfTool();
+      final raw = File('${root.path}/${stored.key}');
+      raw.writeAsBytesSync(GZipCodec().decode(raw.readAsBytesSync()));
+
+      final result = await _build(root);
+
+      expect(result.exitCode, 1, reason: '${result.stdout}${result.stderr}');
+      expect(LineSplitter.split('${result.stdout}'),
+          contains(allOf(contains(stored.value), contains(fileName))));
+      expect(Directory('${root.path}/data').existsSync(), isFalse);
+    });
+  }
+
   test('build fails when zones.csv lists a zone-year with rows as unpublished',
       () async {
     final root = _copyOfTool();
@@ -242,5 +261,26 @@ void main() {
     expect(stored.existsSync(), isFalse);
     expect(lines.where((line) => line.contains('JHR03 2026')), isNotEmpty);
     expect(ok, isFalse);
+  });
+
+  test('fetch keeps a stored file that is not gzip and names the zone-year',
+      () async {
+    final root = _copyOfTool();
+    final stored = File('${root.path}/$_esolatDir/JHR03_2026.json.gz');
+    final plain = GZipCodec().decode(stored.readAsBytesSync());
+    stored.writeAsBytesSync(plain);
+    final committed = _committedTimetables();
+    final fake = await _FakeEsolat.serve(
+        (zone, year) => committed['$zone $year'] ?? _noRecord(zone));
+
+    final lines = <String>[];
+    final ok = await _fetch(root, [2026], fake, lines: lines);
+
+    expect(ok, isFalse);
+    expect(
+        lines,
+        contains(
+            allOf(contains('JHR03 2026'), contains('JHR03_2026.json.gz'))));
+    expect(stored.readAsBytesSync(), plain);
   });
 }
