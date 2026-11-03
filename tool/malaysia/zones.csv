@@ -1,0 +1,70 @@
+code,state,areas,valid_from,valid_to,successors,reference_lat,reference_lon,notes
+JHR01,Johor,Pulau Aur dan Pulau Pemanggil,,,,2.44969,104.52109,Reference point: Pulau Aur (GeoNames 1732794).
+JHR02,Johor,"Johor Bahru, Kota Tinggi, Mersing, Kulai",,,,1.4655,103.7578,Reference point: Johor Bahru (GeoNames 1732752).
+JHR03,Johor,"Kluang, Pontian",,,,2.03046,103.31689,Reference point: Kluang (GeoNames 1732811).
+JHR04,Johor,"Batu Pahat, Muar, Segamat, Gemas Johor, Tangkak",,,,1.8548,102.9325,Reference point: Batu Pahat (GeoNames 1732687).
+KDH01,Kedah,"Kota Setar, Kubang Pasu, Pokok Sena (Daerah Kecil)",,,,6.12104,100.36014,Reference point: Alor Setar (GeoNames 1736309).
+KDH02,Kedah,"Kuala Muda, Yan, Pendang",,,,5.647,100.48772,Reference point: Sungai Petani (GeoNames 1735498).
+KDH03,Kedah,"Padang Terap, Sik",,,,6.25844,100.61264,Reference point: Kuala Nerang (GeoNames 1736331).
+KDH04,Kedah,Baling,,,,5.67806,100.9177,Reference point: Baling (GeoNames 1734448).
+KDH05,Kedah,"Bandar Baharu, Kulim",,,,5.13428,100.49549,Reference point: Bandar Baharu (GeoNames 1734407).
+KDH06,Kedah,Langkawi,,,,6.32649,99.8432,Reference point: Kuah (GeoNames 1222396).
+KDH07,Kedah,Puncak Gunung Jerai,,,,5.78756,100.43394,Reference point: Gunung Jerai (GeoNames 1735480).
+KTN01,Kelantan,"Bachok, Kota Bharu, Machang, Pasir Mas, Pasir Puteh, Tanah Merah, Tumpat, Kuala Krai, Mukim Chiku",,,,6.06667,102.4,Reference point: Bachok (GeoNames 1736380).
+KTN02,Kelantan,"Gua Musang (Daerah Galas Dan Bertam), Jeli, Jajahan Kecil Lojing",,,,4.88441,101.96857,Reference point: Gua Musang (GeoNames 1734651).
+MLK01,Melaka,SELURUH NEGERI MELAKA,,,,2.196,102.2405,Reference point: Malacca (GeoNames 1734759).
+NGS01,Negeri Sembilan,"Tampin, Jempol",,,,2.4701,102.2302,Reference point: Tampin (GeoNames 1734738).
+NGS02,Negeri Sembilan,"Jelebu, Kuala Pilah, Rembau",,,,2.9395,102.0704,Reference point: Kuala Klawang (GeoNames 1734800).
+NGS03,Negeri Sembilan,"Port Dickson, Seremban",,,,2.52462,101.79651,Reference point: Port Dickson (GeoNames 1734815).
+PHG01,Pahang,Pulau Tioman,,,,2.7972,104.166,Reference point: Pulau Tioman (GeoNames 1734910).
+PHG02,Pahang,"Kuantan, Pekan, Muadzam Shah",,,,3.8077,103.326,Reference point: Kuantan (GeoNames 1735227).
+PHG03,Pahang,"Jerantut, Temerloh, Maran, Bera, Chenor, Jengka",,,,3.936,102.3626,Reference point: Jerantut (GeoNames 1732602).
+PHG04,Pahang,"Bentong, Lipis, Raub",,,,3.5316,101.9038,Reference point: Bentung (GeoNames 1732667).
+PHG05,Pahang,"Genting Sempah, Janda Baik, Bukit Tinggi",,,,3.35,101.78333,Reference point: Genting Sempah (GeoNames 1745114).
+PHG06,Pahang,"Cameron Highlands, Genting Higlands, Bukit Fraser",,,,4.46361,101.3763,Reference point: Tanah Rata (GeoNames 1735262).
+PHG07,Pahang,"Zon Khas Daerah Rompin, (Mukim Rompin, Mukim Endau, Mukim Pontian)",,,,2.81667,103.48333,Reference point: Kuala Rompin (GeoNames 1734914).
+PRK01,Perak,"Tapah, Slim River, Tanjung Malim",,,,4.18333,101.26667,Reference point: Tapah (GeoNames 1735283).
+PRK02,Perak,"Kuala Kangsar, Sg. Siput , Ipoh, Batu Gajah, Kampar",,,,4.76667,100.93333,Reference point: Kuala Kangsar (GeoNames 1734599).
+PRK03,Perak,"Lenggong, Pengkalan Hulu, Grik",,,,5.10633,100.96792,Reference point: Lenggong (GeoNames 1767492).
+PRK04,Perak,"Temengor, Belum",,,,5.33333,101.36667,Reference point: Temengor (GeoNames 1734377).
+PRK05,Perak,"Kg Gajah, Teluk Intan, Bagan Datuk, Seri Iskandar, Beruas, Parit, Lumut, Sitiawan, Pulau Pangkor",,,,4.1864,100.9396,Reference point: Kampung Gajah (GeoNames 1735455).
+PRK06,Perak,"Selama, Taiping, Bagan Serai, Parit Buntar",,,,5.2236,100.69262,Reference point: Selama (GeoNames 1734399).
+PRK07,Perak,Bukit Larut,,,,4.86247,100.79265,Reference point: Bukit Larut (GeoNames 9172440).
+PLS01,Perlis,SELURUH NEGERI PERLIS,,,,6.4414,100.19862,Reference point: Kangar (GeoNames 1736278).
+PNG01,Pulau Pinang,SELURUH NEGERI PULAU PINANG,,,,5.41123,100.33543,Reference point: George Town (GeoNames 1735106).
+SBH01,Sabah,"Bahagian Sandakan (Timur), Bukit Garam, Semawang, Temanggong, Tambisan, Bandar Sandakan, Sukau",,,,5.8402,118.1179,Reference point: Sandakan (GeoNames 1734052).
+SBH02,Sabah,"Beluran, Telupid, Pinangah, Terusan, Kuamut, Bahagian Sandakan (Barat)",,,,5.8956,117.5557,Reference point: Beluran (GeoNames 1734020).
+SBH03,Sabah,"Lahad Datu, Silabukan, Kunak, Sahabat, Semporna, Tungku, Bahagian Tawau (Timur)",,,,5.02298,118.32897,Reference point: Lahad Datu (GeoNames 1733953).
+SBH04,Sabah,"Bandar Tawau, Balong, Merotai, Kalabakan, Bahagian Tawau (Barat)",,,,4.24482,117.89115,Reference point: Tawau (GeoNames 1734199).
+SBH05,Sabah,"Kudat, Kota Marudu, Pitas, Pulau Banggi, Bahagian Kudat",,,,6.88732,116.82364,Reference point: Kudat (GeoNames 1736458).
+SBH06,Sabah,Gunung Kinabalu,,,,6.07458,116.5582,Reference point: Mount Kinabalu (GeoNames 1736632).
+SBH07,Sabah,"Kota Kinabalu, Ranau, Kota Belud, Tuaran, Penampang, Papar, Putatan, Bahagian Pantai Barat",,,,5.9749,116.0724,Reference point: Kota Kinabalu (GeoNames 1733432).
+SBH08,Sabah,"Pensiangan, Keningau, Tambunan, Nabawan, Bahagian Pendalaman (Atas)",,,,4.55,116.31667,Reference point: Pensiangan (GeoNames 1734174).
+SBH09,Sabah,"Beaufort, Kuala Penyu, Sipitang, Tenom, Long Pasia, Membakut, Weston, Bahagian Pendalaman (Bawah)",,,,5.3473,115.7455,Reference point: Beaufort (GeoNames 1733874).
+SWK01,Sarawak,"Limbang, Lawas, Sundar, Trusan",,,,4.75477,115.01011,Reference point: Limbang (GeoNames 1737714).
+SWK02,Sarawak,"Miri, Niah, Bekenu, Sibuti, Marudi",,,,4.39928,113.99163,Reference point: Miri (GeoNames 1738050).
+SWK03,Sarawak,"Pandan, Belaga, Suai, Tatau, Sebauh, Bintulu",,,,3.15,113.36667,Reference point: Pandan (GeoNames 1737478).
+SWK04,Sarawak,"Sibu, Mukah, Dalat, Song, Igan, Oya, Balingian, Kanowit, Kapit",,,,2.3,111.81667,Reference point: Sibu (GeoNames 1735902).
+SWK05,Sarawak,"Sarikei, Matu, Julau, Rajang, Daro, Bintangor, Belawai",,,,2.11667,111.51667,Reference point: Sarikei (GeoNames 1735837).
+SWK06,Sarawak,"Lubok Antu, Sri Aman, Roban, Debak, Kabong, Lingga, Engkelili, Betong, Spaoh, Pusa, Saratok",,,,1.04186,111.83398,Reference point: Lubok Antu (GeoNames 1736868).
+SWK07,Sarawak,"Serian, Simunjan, Samarahan, Sebuyau, Meludam",,,,1.16667,110.56667,Reference point: Serian (GeoNames 1744288).
+SWK08,Sarawak,"Kuching, Bau, Lundu, Sematan",,,,1.55,110.33333,Reference point: Kuching (GeoNames 1735634).
+SWK09,Sarawak,Zon Khas (Kampung Patarikan),,,,4.9539,115.5078,Reference point: Merapok (GeoNames 1737579).
+SGR01,Selangor,"Gombak, Petaling, Sepang, Hulu Langat, Hulu Selangor, Shah Alam",,2026-12-31,SGRGBK SGRHLG SGRHSL SGRPTG SGRSPG,3.3213,101.5767,Reference point: Rawang (GeoNames 1735150). Retired after 2026-12-31 when Selangor publishes one timetable per district.
+SGR02,Selangor,"Kuala Selangor, Sabak Bernam",,2026-12-31,SGRKSL SGRSBN,3.35,101.25,Reference point: Kuala Selangor (GeoNames 1732891). Retired after 2026-12-31 when Selangor publishes one timetable per district.
+SGR03,Selangor,"Klang, Kuala Langat",,2026-12-31,SGRKLG SGRKLT,3.03667,101.44333,Reference point: Klang (GeoNames 1732905). Retired after 2026-12-31 when Selangor publishes one timetable per district.
+TRG01,Terengganu,"Kuala Terengganu, Marang, Kuala Nerus",,,,5.3302,103.1408,Reference point: Kuala Terengganu (GeoNames 1734705).
+TRG02,Terengganu,"Besut, Setiu",,,,5.7336,102.4897,Reference point: Jertih (GeoNames 1736405).
+TRG03,Terengganu,Hulu Terengganu,,,,5.0734,103.0114,Reference point: Kuala Berang (GeoNames 1734720).
+TRG04,Terengganu,"Dungun, Kemaman",,,,4.775,103.4162,Reference point: Dungun (GeoNames 1734308).
+WLY01,Wilayah Persekutuan,"Kuala Lumpur, Putrajaya",,,,3.1412,101.68653,Reference point: Kuala Lumpur (GeoNames 1735161).
+WLY02,Wilayah Persekutuan,Labuan,,,,5.28028,115.2475,Reference point: Labuan (GeoNames 1733782).
+SGRGBK,Selangor,Gombak,2027-01-01,,,3.3213,101.5767,Reference point: Rawang (GeoNames 1735150). Provisional code: JAKIM has not published codes for the Selangor district timetables.
+SGRHLG,Selangor,Hulu Langat,2027-01-01,,,2.99424,101.78875,Reference point: Kajang (GeoNames 10941913). Provisional code: JAKIM has not published codes for the Selangor district timetables.
+SGRHSL,Selangor,Hulu Selangor,2027-01-01,,,3.5638,101.6581,Reference point: Kuala Kubu Baharu (GeoNames 1732676). Provisional code: JAKIM has not published codes for the Selangor district timetables.
+SGRKLG,Selangor,Klang,2027-01-01,,,3.03667,101.44333,Reference point: Klang (GeoNames 1732905). Provisional code: JAKIM has not published codes for the Selangor district timetables.
+SGRKLT,Selangor,Kuala Langat,2027-01-01,,,2.8136,101.50185,Reference point: Banting (GeoNames 1734781). Provisional code: JAKIM has not published codes for the Selangor district timetables.
+SGRKSL,Selangor,Kuala Selangor,2027-01-01,,,3.35,101.25,Reference point: Kuala Selangor (GeoNames 1732891). Provisional code: JAKIM has not published codes for the Selangor district timetables.
+SGRPTG,Selangor,Petaling,2027-01-01,,,3.10726,101.60671,Reference point: Petaling Jaya (GeoNames 1735158). Provisional code: JAKIM has not published codes for the Selangor district timetables.
+SGRSBN,Selangor,Sabak Bernam,2027-01-01,,,3.7698,100.9879,Reference point: Sabak Bernam (GeoNames 1735195). Provisional code: JAKIM has not published codes for the Selangor district timetables.
+SGRSPG,Selangor,Sepang,2027-01-01,,,2.6931,101.7498,Reference point: Sepang (GeoNames 1734821). Provisional code: JAKIM has not published codes for the Selangor district timetables.

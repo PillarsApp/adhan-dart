@@ -1,0 +1,13 @@
+zone,name,lat,lon,radius_m,source
+JHR01,Pulau Aur,2.44969,104.52109,6000,"e-Solat JHR01 ""Pulau Aur""; GeoNames 1732794 (T.ISL). Radius covers Pulau Aur and Pulau Dayang. Lies in the Mersing shape (JHR02, Johor)."
+JHR01,Pulau Pemanggil,2.58333,104.33333,5000,"e-Solat JHR01 ""Pulau Pemanggil""; GeoNames 1734958 (T.ISL). Lies in the Mersing shape (JHR02, Johor)."
+PHG01,Pulau Tioman,2.79720,104.16600,13000,"e-Solat PHG01 ""Pulau Tioman""; GeoNames 1734910 (T.ISL). The island spans lat 2.70 to 2.90, 11 km from the centre. Lies in the Rompin shape (PHG07/PHG02, Pahang)."
+PHG05,Genting Sempah,3.35000,101.78333,3000,"e-Solat PHG05 ""Genting Sempah""; GeoNames 1745114 (T.PASS). Lies in the Bentong shape (PHG04, Pahang); the Selangor side of the pass keeps its Gombak zone because the states differ. 8.3 km from Genting Highlands."
+PHG05,Janda Baik,3.31667,101.86667,4000,"e-Solat PHG05 ""Janda Baik""; GeoNames 1735141. Lies in the Bentong shape (PHG04, Pahang)."
+PHG05,Bukit Tinggi,3.34944,101.82631,3000,"e-Solat PHG05 ""Bukit Tinggi""; GeoNames 1735133 Kampung Bukit Tinggi, Bentong. Lies in the Bentong shape (PHG04, Pahang)."
+PHG06,Genting Highlands,3.42453,101.79163,5000,"e-Solat PHG06 ""Genting Higlands""; GeoNames 1735132. Radius covers Gohtong Jaya (3.7 km) and stops short of Genting Sempah (8.3 km) and Bukit Tinggi (7.4 km). Lies in the Bentong shape (PHG04, Pahang); the Gombak side keeps SGR01 because the states differ."
+PHG06,Bukit Fraser,3.71260,101.74120,4000,"e-Solat PHG06 ""Bukit Fraser""; GeoNames 1732671. Lies in the Raub shape (PHG04, Pahang); the Hulu Selangor side keeps its Selangor zone because the states differ."
+KDH07,Puncak Gunung Jerai,5.78756,100.43394,3000,"e-Solat KDH07 ""Puncak Gunung Jerai""; GeoNames 1735480 (T.MT). Radius stops short of Gurun (4.5 km) and Yan (7 km). Lies in the Kuala Muda shape (KDH02, Kedah)."
+PRK07,Bukit Larut,4.86247,100.79265,3000,"e-Solat PRK07 ""Bukit Larut""; GeoNames 9172440 (P.PPLL, the Maxwell Hill resort). Radius stops short of Taiping (6.6 km). Lies in the Larut dan Matang shape (PRK06, Perak)."
+SBH06,Gunung Kinabalu,6.07458,116.55820,6000,"e-Solat SBH06 ""Gunung Kinabalu""; GeoNames 1736632 (T.MT, the summit). Radius covers Laban Rata (3 km) and stops short of Timpohon Gate (7.5 km), Kinabalu Park HQ (7.9 km) and Kundasang (8.6 km). Lies in the Ranau shape (SBH07, Sabah)."
+SWK09,Kampung Patarikan,4.95390,115.50780,3000,"e-Solat SWK09 ""Zon Khas (Kampung Patarikan)""; centre is Merapok, GeoNames 1737579, the mukim centre the Lawas listing names for the kampung (GeoNames and OpenStreetMap have no entry for Kampung Patarikan). Lies in the Lawas shape (SWK01, Sarawak); the Sabah side of the border keeps SBH09 because the states differ."
