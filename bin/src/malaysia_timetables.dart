@@ -518,8 +518,6 @@ void _loadEsolat(
 
 void _loadSelangor(Directory root, List<_ZoneYear> zoneYears,
     List<ManifestEntry> sources, List<String> errors) {
-  final csv = File(_selangorCsv(root));
-  if (!csv.existsSync()) return;
   for (final source in _readSelangorSources(root)) {
     final file =
         File('${_selangorDir(root)}/${source.zone}_${source.year}.txt.gz');
@@ -557,7 +555,6 @@ void _applyCorrections(
     Set<String> waiverRules,
     List<String> errors) {
   final file = File('${root.path}/tool/malaysia/corrections.csv');
-  if (!file.existsSync()) return;
   final byKey = {
     for (final zoneYear in zoneYears)
       '${zoneYear.zone} ${zoneYear.year}': zoneYear,
