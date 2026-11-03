@@ -222,12 +222,12 @@ Klang,SGR03,2026-12-31,3.03667,101.44333,1732905,
 Klang,SGRKLG,2027-01-01,3.03667,101.44333,1732905,
 Kuala Langat,SGR03,2026-12-31,2.8136,101.50185,1734781,"Banting, the district town."
 Kuala Langat,SGRKLT,2027-01-01,2.8136,101.50185,1734781,"Banting, the district town."
-Cyberjaya,SGR01,2026-12-31,2.92281,101.65718,6930887,"Sepang shape, 1.4 km west of the Putrajaya box (lon>=101.67)."
-Cyberjaya,SGRSPG,2027-01-01,2.92281,101.65718,6930887,"Sepang shape, 1.4 km west of the Putrajaya box (lon>=101.67)."
-Dengkil,SGR01,2026-12-31,2.86,101.6806,7697699,"Sepang shape, 1.7 km south of the Putrajaya box (lat>=2.875)."
-Dengkil,SGRSPG,2027-01-01,2.86,101.6806,7697699,"Sepang shape, 1.7 km south of the Putrajaya box (lat>=2.875)."
-Bangi,SGR01,2026-12-31,2.9,101.78333,1734797,"Ulu Langat shape, east of the Putrajaya box."
-Bangi,SGRHLG,2027-01-01,2.9,101.78333,1734797,"Ulu Langat shape, east of the Putrajaya box."
+Cyberjaya,SGR01,2026-12-31,2.92281,101.65718,6930887,Sepang shape west of Putrajaya.
+Cyberjaya,SGRSPG,2027-01-01,2.92281,101.65718,6930887,Sepang shape west of Putrajaya.
+Dengkil,SGR01,2026-12-31,2.86,101.6806,7697699,Sepang shape south of Putrajaya.
+Dengkil,SGRSPG,2027-01-01,2.86,101.6806,7697699,Sepang shape south of Putrajaya.
+Bangi,SGR01,2026-12-31,2.9,101.78333,1734797,Ulu Langat shape east of Putrajaya.
+Bangi,SGRHLG,2027-01-01,2.9,101.78333,1734797,Ulu Langat shape east of Putrajaya.
 Kajang,SGR01,2026-12-31,2.99424,101.78875,10941913,
 Kajang,SGRHLG,2027-01-01,2.99424,101.78875,10941913,
 Kuala Terengganu,TRG01,2026-06-01,5.3302,103.1408,1734705,
@@ -240,8 +240,8 @@ Dungun,TRG04,2026-06-01,4.775,103.4162,1734308,
 Kemaman,TRG04,2026-06-01,4.25,103.41667,1732945,"Cukai (Chukai), the district town."
 Kuala Lumpur,WLY01,2026-12-31,3.1412,101.68653,1735161,
 Kuala Lumpur,WLY01,2027-01-01,3.1412,101.68653,1735161,
-Putrajaya,WLY01,2026-12-31,2.93527,101.69112,6697380,Inside the Sepang shape; the Sepang row lat>=2.875 & lon>=101.67 & lon<=101.735 carries it to WLY01.
-Putrajaya,WLY01,2027-01-01,2.93527,101.69112,6697380,Inside the Sepang shape; the Sepang row lat>=2.875 & lon>=101.67 & lon<=101.735 carries it to WLY01.
+Putrajaya,WLY01,2026-12-31,2.93527,101.69112,6697380,Inside the geoBoundaries ADM1 Putrajaya polygon.
+Putrajaya,WLY01,2027-01-01,2.93527,101.69112,6697380,Inside the geoBoundaries ADM1 Putrajaya polygon.
 Labuan,WLY02,2026-06-01,5.28028,115.2475,1733782,
 Kuala Lumpur (verifier),WLY01,2026-12-31,3.1390,101.6869,,Verifier point.
 Kuala Lumpur (verifier),WLY01,2027-01-01,3.1390,101.6869,,Verifier point.

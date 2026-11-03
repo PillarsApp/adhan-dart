@@ -1,6 +1,6 @@
 kind	name	retrieved	url	sha256
 output	malaysia_times.txt			badfebbb3fea9ef41e3ce98b10da20d35186f3f3e86df2118e80bef4f358585e
-output	malaysia_zones.txt			333478f0dc328be8dd0ddb7b600096af7e155ab64294f6e4875d964cd42d60ba
+output	malaysia_zones.txt			d6bb4355de551e262b5f4f76f3ac3aae7de6aae6af76696de892ad8e01b198eb
 esolat	JHR01 2026	2026-11-03	https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&period=duration&zone=JHR01&datestart=2026-01-01&dateend=2026-12-31	9de49d083b48edd48d10227953ec88ab94593a8d4f9b57c892010d63cad271a0
 esolat	JHR02 2026	2026-11-03	https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&period=duration&zone=JHR02&datestart=2026-01-01&dateend=2026-12-31	733e384a378b78d419ff71d73e45add55adb96ce43e9eee702edfe0a71083c25
 esolat	JHR03 2026	2026-11-03	https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&period=duration&zone=JHR03&datestart=2026-01-01&dateend=2026-12-31	4e2efc18a68f90512fd48405f90f47393d347ee99fdf2eea7dacadb62a810491
@@ -128,3 +128,4 @@ selangor-text	SGRPTG 2027	2026-11-02	tool/malaysia/raw/selangor/SGRPTG_2027.txt.
 selangor-text	SGRSBN 2027	2026-11-02	tool/malaysia/raw/selangor/SGRSBN_2027.txt.gz	fa56c957af5a298c81f28b04bc08bb9198b735c2af927f48cfe5e5716e7196fd
 selangor-text	SGRSPG 2027	2026-11-02	tool/malaysia/raw/selangor/SGRSPG_2027.txt.gz	b9581209d3a9d4bb1b865a6c2a91392c0bcc055cf5d8d45f928e25f864583e54
 geoboundaries	MYS ADM2 simplified 9469f09	2026-11-03	https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData/gbOpen/MYS/ADM2/geoBoundaries-MYS-ADM2_simplified.geojson	2370e1df1da8e8db2d582ea404d2bcb538127a01785dd994cbe4c1bbf33a951f
+geoboundaries	MYS ADM1 simplified 9469f09	2026-11-03	https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData/gbOpen/MYS/ADM1/geoBoundaries-MYS-ADM1_simplified.geojson	fb0f76f0f987c748b732ef02049113946db2dd5fc604130d4a0fbab4e74d4012

@@ -9,12 +9,19 @@ import 'package:adhan/src/data/malaysia_zones_data.dart';
 import 'csv.dart';
 import 'malaysia_manifest.dart';
 
-const geoBoundariesFile = 'geoBoundaries-MYS-ADM2_simplified.geojson.gz';
-const geoBoundariesUrl =
-    'https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData/gbOpen/MYS/ADM2/geoBoundaries-MYS-ADM2_simplified.geojson';
+const geoBoundariesRelease = '9469f09';
 const geoBoundariesRetrieved = '2026-11-03';
 const simplifyToleranceMetres = 100.0;
 const overlapGridStepDegrees = 0.02;
+const specialAreaReachLimitMetres = 500.0;
+const specialAreaGridStepMetres = 100.0;
+
+String _geoBoundariesFile(String level) =>
+    'geoBoundaries-MYS-${level}_simplified.geojson';
+
+String _geoBoundariesUrl(String level) =>
+    'https://github.com/wmgeolab/geoBoundaries/raw/$geoBoundariesRelease/'
+    'releaseData/gbOpen/MYS/$level/${_geoBoundariesFile(level)}';
 
 String? lookupZone(double latitude, double longitude, DateComponents date) =>
     MalaysiaZoneMap.parse(malaysiaZonesData).zoneAt(latitude, longitude, date);
@@ -25,6 +32,7 @@ DataBuild buildZones(Directory root) {
   final zones = readCsv(File('$tool/zones.csv'));
   final districts = readCsv(File('$tool/districts.csv'));
   final specialAreas = readCsv(File('$tool/special_areas.csv'));
+  final islands = readCsv(File('$tool/islands.csv'));
   final fixtures = readCsv(File('$tool/town_fixtures.csv'));
   final zoneCodes = {for (final zone in zones) zone['code']!};
 
@@ -42,19 +50,36 @@ DataBuild buildZones(Directory root) {
     }
   }
 
-  final geoJsonBytes = GZipCodec()
-      .decode(File('$tool/raw/$geoBoundariesFile').readAsBytesSync());
-  final shapes = _readShapes(utf8.decode(geoJsonBytes));
+  final sources = <ManifestEntry>[];
+  Map<String, _Shape> readLevel(String level) {
+    final bytes = GZipCodec().decode(
+        File('$tool/raw/${_geoBoundariesFile(level)}.gz').readAsBytesSync());
+    sources.add(ManifestEntry(
+        'geoboundaries',
+        'MYS $level simplified $geoBoundariesRelease',
+        geoBoundariesRetrieved,
+        _geoBoundariesUrl(level),
+        sha256Hex(bytes)));
+    return _readShapes(utf8.decode(bytes));
+  }
+
+  final adm2 = readLevel('ADM2');
+  final adm1 = readLevel('ADM1');
+  final shapes = <String, _Shape>{...adm2};
+  final shapeIdsByDistrict = <String, String>{};
   final rowsByShape = <String, List<String>>{};
   for (final row in districts) {
     final district = 'districts.csv ${row['district']}';
     if (!zoneCodes.contains(row['zone'])) {
       errors.add('$district: unknown zone ${row['zone']}');
     }
-    if (!shapes.containsKey(row['shape_id'])) {
+    final shape = adm2[row['shape_id']] ?? adm1[row['shape_id']];
+    if (shape == null) {
       errors.add('$district: unknown shape ${row['shape_id']}');
       continue;
     }
+    shapes[shape.id] = shape;
+    shapeIdsByDistrict[row['district']!] = shape.id;
     String rule;
     try {
       rule = _normalizeRule(row['rule']!);
@@ -66,15 +91,53 @@ DataBuild buildZones(Directory root) {
         .putIfAbsent(row['shape_id']!, () => [])
         .add(rule.isEmpty ? row['zone']! : '${row['zone']}:$rule');
   }
-  for (final shape in shapes.values) {
+  for (final shape in adm2.values) {
     if (!rowsByShape.containsKey(shape.id)) {
       errors.add('districts.csv: no row for shape ${shape.id} ${shape.name}');
     }
   }
+  String? shapeIdOf(String file, String name, String district) {
+    final id = shapeIdsByDistrict[district];
+    if (id == null) errors.add('$file $name: unknown district $district');
+    return id;
+  }
+
+  final parentShapeIds = [
+    for (final area in specialAreas)
+      shapeIdOf('special_areas.csv', area['name']!, area['district']!),
+  ];
+  final islandShapeIds = [
+    for (final island in islands)
+      shapeIdOf('islands.csv', island['name']!, island['district']!),
+  ];
+  if (errors.isNotEmpty) return DataBuild('', errors, [], 'zones: not built');
+
+  for (final enclave in adm1.values.where((s) => shapes.containsKey(s.id))) {
+    final hosts = adm2.values.where((host) => enclave.liesInside(host));
+    if (hosts.length != 1) {
+      errors.add('${enclave.name} lies inside ${hosts.length} ADM2 shapes; '
+          'an ADM1 shape must lie inside exactly one');
+      continue;
+    }
+    hosts.single.rings.addAll(enclave.rings);
+  }
+  for (var i = 0; i < islands.length; i++) {
+    final island = islands[i];
+    final ring = _octagon(double.parse(island['lat']!),
+        double.parse(island['lon']!), double.parse(island['radius_m']!));
+    final touching = shapes.values.where((shape) => shape.touches(ring));
+    if (touching.isNotEmpty) {
+      errors.add('islands.csv ${island['name']}: the area touches '
+          '${touching.map((shape) => shape.name).join(', ')}');
+      continue;
+    }
+    shapes[islandShapeIds[i]]!.rings.add(ring);
+  }
   if (errors.isNotEmpty) return DataBuild('', errors, [], 'zones: not built');
 
   final points = _Points();
-  final regions = _mergeRegions(districts, rowsByShape, shapes, points);
+  final regions = _mergeRegions(districts, rowsByShape, shapes,
+      parentShapeIds.whereType<String>().toSet(), points);
   final arcs = _buildArcs(regions, points);
   final output = StringBuffer();
   for (final zone in zones) {
@@ -90,7 +153,8 @@ DataBuild buildZones(Directory root) {
       zone['reference_lon'],
     ].join('\t'));
   }
-  for (final area in specialAreas) {
+  for (var i = 0; i < specialAreas.length; i++) {
+    final area = specialAreas[i];
     output.writeln([
       'S',
       area['zone'],
@@ -98,6 +162,8 @@ DataBuild buildZones(Directory root) {
       area['lat'],
       area['lon'],
       area['radius_m'],
+      regions
+          .indexWhere((region) => region.shapeIds.contains(parentShapeIds[i])),
     ].join('\t'));
   }
   for (final arc in arcs) {
@@ -131,18 +197,16 @@ DataBuild buildZones(Directory root) {
     }
   }
   errors.addAll(_gridOverlaps(map, regions).map((line) => 'overlap $line'));
+  for (var i = 0; i < map.specialAreas.length; i++) {
+    errors.addAll(_specialAreaReach(
+        map, map.specialAreas[i], parentShapeIds[i]!, shapes.values));
+  }
 
   final summary = '${zones.length} zones, ${shapes.length} districts in '
       '${regions.length} regions, ${specialAreas.length} special areas, '
-      '${arcs.length} arcs, $resolved fixtures resolved';
-  return DataBuild(
-      output.toString(),
-      errors,
-      [
-        ManifestEntry('geoboundaries', 'MYS ADM2 simplified 9469f09',
-            geoBoundariesRetrieved, geoBoundariesUrl, sha256Hex(geoJsonBytes)),
-      ],
-      summary);
+      '${islands.length} island areas, ${arcs.length} arcs, '
+      '$resolved fixtures resolved';
+  return DataBuild(output.toString(), errors, sources, summary);
 }
 
 String _normalizeRule(String rule) {
@@ -161,6 +225,132 @@ class _Shape {
   final List<List<int>> rings;
 
   _Shape(this.id, this.name, this.rings);
+
+  bool contains(int lat, int lon) {
+    var inside = false;
+    for (final ring in rings) {
+      if (_ringContains(ring, lat, lon)) inside = !inside;
+    }
+    return inside;
+  }
+
+  bool liesInside(_Shape host) => rings.every((ring) =>
+      host.contains(ring[0], ring[1]) &&
+      !host.rings.any((hostRing) => _ringsCross(ring, hostRing)));
+
+  bool touches(List<int> ring) =>
+      contains(ring[0], ring[1]) ||
+      rings.any((own) =>
+          _ringsCross(own, ring) || _ringContains(ring, own[0], own[1]));
+
+  double depthMetres(int lat, int lon) {
+    var best = double.infinity;
+    for (final ring in rings) {
+      for (var i = 0, j = ring.length - 2; i < ring.length; j = i, i += 2) {
+        best = math.min(
+            best,
+            _pointSegmentMetres(
+                lat, lon, ring[j], ring[j + 1], ring[i], ring[i + 1]));
+      }
+    }
+    return best;
+  }
+
+  List<int> get bounds {
+    final box = [1 << 40, -(1 << 40), 1 << 40, -(1 << 40)];
+    for (final ring in rings) {
+      for (var i = 0; i < ring.length; i += 2) {
+        box[0] = math.min(box[0], ring[i]);
+        box[1] = math.max(box[1], ring[i]);
+        box[2] = math.min(box[2], ring[i + 1]);
+        box[3] = math.max(box[3], ring[i + 1]);
+      }
+    }
+    return box;
+  }
+}
+
+bool _ringContains(List<int> ring, int lat, int lon) {
+  var inside = false;
+  for (var i = 0, j = ring.length - 2; i < ring.length; j = i, i += 2) {
+    final lat1 = ring[j];
+    final lat2 = ring[i];
+    if ((lat1 > lat) == (lat2 > lat)) continue;
+    final lon1 = ring[j + 1];
+    final crossing = lon1 + (lat - lat1) * (ring[i + 1] - lon1) / (lat2 - lat1);
+    if (lon < crossing) inside = !inside;
+  }
+  return inside;
+}
+
+bool _ringsCross(List<int> a, List<int> b) {
+  for (var i = 0, j = a.length - 2; i < a.length; j = i, i += 2) {
+    final aMinLat = math.min(a[i], a[j]);
+    final aMaxLat = math.max(a[i], a[j]);
+    final aMinLon = math.min(a[i + 1], a[j + 1]);
+    final aMaxLon = math.max(a[i + 1], a[j + 1]);
+    for (var k = 0, l = b.length - 2; k < b.length; l = k, k += 2) {
+      if (math.max(b[k], b[l]) < aMinLat ||
+          math.min(b[k], b[l]) > aMaxLat ||
+          math.max(b[k + 1], b[l + 1]) < aMinLon ||
+          math.min(b[k + 1], b[l + 1]) > aMaxLon) {
+        continue;
+      }
+      if (_segmentsIntersect(
+          a[j], a[j + 1], a[i], a[i + 1], b[l], b[l + 1], b[k], b[k + 1])) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+int _turn(int ay, int ax, int by, int bx, int cy, int cx) =>
+    ((bx - ax) * (cy - ay) - (by - ay) * (cx - ax)).sign;
+
+bool _segmentsIntersect(
+    int ay, int ax, int by, int bx, int cy, int cx, int dy, int dx) {
+  final abc = _turn(ay, ax, by, bx, cy, cx);
+  final abd = _turn(ay, ax, by, bx, dy, dx);
+  final cda = _turn(cy, cx, dy, dx, ay, ax);
+  final cdb = _turn(cy, cx, dy, dx, by, bx);
+  if (abc * abd < 0 && cda * cdb < 0) return true;
+  bool onSegment(int py, int px, int qy, int qx, int ry, int rx) =>
+      math.min(py, qy) <= ry &&
+      ry <= math.max(py, qy) &&
+      math.min(px, qx) <= rx &&
+      rx <= math.max(px, qx);
+  return (abc == 0 && onSegment(ay, ax, by, bx, cy, cx)) ||
+      (abd == 0 && onSegment(ay, ax, by, bx, dy, dx)) ||
+      (cda == 0 && onSegment(cy, cx, dy, dx, ay, ax)) ||
+      (cdb == 0 && onSegment(cy, cx, dy, dx, by, bx));
+}
+
+double _pointSegmentMetres(
+    int lat, int lon, int lat1, int lon1, int lat2, int lon2) {
+  final lonScale = 111320 * math.cos(lat / 100000 * math.pi / 180) / 100000;
+  final x1 = (lon1 - lon) * lonScale;
+  final y1 = (lat1 - lat) * _latScale;
+  final dx = (lon2 - lon1) * lonScale;
+  final dy = (lat2 - lat1) * _latScale;
+  final lengthSquared = dx * dx + dy * dy;
+  var t = lengthSquared == 0 ? 0.0 : -(x1 * dx + y1 * dy) / lengthSquared;
+  t = t < 0 ? 0.0 : (t > 1 ? 1.0 : t);
+  final px = x1 + t * dx;
+  final py = y1 + t * dy;
+  return math.sqrt(px * px + py * py);
+}
+
+List<int> _octagon(double latitude, double longitude, double radiusMetres) {
+  final lonMetres = 111320 * math.cos(latitude * math.pi / 180);
+  return [
+    for (var k = 0; k < 8; k++) ...[
+      MalaysiaZoneMap.quantize(
+          latitude + radiusMetres * math.cos(k * math.pi / 4) / 110574),
+      MalaysiaZoneMap.quantize(
+          longitude + radiusMetres * math.sin(k * math.pi / 4) / lonMetres),
+    ],
+  ];
 }
 
 Map<String, _Shape> _readShapes(String geoJson) {
@@ -204,6 +394,7 @@ Map<String, _Shape> _readShapes(String geoJson) {
 
 class _Region {
   final List<String> rows;
+  final List<String> shapeIds = [];
   final List<String> shapeNames = [];
   final Set<int> segments = {};
   final List<int> arcIndices = [];
@@ -235,20 +426,25 @@ List<_Region> _mergeRegions(
     List<Map<String, String>> districts,
     Map<String, List<String>> rowsByShape,
     Map<String, _Shape> shapes,
+    Set<String> separateShapeIds,
     _Points points) {
-  final regionsByRows = <String, _Region>{};
+  final regionsByKey = <String, _Region>{};
   final regions = <_Region>[];
   final seen = <String>{};
   for (final row in districts) {
     final shapeId = row['shape_id']!;
     if (!seen.add(shapeId)) continue;
     final rows = rowsByShape[shapeId]!;
-    final region = regionsByRows.putIfAbsent(rows.join(' '), () {
+    final key = separateShapeIds.contains(shapeId)
+        ? '${rows.join(' ')} $shapeId'
+        : rows.join(' ');
+    final region = regionsByKey.putIfAbsent(key, () {
       final created = _Region(rows);
       regions.add(created);
       return created;
     });
     final shape = shapes[shapeId]!;
+    region.shapeIds.add(shapeId);
     region.shapeNames.add(shape.name);
     for (final ring in shape.rings) {
       for (var i = 0; i < ring.length; i += 2) {
@@ -428,4 +624,49 @@ List<String> _gridOverlaps(MalaysiaZoneMap map, List<_Region> regions) {
   }
   final keys = found.keys.toList()..sort();
   return [for (final key in keys) '${found[key]} grid points in $key'];
+}
+
+List<String> _specialAreaReach(MalaysiaZoneMap map, MalaysiaSpecialArea area,
+    String parentShapeId, Iterable<_Shape> shapes) {
+  final day = math.max(map.zone(area.zone)!.validFromDay, 20000101);
+  final date = DateComponents(day ~/ 10000, day ~/ 100 % 100, day % 100);
+  final steps = (area.radiusMetres / specialAreaGridStepMetres).ceil();
+  final latStep = specialAreaGridStepMetres / 110574;
+  final lonStep = specialAreaGridStepMetres /
+      (111320 * math.cos(area.latitude * math.pi / 180));
+  final margin =
+      MalaysiaZoneMap.quantize((steps + 1) * math.max(latStep, lonStep));
+  final lat0 = MalaysiaZoneMap.quantize(area.latitude);
+  final lon0 = MalaysiaZoneMap.quantize(area.longitude);
+  final neighbours = shapes.where((shape) {
+    if (shape.id == parentShapeId) return false;
+    final box = shape.bounds;
+    return box[0] <= lat0 + margin &&
+        box[1] >= lat0 - margin &&
+        box[2] <= lon0 + margin &&
+        box[3] >= lon0 - margin;
+  }).toList();
+  final deepest = <String, double>{};
+  for (var y = -steps; y <= steps; y++) {
+    for (var x = -steps; x <= steps; x++) {
+      if (x * x + y * y > steps * steps) continue;
+      final latitude = area.latitude + y * latStep;
+      final longitude = area.longitude + x * lonStep;
+      if (map.zoneAt(latitude, longitude, date) != area.zone) continue;
+      final lat = MalaysiaZoneMap.quantize(latitude);
+      final lon = MalaysiaZoneMap.quantize(longitude);
+      for (final shape in neighbours) {
+        if (!shape.contains(lat, lon)) continue;
+        final depth = shape.depthMetres(lat, lon);
+        if (depth > (deepest[shape.name] ?? specialAreaReachLimitMetres)) {
+          deepest[shape.name] = depth;
+        }
+      }
+    }
+  }
+  return [
+    for (final entry in deepest.entries)
+      'special area ${area.zone} ${area.name} reaches '
+          '${entry.value.round()} m into ${entry.key}',
+  ];
 }

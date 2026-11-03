@@ -1,5 +1,6 @@
 shape_id,district,zone,rule,source
 92858781B79427410842699,Kuala Lumpur,WLY01,,"e-Solat WLY01 ""Kuala Lumpur""; geoBoundaries cuts Kuala Lumpur out of the Selangor shapes (no overlap found)."
+15666254B54729125478011,Putrajaya,WLY01,,"e-Solat WLY01 ""Putrajaya"". The shape is the geoBoundaries ADM1 Putrajaya polygon, because the ADM2 layer has no Putrajaya shape and its Sepang shape covers Putrajaya. The build cuts it out of the Sepang shape."
 92858781B93759904190294,Labuan,WLY02,,"e-Solat WLY02 ""Labuan""."
 92858781B42177808662163,Johor Bahru,JHR02,,"e-Solat JHR02 ""Johor Bahru""."
 92858781B34033962801246,Kota Tinggi,JHR02,,"e-Solat JHR02 ""Kota Tinggi""."
@@ -153,7 +154,6 @@ shape_id,district,zone,rule,source
 92858781B84445266980229,Gombak,SGRGBK,,Selangor Gombak district timetable from 2027-01-01.
 92858781B60376413639078,Petaling,SGR01,,"e-Solat SGR01 ""Petaling, Shah Alam"" until 2026-12-31."
 92858781B60376413639078,Petaling,SGRPTG,,Selangor Petaling district timetable from 2027-01-01.
-92858781B54424141725992,Sepang,WLY01,lat>=2.875 & lon>=101.67 & lon<=101.735,"e-Solat WLY01 ""Putrajaya"": geoBoundaries does not cut Putrajaya out of Sepang. Box drawn east of Cyberjaya (GeoNames 6930887, lon 101.6572), north of Dengkil (GeoNames 7697699, lat 2.86) and west of the Sepang land beyond Putrajaya's eastern edge (Sepang shape vertices at lon 101.75); Putrajaya centre is 2.9353,101.6911."
 92858781B54424141725992,Sepang,SGR01,,"e-Solat SGR01 ""Sepang"" until 2026-12-31."
 92858781B54424141725992,Sepang,SGRSPG,,Selangor Sepang district timetable from 2027-01-01.
 92858781B61799260862057,Ulu Langat,SGR01,,"e-Solat SGR01 ""Hulu Langat"" until 2026-12-31."

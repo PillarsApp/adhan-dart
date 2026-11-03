@@ -250,7 +250,7 @@ The repository carries the published Malaysian prayer timetables and a zone map,
 Data sources and credits:
 
 - Prayer timetables: JAKIM e-Solat ([www.e-solat.gov.my](https://www.e-solat.gov.my)) and, for the Selangor districts from 2027, the Selangor State Mufti Department ([www.muftiselangor.gov.my](https://www.muftiselangor.gov.my/takwim-solat/)).
-- District boundaries: [geoBoundaries](https://www.geoboundaries.org) gbOpen MYS ADM2 (sources: geoBoundaries, citypopulation.de), licensed under [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/). Runfola, D. et al. (2020) geoBoundaries: A global database of political administrative boundaries. PLoS ONE 15(4): e0231866. The polygons are simplified to 100 metres and quantized to 1e-5 degrees.
+- District boundaries: [geoBoundaries](https://www.geoboundaries.org) gbOpen MYS ADM2, with the Putrajaya polygon from ADM1 and island positions from ADM0 (sources: geoBoundaries, citypopulation.de), licensed under [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/). Runfola, D. et al. (2020) geoBoundaries: A global database of political administrative boundaries. PLoS ONE 15(4): e0231866. The polygons are simplified to 100 metres and quantized to 1e-5 degrees.
 - Place coordinates for the zone test fixtures and zone reference points: [GeoNames](https://www.geonames.org), licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
 
 ## Features and bugs

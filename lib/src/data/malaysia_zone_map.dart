@@ -39,7 +39,8 @@ class MalaysiaZoneMap {
               fields[2],
               double.parse(fields[3]),
               double.parse(fields[4]),
-              int.parse(fields[5])));
+              int.parse(fields[5]),
+              int.parse(fields[6])));
           break;
         case 'A':
           arcs.add(decodePolyline(fields[1]));
@@ -71,47 +72,42 @@ class MalaysiaZoneMap {
 
   String? zoneAt(double latitude, double longitude, DateComponents date) {
     final day = date.year * 10000 + date.month * 100 + date.day;
-    final region = _regionAt(latitude, longitude);
-    String? districtZone;
-    if (region != null) {
-      for (final row in region.rows) {
-        final zone = _zonesByCode[row.zone];
-        if (zone != null &&
-            zone.inForce(day) &&
-            row.matches(latitude, longitude)) {
-          districtZone = zone.code;
-          break;
-        }
-      }
-    }
-    final districtState = _zonesByCode[districtZone]?.state;
+    final region = _regionIndexAt(latitude, longitude);
+    if (region == null) return null;
     for (final area in specialAreas) {
       final zone = _zonesByCode[area.zone];
-      if (zone == null || !zone.inForce(day)) continue;
-      if (distanceMetres(latitude, longitude, area.latitude, area.longitude) >
-          area.radiusMetres) {
-        continue;
-      }
-      if (districtState == null || districtState == zone.state) {
+      if (area.region == region &&
+          zone != null &&
+          zone.inForce(day) &&
+          distanceMetres(latitude, longitude, area.latitude, area.longitude) <=
+              area.radiusMetres) {
         return zone.code;
       }
     }
-    return districtZone;
+    for (final row in _regions[region].rows) {
+      final zone = _zonesByCode[row.zone];
+      if (zone != null &&
+          zone.inForce(day) &&
+          row.matches(latitude, longitude)) {
+        return zone.code;
+      }
+    }
+    return null;
   }
 
-  _Region? _regionAt(double latitude, double longitude) {
+  int? _regionIndexAt(double latitude, double longitude) {
     final lat = quantize(latitude);
     final lon = quantize(longitude);
-    for (final region in _regions) {
-      if (region.contains(lat, lon)) return region;
+    for (var i = 0; i < _regions.length; i++) {
+      if (_regions[i].contains(lat, lon)) return i;
     }
-    _Region? nearest;
+    int? nearest;
     var nearestMetres = boundaryToleranceMetres.toDouble();
-    for (final region in _regions) {
-      if (!region.nearBounds(lat, lon, nearestMetres)) continue;
-      final metres = region.distanceMetres(lat, lon);
+    for (var i = 0; i < _regions.length; i++) {
+      if (!_regions[i].nearBounds(lat, lon, nearestMetres)) continue;
+      final metres = _regions[i].distanceMetres(lat, lon);
       if (metres <= nearestMetres) {
-        nearest = region;
+        nearest = i;
         nearestMetres = metres;
       }
     }
@@ -207,9 +203,10 @@ class MalaysiaSpecialArea {
   final double latitude;
   final double longitude;
   final int radiusMetres;
+  final int region;
 
-  MalaysiaSpecialArea._(
-      this.zone, this.name, this.latitude, this.longitude, this.radiusMetres);
+  MalaysiaSpecialArea._(this.zone, this.name, this.latitude, this.longitude,
+      this.radiusMetres, this.region);
 }
 
 const double _metresPerDegreeLatitude = 110574;
