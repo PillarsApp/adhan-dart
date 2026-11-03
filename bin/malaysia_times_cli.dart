@@ -58,26 +58,34 @@ Future<void> main(List<String> args) async {
   }
 }
 
+const maxOutputBytes = 400000;
+const maxGzippedOutputBytes = 60000;
+
 int build(Directory root) {
   final timetables = buildTimetables(root);
   final zones = buildZones(root);
+  final outputs = {
+    'malaysia_times.txt': utf8.encode(timetables.output),
+    'malaysia_zones.txt': utf8.encode(zones.output),
+  };
   final errors = [...timetables.errors, ...zones.errors];
+  outputs.forEach((name, bytes) {
+    final gzipped = GZipCodec(level: 9).encode(bytes).length;
+    print('$name ${bytes.length} bytes, $gzipped gzipped');
+    if (bytes.length > maxOutputBytes || gzipped > maxGzippedOutputBytes) {
+      errors.add('$name exceeds $maxOutputBytes bytes or '
+          '$maxGzippedOutputBytes bytes gzipped');
+    }
+  });
   errors.forEach(print);
   print(timetables.summary);
   print(zones.summary);
   if (errors.isNotEmpty) return 1;
 
-  final outputs = {
-    'malaysia_times.txt': utf8.encode(timetables.output),
-    'malaysia_zones.txt': utf8.encode(zones.output),
-  };
   final dataDir = Directory('${root.path}/data/malaysia')
     ..createSync(recursive: true);
-  outputs.forEach((name, bytes) {
-    File('${dataDir.path}/$name').writeAsBytesSync(bytes);
-    print('$name ${bytes.length} bytes, '
-        '${GZipCodec(level: 9).encode(bytes).length} gzipped');
-  });
+  outputs.forEach(
+      (name, bytes) => File('${dataDir.path}/$name').writeAsBytesSync(bytes));
   File('${dataDir.path}/MANIFEST').writeAsStringSync(
       renderManifest(outputs, [...timetables.sources, ...zones.sources]));
   _writeDartConstant(
