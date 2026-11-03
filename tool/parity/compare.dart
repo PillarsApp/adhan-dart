@@ -15,20 +15,30 @@ void main(List<String> arguments) {
     }
   }
 
+  stdout.writeln(
+      'singapore_mid runs with Rounding.up on this side, the rounding the '
+      'adhan-swift Singapore method uses by default and this library does not.');
   var defects = 0;
   for (final correction in HourAngleCorrection.values) {
-    final referenceName = 'swift-${correction.name}.csv.gz';
-    final reference = _loadReference('$referenceDir/$referenceName');
-    final dart =
-        _loadRows(gridRows(GridOptions(hourAngleCorrection: correction)));
-    final result = _compare(reference, dart);
-    defects += result.differing.length;
-    stdout.writeln(
-        '${correction.name}: ${result.differing.length} differing cells against $referenceName'
-        ' (${result.excludedSingaporeCells} Singapore cells excluded:'
-        ' adhan-swift rounds the Singapore method up, this library rounds it to the nearest minute)');
-    for (final line in result.differing.take(20)) {
-      stdout.writeln('  $line');
+    for (final polar in [
+      PolarCircleResolution.aqrabBalad,
+      PolarCircleResolution.unresolved
+    ]) {
+      final suffix =
+          polar == PolarCircleResolution.aqrabBalad ? '' : '-${polar.name}';
+      final referenceName = 'swift-${correction.name}$suffix.csv.gz';
+      final reference = _loadReference('$referenceDir/$referenceName');
+      final dart = _loadRows(gridRows(GridOptions(
+          hourAngleCorrection: correction,
+          polarCircleResolution: polar,
+          singaporeRounding: Rounding.up)));
+      final differing = _compare(reference, dart);
+      defects += differing.length;
+      stdout.writeln(
+          '${correction.name} ${polar.name}: ${differing.length} differing cells against $referenceName');
+      for (final line in differing.take(20)) {
+        stdout.writeln('  $line');
+      }
     }
   }
   exit(defects == 0 ? 0 : 1);
@@ -53,38 +63,21 @@ Map<String, List<String>> _loadRows(Iterable<String> rows) {
   return result;
 }
 
-class _Comparison {
-  final List<String> differing = [];
-  int excludedSingaporeCells = 0;
-}
-
-_Comparison _compare(
+List<String> _compare(
     Map<String, List<String>> swift, Map<String, List<String>> dart) {
-  final result = _Comparison();
   if (swift.keys.length != dart.keys.length ||
       !swift.keys.every(dart.containsKey)) {
-    result.differing.add('row keys differ between the two grids');
-    return result;
+    return ['row keys differ between the two grids'];
   }
+  final differing = <String>[];
   for (final key in swift.keys) {
-    final isSingapore = key.endsWith(',singapore_mid');
     for (var i = 0; i < prayerNames.length; i++) {
       final s = swift[key]![i];
       final d = dart[key]![i];
-      if (s == d) {
-        continue;
+      if (s != d) {
+        differing.add('$key ${prayerNames[i]}: swift $s, dart $d');
       }
-      final sSeconds = int.tryParse(s);
-      final dSeconds = int.tryParse(d);
-      if (isSingapore &&
-          sSeconds != null &&
-          dSeconds != null &&
-          sSeconds - dSeconds == 60) {
-        result.excludedSingaporeCells++;
-        continue;
-      }
-      result.differing.add('$key ${prayerNames[i]}: swift $s, dart $d');
     }
   }
-  return result;
+  return differing;
 }

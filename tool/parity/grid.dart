@@ -45,8 +45,12 @@ String dayLabel(DateTime day) {
 class GridOptions {
   final PolarCircleResolution? polarCircleResolution;
   final HourAngleCorrection? hourAngleCorrection;
+  final Rounding? singaporeRounding;
 
-  const GridOptions({this.polarCircleResolution, this.hourAngleCorrection});
+  const GridOptions(
+      {this.polarCircleResolution,
+      this.hourAngleCorrection,
+      this.singaporeRounding});
 
   static const usage = '[--polar aqrabBalad|aqrabYaum|unresolved] '
       '[--correction iterative|singlePass]';
@@ -99,6 +103,10 @@ class GridOptions {
       case 'singapore_mid':
         p = CalculationMethod.singapore.getParameters()
           ..highLatitudeRule = HighLatitudeRule.middle_of_the_night;
+        final rounding = singaporeRounding;
+        if (rounding != null) {
+          p.rounding = rounding;
+        }
         break;
       default:
         throw ArgumentError.value(methodKey, 'methodKey');
