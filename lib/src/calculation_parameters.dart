@@ -48,6 +48,11 @@ class CalculationParameters {
   /// How days inside the polar circles without computable times are resolved
   PolarCircleResolution polarCircleResolution;
 
+  /// The code of the official Malaysian zone to read, such as WLY01, when the
+  /// method is [CalculationMethod.malaysia_official]. Null resolves the zone
+  /// from the coordinates.
+  String? malaysiaZone;
+
   CalculationParameters(
       {this.method = CalculationMethod.other,
       required this.fajrAngle,
@@ -60,7 +65,8 @@ class CalculationParameters {
       PrayerAdjustments? methodAdjustments,
       this.rounding = Rounding.nearest,
       this.hourAngleCorrection = HourAngleCorrection.iterative,
-      this.polarCircleResolution = PolarCircleResolution.aqrabBalad})
+      this.polarCircleResolution = PolarCircleResolution.aqrabBalad,
+      this.malaysiaZone})
       : adjustments = adjustments ?? PrayerAdjustments(),
         methodAdjustments = methodAdjustments ?? PrayerAdjustments();
 

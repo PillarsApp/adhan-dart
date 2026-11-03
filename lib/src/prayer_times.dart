@@ -6,8 +6,29 @@ import 'coordinates.dart';
 import 'data/date_components.dart';
 import 'data/london_times_lookup.dart';
 import 'internal/day_times.dart';
+import 'internal/present.dart';
 import 'polar_circle_resolution.dart';
 import 'prayer.dart';
+
+/// Where a set of prayer times came from.
+enum PrayerTimesSource {
+  /// Computed from the sun's position with the method's parameters.
+  calculated,
+
+  /// Read from a published timetable.
+  official,
+
+  /// Computed because no official zone covers the coordinates, or the manual
+  /// zone code names no zone in the data.
+  calculatedNoZone,
+
+  /// Computed because the official zone is known but the data has no row for
+  /// the date.
+  calculatedNoRow;
+
+  /// Whether the times were read from a published timetable.
+  bool get isOfficial => this == PrayerTimesSource.official;
+}
 
 class PrayerTimes {
   late DateTime _fajr;
@@ -137,10 +158,7 @@ class PrayerTimes {
     _isha = _present(times.isha);
   }
 
-  DateTime _present(DateTime utc) {
-    final offset = utcOffset;
-    return offset == null ? utc.toLocal() : utc.add(offset);
-  }
+  DateTime _present(DateTime utc) => present(utc, utcOffset);
 
   Prayer currentPrayer() {
     return currentPrayerByDateTime(DateTime.now());
