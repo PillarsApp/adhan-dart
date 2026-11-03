@@ -16,12 +16,8 @@ const geoBoundariesRetrieved = '2026-11-03';
 const simplifyToleranceMetres = 100.0;
 const overlapGridStepDegrees = 0.02;
 
-MalaysiaZoneMap? _zoneMap;
-
-String? lookupZone(double latitude, double longitude, DateComponents date) {
-  _zoneMap ??= MalaysiaZoneMap.parse(malaysiaZonesData);
-  return _zoneMap!.zoneAt(latitude, longitude, date);
-}
+String? lookupZone(double latitude, double longitude, DateComponents date) =>
+    MalaysiaZoneMap.parse(malaysiaZonesData).zoneAt(latitude, longitude, date);
 
 DataBuild buildZones(Directory root) {
   final tool = '${root.path}/tool/malaysia';
