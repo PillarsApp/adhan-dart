@@ -427,10 +427,11 @@ DataBuild buildTimetables(Directory root) {
     for (final entry in byDate.entries) {
       rejected++;
       final first = entry.value.first;
-      final index = zoneYear.dates.indexOf(entry.key);
-      final value = index < 0
+      final dayIndex = zoneYear.dates.indexOf(entry.key);
+      final fieldIndex = timeFields.indexOf(first.field);
+      final value = dayIndex < 0 || fieldIndex < 0
           ? ''
-          : ' ${formatMinutes(zoneYear.corrected[index][timeFields.indexOf(first.field)])}';
+          : ' ${formatMinutes(zoneYear.corrected[dayIndex][fieldIndex])}';
       final more = entry.value
           .skip(1)
           .map((v) => '; ${v.field} ${v.rule}: ${v.detail}')
