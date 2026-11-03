@@ -35,10 +35,8 @@ CalculationParameters muslimWorldLeague(
   return params;
 }
 
-/// An ishaInterval below the five minute minimum gap makes Maghrib and Isha
-/// collide everywhere, so every search exhausts its candidates.
-CalculationParameters impossibleParams() =>
-    muslimWorldLeague()..ishaInterval = 1;
+CalculationParameters ishaInsideMinimumGap() =>
+    muslimWorldLeague()..ishaInterval = DayTimes.minimumPrayerGap.inMinutes - 4;
 
 void expectOrdered(PrayerTimes p) {
   expect(p.fajr.isBefore(p.sunrise), isTrue);
@@ -133,6 +131,17 @@ void main() {
   });
 
   group('host time zone', () {
+    test(
+        'rounding a local time inside a daylight saving hour keeps the instant',
+        () {
+      final beforeFallBack = DateTime.utc(2026, 11, 1, 6, 59, 45).toLocal();
+      expect(CalendarUtil.roundedMinute(beforeFallBack).toUtc(),
+          DateTime.utc(2026, 11, 1, 7, 0));
+      final beforeSpringForward = DateTime.utc(2026, 3, 8, 7, 59, 45).toLocal();
+      expect(CalendarUtil.roundedMinute(beforeSpringForward).toUtc(),
+          DateTime.utc(2026, 3, 8, 8, 0));
+    });
+
     test('a daylight saving day in the host zone does not move a time', () {
       final reykjavik = Coordinates(64.1466, -21.9426);
       final tromso = Coordinates(69.6492, 18.9553);
@@ -253,15 +262,15 @@ void main() {
 
     test('impossible parameters fail even at the equator', () {
       expect(
-          DayTimes.compute(
-              Coordinates(0, 0), DateTime.utc(2026, 1, 1), impossibleParams()),
+          DayTimes.compute(Coordinates(0, 0), DateTime.utc(2026, 1, 1),
+              ishaInsideMinimumGap()),
           isNull);
     });
 
     test('aqrabBalad searches to the equator and gives up', () {
       expect(
           PolarCircleResolution.aqrabBalad.resolve(Coordinates(70, 10),
-              DateTime.utc(2026, 1, 1), impossibleParams()),
+              DateTime.utc(2026, 1, 1), ishaInsideMinimumGap()),
           isNull);
     });
 
@@ -269,7 +278,7 @@ void main() {
       for (final latitude in [0.3, -0.3, 0.0]) {
         expect(
             PolarCircleResolution.aqrabBalad.resolve(Coordinates(latitude, 10),
-                DateTime.utc(2026, 1, 1), impossibleParams()),
+                DateTime.utc(2026, 1, 1), ishaInsideMinimumGap()),
             isNull,
             reason: '$latitude');
       }
@@ -285,7 +294,7 @@ void main() {
     test('aqrabYaum gives up when no day is valid', () {
       expect(
           PolarCircleResolution.aqrabYaum.resolve(Coordinates(70, 10),
-              DateTime.utc(2026, 1, 1), impossibleParams()),
+              DateTime.utc(2026, 1, 1), ishaInsideMinimumGap()),
           isNull);
     });
 
