@@ -116,6 +116,9 @@ params.adjustments.fajr = 2;
 | `madhab` | Value from the Madhab object, used to calculate Asr |
 | `highLatitudeRule` | Value from the HighLatitudeRule object, used to set a minimum time for Fajr and a max time for Isha |
 | `adjustments` | `PrayerAdjustments` object with custom prayer time adjustments in minutes for each prayer time |
+| `rounding` | Value from the Rounding object, how each time is rounded to the minute. Default `nearest` |
+| `polarCircleResolution` | Value from the PolarCircleResolution object, how days inside the polar circles without computable times are resolved. Default `aqrabBalad` |
+| `hourAngleCorrection` | Value from the HourAngleCorrection object, how the time the sun reaches each prayer's angle is corrected and validated. Default `iterative` |
 
 **CalculationMethod**
 
@@ -150,6 +153,35 @@ params.adjustments.fajr = 2;
 | `middle_of_the_night` | Fajr will never be earlier than the middle of the night and Isha will never be later than the middle of the night |
 | `seventh_of_the_night` | Fajr will never be earlier than the beginning of the last seventh of the night and Isha will never be later than the end of the first seventh of the night |
 | `twilight_angle` | Similar to `SEVENTH_OF_THE_NIGHT`, but instead of 1/7, the fraction of the night used is fajrAngle/60 and ishaAngle/60 |
+
+`HighLatitudeRule.recommended(coordinates)` returns `seventh_of_the_night` beyond 48 degrees from the equator in either hemisphere and `middle_of_the_night` otherwise.
+
+**Rounding**
+
+| Value | Description |
+| ----- | ----------- |
+| `nearest` | Round to the nearest minute. This is the default |
+| `up` | Round up to the next minute whenever the time has any seconds |
+| `none` | Keep the computed seconds |
+
+**PolarCircleResolution**
+
+Inside the polar circles the sun may not rise or set, or may not reach the angle a prayer needs, on some days of the year.
+
+| Value | Description |
+| ----- | ----------- |
+| `aqrabBalad` | Finds the closest location, moving toward the equator at the same longitude, for which prayer times can be computed. This is the default |
+| `aqrabYaum` | Finds the closest date, forward or backward, for which prayer times can be computed, and relabels its times onto the requested date |
+| `unresolved` | Leaves prayer times unresolved. `PrayerTimes` throws an `ArgumentError` when they cannot be computed, as versions before 2.4.0 did |
+
+**HourAngleCorrection**
+
+| Value | Description |
+| ----- | ----------- |
+| `iterative` | Repeats the hour angle correction until it converges or ten passes have run, rejects an Asr angle the sun does not reach that day, and treats a day whose times come out of order, or less than five minutes apart, as one whose times cannot be computed. This is the default |
+| `singlePass` | Applies the hour angle correction once and keeps every time it produces, as versions before 2.4.0 did. Isha can differ from `iterative` by a few minutes above about 48 degrees latitude |
+
+To keep the times versions before 2.4.0 computed, set `hourAngleCorrection` to `singlePass` and `polarCircleResolution` to `unresolved`.
 
 
 ### Prayer Times
