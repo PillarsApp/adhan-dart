@@ -16,13 +16,16 @@ Usage:
   dart run tool/malaysia/malaysia_times_cli.dart build [--root <dir>]
   dart run tool/malaysia/malaysia_times_cli.dart lookup <latitude> <longitude> <yyyy-mm-dd>
 
-fetch            Download each e-Solat zone for each year into tool/malaysia/raw/esolat/.
-                 Keeps zone-years that already hold rows unless --refresh is given.
+fetch            Download every e-Solat zone that tool/malaysia/zones.csv has in force in
+                 each year into tool/malaysia/raw/esolat/. Keeps zone-years that already
+                 hold rows unless --refresh is given, stores only responses with rows,
+                 and exits 1 when a response is unusable or would replace stored rows.
 import-selangor  Extract the Selangor district PDFs with pdftotext -layout into
                  tool/malaysia/raw/selangor/ and record each PDF's SHA-256.
 build            Validate every zone-year, apply tool/malaysia/corrections.csv, and write
                  data/malaysia/ and lib/src/data/malaysia_*_data.dart. Exits 1 and writes
-                 nothing when any row is rejected.
+                 nothing when any row is rejected or a zone-year that zones.csv has in
+                 force has no rows.
 lookup           Print the zone in force at a point on a date, or none.
 
 --root <dir>     Repository root. Defaults to the current directory.

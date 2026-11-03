@@ -139,6 +139,23 @@ void main() {
     });
   }
 
+  test('build fails when zones.csv lists a zone-year with rows as unpublished',
+      () async {
+    final root = _copyOfTool();
+    final zones = File('${root.path}/tool/malaysia/zones.csv');
+    final text = zones.readAsStringSync();
+    final edited = text.replaceFirst(
+        RegExp(r'(?<=\nJHR01,.*),e-solat,,'), ',e-solat,2026,');
+    expect(edited, isNot(text));
+    zones.writeAsStringSync(edited);
+
+    final result = await _build(root);
+
+    expect(result.exitCode, 1, reason: '${result.stdout}${result.stderr}');
+    expect(result.stdout, contains('JHR01 2026 has rows'));
+    expect(Directory('${root.path}/data').existsSync(), isFalse);
+  });
+
   test('fetch from an empty raw directory requests every zone-year in force',
       () async {
     final root = _copyOfTool();
@@ -158,15 +175,12 @@ void main() {
     final written = {
       for (final file
           in Directory('${root.path}/$_esolatDir').listSync().whereType<File>())
-        file.uri.pathSegments.last: file.readAsBytesSync(),
+        file.uri.pathSegments.last: GZipCodec().decode(file.readAsBytesSync()),
     };
-    final expected = {
-      for (final key in committed.keys)
-        '${key.replaceFirst(' ', '_')}.json.gz':
-            File('$_esolatDir/${key.replaceFirst(' ', '_')}.json.gz')
-                .readAsBytesSync(),
-    };
-    expect(written, expected);
+    expect(written, {
+      for (final entry in committed.entries)
+        '${entry.key.replaceFirst(' ', '_')}.json.gz': entry.value,
+    });
   });
 
   test(

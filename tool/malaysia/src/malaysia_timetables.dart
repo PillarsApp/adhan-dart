@@ -114,62 +114,125 @@ int? _parseClock(String text) {
   return hours * 60 + minutes;
 }
 
+const _esolatSource = 'e-solat';
+const _selangorSource = 'selangor-pdf';
+
+class _CatalogZone {
+  final String code;
+  final String source;
+  final int validFrom;
+  final int validTo;
+  final Set<int> unpublished;
+
+  _CatalogZone(
+      this.code, this.source, this.validFrom, this.validTo, this.unpublished);
+
+  bool inForceDuring(int year) =>
+      validFrom <= year * 10000 + 1231 && validTo >= year * 10000 + 101;
+}
+
+int _day(String iso, int whenEmpty) =>
+    iso.isEmpty ? whenEmpty : int.parse(iso.replaceAll('-', ''));
+
+List<_CatalogZone> _readCatalog(Directory root) => [
+      for (final row in readCsv(File('${root.path}/tool/malaysia/zones.csv')))
+        if (row['source'] != _esolatSource && row['source'] != _selangorSource)
+          throw FormatException(
+              'zones.csv ${row['code']}: unknown source ${row['source']}')
+        else
+          _CatalogZone(row['code']!, row['source']!,
+              _day(row['valid_from']!, 0), _day(row['valid_to']!, 99999999), {
+            for (final year in row['unpublished']!.split(' '))
+              if (year.isNotEmpty) int.parse(year),
+          }),
+    ];
+
+class _EsolatResponse {
+  final List<Map<String, dynamic>>? rows;
+  final String problem;
+  final bool isNoRecord;
+  final Object? serverTime;
+
+  _EsolatResponse._(this.rows, this.problem, this.isNoRecord,
+      [this.serverTime]);
+
+  factory _EsolatResponse.parse(List<int> body) {
+    final Object? json;
+    try {
+      json = jsonDecode(utf8.decode(body));
+    } on FormatException catch (error) {
+      return _EsolatResponse._(
+          null, 'a body that is not JSON: ${error.message}', false);
+    }
+    if (json is! Map<String, dynamic>) {
+      return _EsolatResponse._(null, 'JSON that is not an object', false);
+    }
+    final rows = json['prayerTime'];
+    if (rows is List &&
+        rows.isNotEmpty &&
+        rows.every((row) => row is Map<String, dynamic>)) {
+      return _EsolatResponse._(
+          rows.cast<Map<String, dynamic>>(), '', false, json['serverTime']);
+    }
+    return _EsolatResponse._(
+        null, 'status ${json['status']}', json['status'] == 'NO_RECORD!');
+  }
+}
+
 Future<bool> fetchTimetables(Directory root, List<int> years,
     {bool refresh = false,
     String endpoint = esolatEndpoint,
     Duration pause = _fetchPause}) async {
   final dir = Directory(_esolatDir(root))..createSync(recursive: true);
-  final zonePattern = RegExp(r'^([A-Z0-9]+)_\d{4}\.json\.gz$');
-  final zones = <String>{
-    for (final entity in dir.listSync())
-      if (entity is File) ..._zoneOf(zonePattern, entity),
-  }.toList()
-    ..sort();
+  final catalog = _readCatalog(root);
   final client = HttpClient();
+  var ok = true;
   var requested = false;
   try {
     for (final year in years) {
-      for (final zone in zones) {
-        final file = File('${dir.path}/${zone}_$year.json.gz');
-        if (!refresh && file.existsSync()) {
-          final kept = _rowCount(GZipCodec().decode(file.readAsBytesSync()));
-          if (kept > 0) {
-            print('$zone $year kept $kept rows');
-            continue;
-          }
+      for (final zone in catalog) {
+        if (zone.source != _esolatSource || !zone.inForceDuring(year)) continue;
+        final label = '${zone.code} $year';
+        final file = File('${dir.path}/${zone.code}_$year.json.gz');
+        final stored = file.existsSync()
+            ? _EsolatResponse.parse(GZipCodec().decode(file.readAsBytesSync()))
+                .rows
+            : null;
+        if (!refresh && stored != null) {
+          print('$label kept ${stored.length} rows');
+          continue;
         }
         if (requested) await Future<void>.delayed(pause);
         requested = true;
-        final body = await _fetchZoneYear(client, endpoint, zone, year, pause);
-        file.writeAsBytesSync(_gzip(body));
-        final rows = _rowCount(body);
-        print('$zone $year ${rows > 0 ? '$rows rows' : _status(body)}');
+        final List<int> body;
+        try {
+          body = await _fetchZoneYear(client, endpoint, zone.code, year, pause);
+        } on StateError catch (error) {
+          print('$label: ${error.message}');
+          ok = false;
+          continue;
+        }
+        final response = _EsolatResponse.parse(body);
+        if (response.rows != null) {
+          file.writeAsBytesSync(_gzip(body));
+          print('$label ${response.rows!.length} rows');
+        } else if (stored != null) {
+          print('$label: e-Solat returned ${response.problem}; '
+              'kept the stored ${stored.length} rows');
+          ok = false;
+        } else if (response.isNoRecord) {
+          print('$label NO_RECORD!');
+        } else {
+          print('$label: e-Solat returned ${response.problem}; wrote nothing');
+          ok = false;
+        }
       }
     }
   } finally {
     client.close();
   }
-  return true;
+  return ok;
 }
-
-Iterable<String> _zoneOf(RegExp pattern, File file) {
-  final match = pattern.firstMatch(file.uri.pathSegments.last);
-  return match == null ? const [] : [match.group(1)!];
-}
-
-int _rowCount(List<int> body) {
-  try {
-    final prayerTime =
-        (jsonDecode(utf8.decode(body)) as Map<String, dynamic>)['prayerTime'];
-    return prayerTime is List ? prayerTime.length : 0;
-  } on FormatException {
-    return 0;
-  }
-}
-
-String _status(List<int> body) =>
-    (jsonDecode(utf8.decode(body)) as Map<String, dynamic>)['status']
-        .toString();
 
 Future<List<int>> _fetchZoneYear(HttpClient client, String endpoint,
     String zone, int year, Duration pause) async {
@@ -195,8 +258,7 @@ Future<List<int>> _fetchZoneYear(HttpClient client, String endpoint,
       if (attempt < _fetchAttempts) await Future<void>.delayed(pause);
     }
   }
-  throw StateError('$zone $year failed after $_fetchAttempts attempts: '
-      '$lastError');
+  throw StateError('failed after $_fetchAttempts attempts: $lastError');
 }
 
 class _SelangorSource {
@@ -378,16 +440,20 @@ DataBuild buildTimetables(Directory root) {
       .where((name) => name.endsWith('.json.gz'))
       .toList()
     ..sort();
+  final years = <int>{};
   for (final name in esolatFiles) {
     final match = RegExp(r'^([A-Z0-9]+)_(\d{4})\.json\.gz$').firstMatch(name);
     if (match == null) {
       errors.add('unexpected file in raw/esolat: $name');
       continue;
     }
-    _loadEsolat(root, name, match.group(1)!, int.parse(match.group(2)!),
-        zoneYears, sources, errors);
+    final year = int.parse(match.group(2)!);
+    years.add(year);
+    _loadEsolat(root, name, match.group(1)!, year, zoneYears, sources, errors);
   }
   _loadSelangor(root, zoneYears, sources, errors);
+  years.addAll(zoneYears.map((zoneYear) => zoneYear.year));
+  _checkCatalog(_readCatalog(root), years, zoneYears, errors);
 
   zoneYears.sort((a, b) {
     final byYear = a.year.compareTo(b.year);
@@ -458,6 +524,35 @@ DataBuild buildTimetables(Directory root) {
   return DataBuild(errors.isEmpty ? lines : '', errors, sources, summary);
 }
 
+void _checkCatalog(List<_CatalogZone> catalog, Set<int> years,
+    List<_ZoneYear> zoneYears, List<String> errors) {
+  final built = {
+    for (final zoneYear in zoneYears) '${zoneYear.zone} ${zoneYear.year}',
+  };
+  final byCode = {for (final zone in catalog) zone.code: zone};
+  for (final zoneYear in zoneYears) {
+    final zone = byCode[zoneYear.zone];
+    if (zone == null || !zone.inForceDuring(zoneYear.year)) {
+      errors.add('${zoneYear.zone} ${zoneYear.year}: zones.csv has no zone '
+          '${zoneYear.zone} in force in ${zoneYear.year}');
+    }
+  }
+  for (final year in years.toList()..sort()) {
+    for (final zone in catalog.where((zone) => zone.inForceDuring(year))) {
+      final label = '${zone.code} $year';
+      if (zone.unpublished.contains(year)) {
+        if (built.contains(label)) {
+          errors.add('$label has rows, but zones.csv lists $year as '
+              'unpublished for ${zone.code}');
+        }
+      } else if (!built.contains(label)) {
+        errors.add('$label has no ${zone.source} rows, but zones.csv has '
+            '${zone.code} in force in $year');
+      }
+    }
+  }
+}
+
 String _sourceSortKey(String name) {
   final parts = name.split(' ');
   return '${parts[1]} ${parts[0]}';
@@ -473,24 +568,16 @@ void _loadEsolat(
     List<String> errors) {
   final body = GZipCodec()
       .decode(File('${_esolatDir(root)}/$fileName').readAsBytesSync());
-  final Map<String, dynamic> response;
-  try {
-    response = jsonDecode(utf8.decode(body)) as Map<String, dynamic>;
-  } on FormatException catch (error) {
-    errors.add('$fileName is not JSON: ${error.message}');
-    return;
-  }
-  final prayerTime = response['prayerTime'];
-  if (response['status'] == 'NO_RECORD!') return;
-  if (prayerTime is! List) {
-    errors.add('$zone $year: no prayerTime rows and status '
-        '${response['status']}');
+  final response = _EsolatResponse.parse(body);
+  final rows = response.rows;
+  if (rows == null) {
+    errors.add('$zone $year: the stored e-Solat response has no rows '
+        '(${response.problem})');
     return;
   }
   final dates = <String>[];
   final days = <List<int>>[];
-  for (final row in prayerTime) {
-    final fields = row as Map<String, dynamic>;
+  for (final fields in rows) {
     final dateMatch = RegExp(r'^(\d{2})-([A-Za-z]+)-(\d{4})$')
         .firstMatch('${fields['date']}');
     final month =
@@ -518,7 +605,7 @@ void _loadEsolat(
   sources.add(ManifestEntry(
       'esolat',
       '$zone $year',
-      '${response['serverTime']}'.split(' ').first,
+      '${response.serverTime}'.split(' ').first,
       '$esolatEndpoint&zone=$zone&datestart=$year-01-01&dateend=$year-12-31',
       sha256Hex(body)));
 }

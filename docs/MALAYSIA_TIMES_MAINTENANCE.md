@@ -48,9 +48,9 @@ dart run tool/malaysia/malaysia_times_cli.dart build
 dart run tool/malaysia/malaysia_times_cli.dart lookup 3.1390 101.6869 2027-01-01
 ```
 
-- `fetch <year>...` posts `datestart` and `dateend` to `https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&period=duration&zone=<code>` for every zone and stores the response. It keeps a zone and year that already holds rows unless you pass `--refresh`. It always retries a zone and year recorded as `NO_RECORD!`.
+- `fetch <year>...` posts `datestart` and `dateend` to `https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&period=duration&zone=<code>` for every `e-solat` zone that `zones.csv` has in force during the year, and stores each response that holds rows. It keeps a zone and year that already holds rows unless you pass `--refresh`. It stores nothing for a `NO_RECORD!` response. It exits 1, naming the zone and year, when a response is unusable (not JSON, not a JSON object, or without rows for another reason), when a request fails three times, or when `--refresh` gets no rows for a zone and year that already holds rows. In each of those cases it keeps the stored response.
 - `import-selangor <pdf>...` runs `pdftotext -layout` (Poppler) on each PDF, checks that it holds every day of the year, stores the text, and records the PDF's SHA-256.
-- `build` validates, corrects and encodes everything. It prints every rejected row and exits 1 without writing anything when a row is rejected or an output is over budget. On success it prints a summary such as `117 zone-years, 0 rejected, 8 corrected, 24 waived` and the size of each output.
+- `build` validates, corrects and encodes everything. It prints every rejected row and exits 1 without writing anything when a row is rejected, an output is over budget, or the timetables do not match the catalog (see [Catalog](#catalog)). On success it prints a summary such as `117 zone-years, 0 rejected, 8 corrected, 24 waived` and the size of each output.
 - `lookup <latitude> <longitude> <yyyy-mm-dd>` prints the zone in force at that point on that date, or `none`.
 
 ## Validation
@@ -91,7 +91,16 @@ Selangor rows carry Dhuha as Syuruk plus 25 minutes, as each Selangor PDF states
 
 ### Catalog
 
-`zones.csv` lists each zone with its state, the areas e-Solat names, its validity dates, its successors and a reference point. An empty date means the validity is open on that side. The reference point is the GeoNames position of the zone's first named town, or the centre of its special area.
+`zones.csv` lists each zone with its state, the areas e-Solat names, its validity dates, its successors, a reference point, the source of its timetable and the years whose timetable is unpublished. An empty date means the validity is open on that side. The reference point is the GeoNames position of the zone's first named town, or the centre of its special area.
+
+The `source` column is `e-solat` for a zone that `fetch` downloads, or `selangor-pdf` for a Selangor district whose timetable comes from `selangor_sources.csv`. The `unpublished` column lists, separated by spaces, the years for which the publisher has no timetable yet, such as `2027` for every Sabah zone.
+
+`build` covers every year that has a stored e-Solat response or a `selangor_sources.csv` row. For each of those years it fails, naming the zone and year, when:
+
+- a zone in force during the year has no rows and the year is not in its `unpublished` column
+- a zone has rows for a year in its `unpublished` column
+- a zone has rows for a year in which `zones.csv` does not have it in force
+- a stored e-Solat response holds no rows
 
 JAKIM has not published codes for the nine Selangor districts that take effect on 1 January 2027. The catalog uses these provisional codes:
 
@@ -154,14 +163,14 @@ A zone row is a zone code, optionally followed by `:` and a rule with no spaces,
 
 Run this in the fourth quarter, so a release ships before 1 January.
 
-1. Run `fetch <next year>`. Zones that return `NO_RECORD!` stay out of the data and fall back to calculated times.
+1. Run `fetch <next year>`. For each zone that returns `NO_RECORD!`, add the year to the zone's `unpublished` column in `zones.csv`. Those zones fall back to calculated times for that year.
 2. If the Selangor Mufti publishes district PDFs for the next year, download them, add their rows to `selangor_sources.csv`, and run `import-selangor`.
 3. Run `build`. Read every rejected row. Add a correction only for a clear printing error with corroboration, and a waiver for a plausible step. Draft a report to JAKIM for both.
 4. Run `dart test`.
 5. Commit the raw files, the CSVs and the generated files together, and release.
 6. Copy `malaysia_times.txt`, `malaysia_zones.txt` and `MANIFEST` into the other language versions and run their hash check.
 
-Until JAKIM publishes the Sabah 2027 timetable, run `fetch 2027` weekly. When the Sabah rows arrive, rebuild and release.
+Until JAKIM publishes the Sabah 2027 timetable, run `fetch 2027` weekly. When the Sabah rows arrive, remove `2027` from the `unpublished` column of each Sabah zone, rebuild and release.
 
 ## Licences
 
