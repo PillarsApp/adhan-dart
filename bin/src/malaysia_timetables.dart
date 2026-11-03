@@ -479,7 +479,12 @@ void _loadEsolat(
     return;
   }
   final prayerTime = response['prayerTime'];
-  if (response['status'] == 'NO_RECORD!' || prayerTime is! List) return;
+  if (response['status'] == 'NO_RECORD!') return;
+  if (prayerTime is! List) {
+    errors.add('$zone $year: no prayerTime rows and status '
+        '${response['status']}');
+    return;
+  }
   final dates = <String>[];
   final days = <List<int>>[];
   for (final row in prayerTime) {
