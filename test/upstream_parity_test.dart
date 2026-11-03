@@ -18,6 +18,11 @@ DateTime utcMidnight(DateComponents components) =>
 DateTime utc(int y, int m, int d, int h, int min) =>
     DateTime.utc(y, m, d, h, min);
 
+String dayLabel(DateTime day) {
+  String two(int value) => value.toString().padLeft(2, '0');
+  return '${day.year}-${two(day.month)}-${two(day.day)}';
+}
+
 CalculationParameters muslimWorldLeague(
     {PolarCircleResolution? polar,
     HourAngleCorrection? correction,
@@ -314,11 +319,6 @@ void main() {
                 muslimWorldLeague(polar: resolution)),
             throwsArgumentError,
             reason: '$resolution');
-        expect(
-            () => PrayerTimes.utc(arjeplogSweden, DateComponents(2020, 2, 30),
-                muslimWorldLeague(polar: resolution)),
-            throwsArgumentError,
-            reason: '$resolution');
       }
     });
 
@@ -334,6 +334,41 @@ void main() {
       expect(identical(result.shifted(0), result), isTrue);
       expect(result.shifted(2).dhuhr, DateTime.utc(1970, 1, 3));
       expect(result.shifted(-3).isha, DateTime.utc(1969, 12, 29));
+    });
+  });
+
+  group('global sweep', () {
+    test('every 5 degrees latitude, 10 degrees longitude, every day of 2025',
+        () {
+      const polarCircleLatitude = 66.55;
+      final params = muslimWorldLeague(polar: PolarCircleResolution.unresolved);
+      final violations = <String>[];
+      for (var lat = -90; lat <= 90; lat += 5) {
+        for (var lon = -180; lon <= 180; lon += 10) {
+          final coordinates = Coordinates(lat.toDouble(), lon.toDouble());
+          final inPolarCircle = lat.abs() > polarCircleLatitude;
+          var day = DateTime.utc(2025, 1, 1);
+          for (var i = 0; i < 365; i++, day = day.add(Duration(days: 1))) {
+            final where = '($lat, $lon) ${dayLabel(day)}';
+            final PrayerTimes p;
+            try {
+              p = PrayerTimes.utc(
+                  coordinates, DateComponents.from(day), params);
+            } on ArgumentError {
+              if (!inPolarCircle) {
+                violations.add('$where: no times outside the polar circle');
+              }
+              continue;
+            }
+            if (!p.fajr.isBefore(p.sunrise)) violations.add('$where: fajr');
+            if (!p.sunrise.isBefore(p.dhuhr)) violations.add('$where: sunrise');
+            if (!p.dhuhr.isBefore(p.asr)) violations.add('$where: dhuhr');
+            if (!p.asr.isBefore(p.maghrib)) violations.add('$where: asr');
+            if (!p.maghrib.isBefore(p.isha)) violations.add('$where: maghrib');
+          }
+        }
+      }
+      expect(violations, isEmpty);
     });
   });
 

@@ -172,7 +172,18 @@ class Astronomical {
   static double approximateTransit(double L, double theta0, double alpha2) {
     /* Equation from page Astronomical Algorithms 102 */
     final Lw = L * -1;
-    return DoubleUtil.normalizeWithBound((alpha2 + Lw - theta0) / 360, 1);
+    final m0 = DoubleUtil.normalizeWithBound((alpha2 + Lw - theta0) / 360, 1);
+    /* Near longitude 180 the normalized m0 can land on the wrong calendar
+    day, so compare it with the transit the longitude alone predicts and
+    move it back by one cycle when the two disagree by over half a day. */
+    final expectedTransit =
+        DoubleUtil.normalizeWithBound((12.0 - L / 15.0) / 24.0, 1);
+    if (m0 - expectedTransit > 0.5) {
+      return m0 - 1.0;
+    } else if (expectedTransit - m0 > 0.5) {
+      return m0 + 1.0;
+    }
+    return m0;
   }
 
   /// The time at which the sun is at its highest point in the sky (in universal time)
