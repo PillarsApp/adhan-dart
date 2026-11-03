@@ -2,6 +2,7 @@ import 'calculation_method.dart';
 import 'high_latitude_rule.dart';
 import 'hour_angle_correction.dart';
 import 'madhab.dart';
+import 'polar_circle_resolution.dart';
 import 'prayer_adjustments.dart';
 import 'rounding.dart';
 
@@ -44,6 +45,9 @@ class CalculationParameters {
   /// How the hour angle correction runs and how strictly the times are validated
   HourAngleCorrection hourAngleCorrection;
 
+  /// How days inside the polar circles without computable times are resolved
+  PolarCircleResolution polarCircleResolution;
+
   CalculationParameters(
       {this.method = CalculationMethod.other,
       required this.fajrAngle,
@@ -55,7 +59,8 @@ class CalculationParameters {
       PrayerAdjustments? adjustments,
       PrayerAdjustments? methodAdjustments,
       this.rounding = Rounding.nearest,
-      this.hourAngleCorrection = HourAngleCorrection.iterative})
+      this.hourAngleCorrection = HourAngleCorrection.iterative,
+      this.polarCircleResolution = PolarCircleResolution.aqrabBalad})
       : adjustments = adjustments ?? PrayerAdjustments(),
         methodAdjustments = methodAdjustments ?? PrayerAdjustments();
 

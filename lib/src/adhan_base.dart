@@ -6,6 +6,7 @@ export 'calculation_method.dart';
 export 'calculation_parameters.dart';
 export 'high_latitude_rule.dart';
 export 'hour_angle_correction.dart';
+export 'polar_circle_resolution.dart' show PolarCircleResolution;
 export 'prayer_adjustments.dart';
 export 'rounding.dart';
 export 'qibla.dart';
