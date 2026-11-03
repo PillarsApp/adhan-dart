@@ -71,7 +71,7 @@ Mukim Endau,PHG07,2026-06-01,2.67177,103.62056,1763424,"Kampung Tanjong Gemuk, o
 Mukim Pontian,PHG07,2026-06-01,2.76667,103.53333,1734927,"Kuala Pontian, 153 m seaward of the simplified coastline; resolves through the 500 m boundary tolerance."
 Tapah,PRK01,2026-06-01,4.18333,101.26667,1735283,
 Slim River,PRK01,2026-06-01,3.83333,101.4,1732931,
-Tanjung Malim,PRK01,2026-06-01,3.6981,101.5182,7794682,"Taman Malim, inside Tanjung Malim town and the Muallim shape; the GeoNames town point (1732672) lies 143 m south of the simplified Bernam river boundary, inside the Ulu Selangor shape."
+Tanjung Malim,PRK01,2026-06-01,3.681,101.5198,1732672,"Muallim district, Perak. The geoBoundaries ADM2 Ulu Selangor shape reaches this point; the ADM1 Perak-Selangor line, GeoNames and OpenStreetMap put it in Perak."
 Kuala Kangsar,PRK02,2026-06-01,4.76667,100.93333,1734599,
 Sg. Siput,PRK02,2026-06-01,4.8151,101.0786,1734625,"Sungai Siput Utara, in Kuala Kangsar district; GeoNames 1735265 ""Sungai Siput"" is the Kampar village."
 Ipoh,PRK02,2026-06-01,4.5841,101.0829,1734634,
@@ -201,7 +201,7 @@ Kuching,SWK08,2026-06-01,1.55,110.33333,1735634,
 Bau,SWK08,2026-06-01,1.41667,110.15,1734539,
 Lundu,SWK08,2026-06-01,1.67439,109.85171,1737012,
 Sematan,SWK08,2026-06-01,1.8,109.76667,1737015,Lundu shape.
-Merapok,SWK01,2026-06-01,4.9539,115.5078,1737579,"Lawas mukim centre. No source locates Kampung Patarikan, so automatic resolution never returns SWK09."
+Merapok,SWK01,2026-06-01,4.9539,115.5078,1737579,"Lawas district, Sarawak, on the Sabah border (OpenStreetMap). No source locates Kampung Patarikan, so automatic resolution never returns SWK09."
 Gombak,SGR01,2026-12-31,3.3213,101.5767,1735150,"Rawang, in Gombak district; GeoNames has no populated place named Gombak."
 Gombak,SGRGBK,2027-01-01,3.3213,101.5767,1735150,"Rawang, in Gombak district; GeoNames has no populated place named Gombak."
 Petaling,SGR01,2026-12-31,3.10726,101.60671,1735158,Petaling Jaya.
@@ -254,11 +254,18 @@ Klang (verifier),SGRKLG,2027-01-01,3.0449,101.4455,,Verifier point.
 Singapore,,2026-06-01,1.3521,103.8198,,Outside Malaysia: no zone.
 Bandar Seri Begawan,,2026-06-01,4.9031,114.9398,,Outside Malaysia: no zone.
 Pontianak,,2026-06-01,-0.0263,109.3425,,Outside Malaysia: no zone.
-Sindumin,SWK01,2026-06-01,4.9642,115.5075,1734128,Lawas shape near the Sabah border.
-Luagan,SWK01,2026-06-01,4.96667,115.5,1756921,Lawas shape near the Sabah border.
-Kampung Paya B,SWK01,2026-06-01,4.965,115.4961,7767642,Lawas shape near the Sabah border.
-Kampung Ladang Lalang,SWK01,2026-06-01,4.9491,115.5304,7767893,Lawas shape.
-Kampung Terikan,SWK01,2026-06-01,4.9657,115.4876,1762741,Lawas shape near the Sabah border.
+Sindumin,SBH09,2026-06-01,4.9642,115.5075,1734128,"Sipitang district, Sabah (GeoNames, geoBoundaries ADM1 and OpenStreetMap agree); the geoBoundaries ADM2 Lawas shape reaches it."
+Luagan,SBH09,2026-06-01,4.96667,115.5,1756921,"Sipitang district, Sabah (GeoNames, geoBoundaries ADM1 and OpenStreetMap agree); the geoBoundaries ADM2 Lawas shape reaches it."
+Kampung Paya B,SBH09,2026-06-01,4.965,115.4961,7767642,"Sipitang district, Sabah (GeoNames, geoBoundaries ADM1 and OpenStreetMap agree); the geoBoundaries ADM2 Lawas shape reaches it."
+Kampung Ladang Lalang,SWK01,2026-06-01,4.9491,115.5304,7767893,"Lawas district, Sarawak."
+Kampung Terikan,SBH09,2026-06-01,4.9657,115.4876,1762741,"Sipitang district, Sabah (GeoNames, geoBoundaries ADM1 and OpenStreetMap agree); the geoBoundaries ADM2 Lawas shape reaches it."
+Malaman,SBH09,2026-06-01,4.9853,115.6223,1734131,"Sipitang district, Sabah (GeoNames, geoBoundaries ADM1 and OpenStreetMap agree), 1.9 km inside Sabah; the geoBoundaries ADM2 Lawas shape reaches it."
+Kampung Butul,SBH09,2026-06-01,4.9747,115.4771,1769991,"Sipitang district, Sabah (GeoNames, geoBoundaries ADM1 and OpenStreetMap agree); the geoBoundaries ADM2 Lawas shape reaches it."
+Kampung Kawan,SBH09,2026-06-01,4.9812,115.5431,1761704,"Sipitang district, Sabah (GeoNames, geoBoundaries ADM1 and OpenStreetMap agree); the geoBoundaries ADM2 Lawas shape reaches it."
+Kampung Sungai Gading,SGR01,2026-12-31,3.70474,101.56379,1764037,"Hulu Selangor district, Selangor (GeoNames, geoBoundaries ADM1 and OpenStreetMap agree); the geoBoundaries ADM2 Muallim shape reaches it."
+Kampung Sungai Gading,SGRHSL,2027-01-01,3.70474,101.56379,1764037,"Hulu Selangor district, Selangor (GeoNames, geoBoundaries ADM1 and OpenStreetMap agree); the geoBoundaries ADM2 Muallim shape reaches it."
+Kampung Sungai Gapis,SGR01,2026-12-31,3.70762,101.5657,1764032,"Hulu Selangor district, Selangor (GeoNames, geoBoundaries ADM1 and OpenStreetMap agree); the geoBoundaries ADM2 Muallim shape reaches it."
+Kampung Pianggu,PHG07,2026-06-01,2.64874,103.58993,1734898,"Rompin district, Pahang (GeoNames, geoBoundaries ADM1 and OpenStreetMap agree), east of the PHG07 line; the geoBoundaries ADM2 Mersing shape reaches it."
 Kampong Jenderam Hilir,SGR01,2026-12-31,2.88333,101.73333,1768801,Sepang shape 4 km outside the geoBoundaries ADM1 Putrajaya polygon.
 Kampong Jenderam Hilir,SGRSPG,2027-01-01,2.88333,101.73333,1768801,Sepang shape 4 km outside the geoBoundaries ADM1 Putrajaya polygon.
 Ladang Galloway,WLY01,2026-12-31,2.8974,101.6616,7697686,South-west of the geoBoundaries ADM1 Putrajaya polygon.
