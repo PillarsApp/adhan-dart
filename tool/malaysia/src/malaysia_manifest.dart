@@ -4,10 +4,13 @@ class ManifestEntry {
   final String kind;
   final String name;
   final String retrieved;
+  final String method;
   final String url;
+  final String form;
   final String sha256;
 
-  ManifestEntry(this.kind, this.name, this.retrieved, this.url, this.sha256);
+  ManifestEntry(this.kind, this.name, this.retrieved, this.url, this.sha256,
+      {this.method = '', this.form = ''});
 }
 
 class DataBuild {
@@ -24,11 +27,19 @@ String sha256Hex(List<int> bytes) => sha256.convert(bytes).toString();
 String renderManifest(
     Map<String, List<int>> outputs, List<ManifestEntry> sources) {
   final rows = <List<String>>[
-    ['kind', 'name', 'retrieved', 'url', 'sha256'],
+    ['kind', 'name', 'retrieved', 'method', 'url', 'form', 'sha256'],
     for (final file in outputs.keys)
-      ['output', file, '', '', sha256Hex(outputs[file]!)],
+      ['output', file, '', '', '', '', sha256Hex(outputs[file]!)],
     for (final source in sources)
-      [source.kind, source.name, source.retrieved, source.url, source.sha256],
+      [
+        source.kind,
+        source.name,
+        source.retrieved,
+        source.method,
+        source.url,
+        source.form,
+        source.sha256,
+      ],
   ];
   return rows.map((row) => '${row.join('\t')}\n').join();
 }

@@ -10,7 +10,7 @@ Malaysia publishes official prayer times per zone. JAKIM serves them through e-S
 | --- | --- |
 | `data/malaysia/malaysia_times.txt` | One line per zone and year with eight times per day |
 | `data/malaysia/malaysia_zones.txt` | The zone catalog, the special areas and the district polygons |
-| `data/malaysia/MANIFEST` | The SHA-256 of both outputs and of every source, with its URL and retrieval date |
+| `data/malaysia/MANIFEST` | The SHA-256 of both outputs and of every source, with the request that retrieves it and its retrieval date. See [Manifest format](#manifest-format) |
 | `lib/src/data/malaysia_times_data.dart` | `malaysiaTimesData`, the times file as a Dart string |
 | `lib/src/data/malaysia_zones_data.dart` | `malaysiaZonesData`, the zones file as a Dart string |
 
@@ -189,6 +189,24 @@ A zone row is a zone code, optionally followed by `:` and a rule with no spaces,
 5. Each arc is simplified with Douglas-Peucker at 100 metres, keeping its end points.
 
 `build` fails when a district has no row, a row names an unknown zone, a rule is malformed, a fixture resolves to the wrong zone, a special area reaches more than 500 metres into another district, an island area touches land or another island area, or a point of a 0.02-degree grid falls in two regions.
+
+## Manifest format
+
+`data/malaysia/MANIFEST` is tab-separated, with a header row and one row per output file and per source.
+
+| Column | Content |
+| --- | --- |
+| `kind` | `output` for a generated file. For a source: `esolat`, `selangor-pdf`, `selangor-text` or `geoboundaries` |
+| `name` | The output file name, the zone and year, or the geoBoundaries layer and release |
+| `retrieved` | The date the source was retrieved. For e-Solat it is the date of the response's `serverTime`. Empty for an output |
+| `method` | The HTTP method that retrieves the source: `POST` for e-Solat and `GET` for a Selangor PDF or a geoBoundaries file. Empty for an output and for `selangor-text` |
+| `url` | The request URL. For `selangor-text` it is the path of the committed text in this repository |
+| `form` | The form fields a `POST` sends as `application/x-www-form-urlencoded`. Empty for every other row |
+| `sha256` | The SHA-256 of the file, as described below |
+
+Each hash covers decompressed bytes. For `esolat` and `geoboundaries` it is the response body as downloaded, which is the decompressed content of the gzipped file under `tool/malaysia/raw/`. For `selangor-pdf` it is the PDF as downloaded. For `selangor-text` it is the decompressed `pdftotext` output. For `output` it is the file in `data/malaysia/`.
+
+To repeat an e-Solat request, send the form fields to the URL, for example `curl -X POST -d 'datestart=2026-01-01&dateend=2026-12-31' 'https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&period=duration&zone=WLY01'`. A new response carries a new `serverTime`, so its hash differs even when its `prayerTime` rows are the same.
 
 ## Yearly update
 

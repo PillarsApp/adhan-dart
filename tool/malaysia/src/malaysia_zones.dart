@@ -59,7 +59,8 @@ DataBuild buildZones(Directory root) {
         'MYS $level simplified $geoBoundariesRelease',
         geoBoundariesRetrieved,
         _geoBoundariesUrl(level),
-        sha256Hex(bytes)));
+        sha256Hex(bytes),
+        method: 'GET'));
     return _readShapes(utf8.decode(bytes));
   }
 

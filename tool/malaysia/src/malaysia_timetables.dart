@@ -58,6 +58,8 @@ const _selangorMonths = [
   'DISEMBER',
 ];
 
+String _esolatForm(int year) => 'datestart=$year-01-01&dateend=$year-12-31';
+
 const _dhuhaMinutesAfterSyuruk = 25;
 const _fetchAttempts = 3;
 const _fetchPause = Duration(milliseconds: 300);
@@ -242,7 +244,7 @@ Future<List<int>> _fetchZoneYear(HttpClient client, String endpoint,
       final request = await client.postUrl(Uri.parse('$endpoint&zone=$zone'));
       request.headers.contentType =
           ContentType('application', 'x-www-form-urlencoded');
-      request.write('datestart=$year-01-01&dateend=$year-12-31');
+      request.write(_esolatForm(year));
       final response = await request.close();
       final body = await response.fold<List<int>>([], (all, chunk) {
         all.addAll(chunk);
@@ -606,8 +608,10 @@ void _loadEsolat(
       'esolat',
       '$zone $year',
       '${response.serverTime}'.split(' ').first,
-      '$esolatEndpoint&zone=$zone&datestart=$year-01-01&dateend=$year-12-31',
-      sha256Hex(body)));
+      '$esolatEndpoint&zone=$zone',
+      sha256Hex(body),
+      method: 'POST',
+      form: _esolatForm(year)));
 }
 
 void _loadSelangor(Directory root, List<_ZoneYear> zoneYears,
@@ -630,7 +634,8 @@ void _loadSelangor(Directory root, List<_ZoneYear> zoneYears,
     zoneYears
         .add(_ZoneYear(source.zone, source.year, _calendar(source.year), days));
     sources.add(ManifestEntry('selangor-pdf', '${source.zone} ${source.year}',
-        source.retrieved, source.url, source.pdfSha256));
+        source.retrieved, source.url, source.pdfSha256,
+        method: 'GET'));
     sources.add(ManifestEntry(
         'selangor-text',
         '${source.zone} ${source.year}',
