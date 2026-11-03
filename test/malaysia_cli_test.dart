@@ -81,17 +81,13 @@ class _FakeEsolat {
   }
 }
 
-Future<List<String>> _fetch(Directory root, List<int> years, _FakeEsolat fake,
-    {bool refresh = false, required void Function(bool) result}) async {
-  final lines = <String>[];
-  final ok = await runZoned(
-      () => fetchTimetables(root, years,
-          refresh: refresh, endpoint: fake.endpoint, pause: Duration.zero),
-      zoneSpecification: ZoneSpecification(
-          print: (self, parent, zone, line) => lines.add(line)));
-  result(ok);
-  return lines;
-}
+Future<bool> _fetch(Directory root, List<int> years, _FakeEsolat fake,
+        {List<String>? lines, bool refresh = false}) =>
+    runZoned(
+        () => fetchTimetables(root, years,
+            refresh: refresh, endpoint: fake.endpoint, pause: Duration.zero),
+        zoneSpecification: ZoneSpecification(
+            print: (self, parent, zone, line) => lines?.add(line)));
 
 Future<ProcessResult> _build(Directory root) =>
     Process.run(Platform.resolvedExecutable, [
@@ -167,8 +163,7 @@ void main() {
     final fake = await _FakeEsolat.serve(
         (zone, year) => committed['$zone $year'] ?? _noRecord(zone));
 
-    late bool ok;
-    await _fetch(root, [2026, 2027], fake, result: (value) => ok = value);
+    final ok = await _fetch(root, [2026, 2027], fake);
 
     expect(fake.requests.toSet(), {...committed.keys, ...sabahUnpublished2027});
     expect(ok, isTrue);
@@ -199,9 +194,8 @@ void main() {
             .readAsBytesSync(),
     };
 
-    late bool ok;
-    final lines = await _fetch(root, [2026], fake,
-        refresh: true, result: (value) => ok = value);
+    final lines = <String>[];
+    final ok = await _fetch(root, [2026], fake, lines: lines, refresh: true);
 
     expect(fake.requests, containsAll(['JHR01 2026', 'JHR02 2026']));
     for (final zone in before.keys) {
@@ -226,9 +220,8 @@ void main() {
       return committed['$zone $year'] ?? _noRecord(zone);
     });
 
-    late bool ok;
-    final lines =
-        await _fetch(root, [2026], fake, result: (value) => ok = value);
+    final lines = <String>[];
+    final ok = await _fetch(root, [2026], fake, lines: lines);
 
     expect(fake.requests, contains('JHR03 2026'));
     expect(stored.existsSync(), isFalse);
