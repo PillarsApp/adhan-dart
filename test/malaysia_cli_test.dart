@@ -152,6 +152,21 @@ void main() {
     expect(Directory('${root.path}/data').existsSync(), isFalse);
   });
 
+  test('build fails and names an area that resolves to another state\'s zone',
+      () async {
+    final root = _copyOfTool();
+    File('${root.path}/tool/malaysia/special_areas.csv').writeAsStringSync(
+        'JHR02,Johor zone in Rompin,Rompin,2.78,103.4,3000,test\n',
+        mode: FileMode.append);
+
+    final result = await _build(root);
+
+    expect(result.exitCode, 1, reason: '${result.stdout}${result.stderr}');
+    expect(result.stdout,
+        contains('state mismatch JHR02 (Johor) inside ADM1 Pahang'));
+    expect(Directory('${root.path}/data').existsSync(), isFalse);
+  });
+
   test('fetch from an empty raw directory requests every zone-year in force',
       () async {
     final root = _copyOfTool();
