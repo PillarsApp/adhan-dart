@@ -114,8 +114,10 @@ int? _parseClock(String text) {
   return hours * 60 + minutes;
 }
 
-Future<void> fetchTimetables(Directory root, List<int> years,
-    {bool refresh = false}) async {
+Future<bool> fetchTimetables(Directory root, List<int> years,
+    {bool refresh = false,
+    String endpoint = esolatEndpoint,
+    Duration pause = _fetchPause}) async {
   final dir = Directory(_esolatDir(root))..createSync(recursive: true);
   final zonePattern = RegExp(r'^([A-Z0-9]+)_\d{4}\.json\.gz$');
   final zones = <String>{
@@ -136,9 +138,9 @@ Future<void> fetchTimetables(Directory root, List<int> years,
             continue;
           }
         }
-        if (requested) await Future<void>.delayed(_fetchPause);
+        if (requested) await Future<void>.delayed(pause);
         requested = true;
-        final body = await _fetchZoneYear(client, zone, year);
+        final body = await _fetchZoneYear(client, endpoint, zone, year, pause);
         file.writeAsBytesSync(_gzip(body));
         final rows = _rowCount(body);
         print('$zone $year ${rows > 0 ? '$rows rows' : _status(body)}');
@@ -147,6 +149,7 @@ Future<void> fetchTimetables(Directory root, List<int> years,
   } finally {
     client.close();
   }
+  return true;
 }
 
 Iterable<String> _zoneOf(RegExp pattern, File file) {
@@ -168,13 +171,12 @@ String _status(List<int> body) =>
     (jsonDecode(utf8.decode(body)) as Map<String, dynamic>)['status']
         .toString();
 
-Future<List<int>> _fetchZoneYear(
-    HttpClient client, String zone, int year) async {
+Future<List<int>> _fetchZoneYear(HttpClient client, String endpoint,
+    String zone, int year, Duration pause) async {
   Object? lastError;
   for (var attempt = 1; attempt <= _fetchAttempts; attempt++) {
     try {
-      final request =
-          await client.postUrl(Uri.parse('$esolatEndpoint&zone=$zone'));
+      final request = await client.postUrl(Uri.parse('$endpoint&zone=$zone'));
       request.headers.contentType =
           ContentType('application', 'x-www-form-urlencoded');
       request.write('datestart=$year-01-01&dateend=$year-12-31');
@@ -190,7 +192,7 @@ Future<List<int>> _fetchZoneYear(
       return body;
     } on Exception catch (error) {
       lastError = error;
-      if (attempt < _fetchAttempts) await Future<void>.delayed(_fetchPause);
+      if (attempt < _fetchAttempts) await Future<void>.delayed(pause);
     }
   }
   throw StateError('$zone $year failed after $_fetchAttempts attempts: '

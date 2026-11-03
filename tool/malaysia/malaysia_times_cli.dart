@@ -37,9 +37,10 @@ Future<void> main(List<String> args) async {
   }
   switch (options.command) {
     case 'fetch':
-      await fetchTimetables(
+      final fetched = await fetchTimetables(
           options.root, options.positional.map(int.parse).toList(),
           refresh: options.refresh);
+      if (!fetched) exitCode = 1;
       break;
     case 'import-selangor':
       importSelangor(options.root, options.positional);
