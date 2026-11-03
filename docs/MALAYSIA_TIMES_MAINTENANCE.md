@@ -23,18 +23,20 @@ The two Dart constants hold the same bytes as the text files. Other language ver
 | `tool/malaysia/malaysia_times_cli.dart` | The `fetch`, `import-selangor`, `build` and `lookup` commands |
 | `tool/malaysia/src/malaysia_timetables.dart` | Fetching, parsing, validation and correction of the timetables |
 | `tool/malaysia/src/malaysia_zones.dart` | The zone catalog, district rules, polygon simplification and arc encoding |
+| `tool/malaysia/src/malaysia_states.dart` | Moving state borders onto the ADM1 line, and the state check |
 | `lib/src/data/malaysia_times_codec.dart` | Encoder and decoder for the times file |
 | `lib/src/data/malaysia_zone_map.dart` | Decoder and point-to-zone resolver for the zones file |
 | `tool/malaysia/raw/esolat/` | Each e-Solat response, gzipped, exactly as fetched |
 | `tool/malaysia/raw/selangor/` | The `pdftotext -layout` text of each Selangor PDF, gzipped |
 | `tool/malaysia/raw/geoBoundaries-MYS-ADM2_simplified.geojson.gz` | The district polygons, gzipped, exactly as downloaded |
-| `tool/malaysia/raw/geoBoundaries-MYS-ADM1_simplified.geojson.gz` | The state polygons, gzipped, exactly as downloaded; only Putrajaya is used |
+| `tool/malaysia/raw/geoBoundaries-MYS-ADM1_simplified.geojson.gz` | The state polygons, gzipped, exactly as downloaded. They give the Putrajaya polygon and the borders between states |
 | `tool/malaysia/selangor_sources.csv` | Each Selangor PDF's zone code, URL, retrieval date and SHA-256 |
 | `tool/malaysia/corrections.csv` | Reviewed corrections and waivers |
 | `tool/malaysia/zones.csv` | The zone catalog |
 | `tool/malaysia/districts.csv` | The zone of each district, with split rules |
 | `tool/malaysia/special_areas.csv` | Island and highland zones as a centre, a radius and a parent district |
 | `tool/malaysia/islands.csv` | Islands that geoBoundaries ADM2 leaves out, as a centre, a radius and a district |
+| `tool/malaysia/state_exceptions.csv` | Boxes where the ADM1 state line is wrong, so the district line stays |
 | `tool/malaysia/town_fixtures.csv` | Every place named in the zone descriptions, with its expected zone |
 
 The Selangor PDFs are not committed because they total 182 MB. Their URLs and SHA-256 hashes are in `selangor_sources.csv` and `MANIFEST`.
@@ -50,9 +52,9 @@ dart run tool/malaysia/malaysia_times_cli.dart build
 dart run tool/malaysia/malaysia_times_cli.dart lookup 3.1390 101.6869 2027-01-01
 ```
 
-- `fetch <year>...` posts `datestart` and `dateend` to `https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&period=duration&zone=<code>` for every `e-solat` zone that `zones.csv` has in force during the year, and stores each response that holds rows. It keeps a zone and year that already holds rows unless you pass `--refresh`. It stores nothing for a `NO_RECORD!` response. It exits 1, naming the zone and year, when a response is unusable (not JSON, not a JSON object, or without rows for another reason), when a request fails three times, or when `--refresh` gets no rows for a zone and year that already holds rows. In each of those cases it keeps the stored response.
+- `fetch <year>...` posts `datestart` and `dateend` to `https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&period=duration&zone=<code>` for every `e-solat` zone that `zones.csv` has in force during the year, and stores each response that holds rows. It keeps a zone and year that already holds rows unless you pass `--refresh`. It stores nothing for a `NO_RECORD!` response. It exits 1, naming the zone and year, when a response is unusable (not JSON, not a JSON object, or without rows for another reason), when a request fails three times, when `--refresh` gets no rows for a zone and year that already holds rows, or when a stored file is not gzip. In each of those cases it keeps the stored response.
 - `import-selangor <pdf>...` runs `pdftotext -layout` (Poppler) on each PDF, checks that it holds every day of the year, stores the text, and records the PDF's SHA-256.
-- `build` validates, corrects and encodes everything. It prints every rejected row and exits 1 without writing anything when a row is rejected, an output is over budget, or the timetables do not match the catalog (see [Catalog](#catalog)). On success it prints a summary such as `117 zone-years, 0 rejected, 8 corrected, 24 waived` and the size of each output.
+- `build` validates, corrects and encodes everything. It prints every rejected row and exits 1 without writing anything when a row is rejected, an output is over budget, a stored raw file is not gzip (it names the file and the zone and year), the timetables do not match the catalog (see [Catalog](#catalog)), or a zone check fails (see [Zones format](#zones-format)). On success it prints a summary such as `117 zone-years, 0 rejected, 8 corrected, 24 waived` and the size of each output.
 - `lookup <latitude> <longitude> <yyyy-mm-dd>` prints the zone in force at that point on that date, or `none`. It does not check the times file, so it prints a Sabah zone for a date in 2027 although Sabah has no 2027 timetable yet.
 
 ## Validation
@@ -134,15 +136,32 @@ Districts that hold places from two zones carry ordered rule rows: Hulu Perak, G
 
 The geoBoundaries ADM2 layer has no Putrajaya shape, and its Sepang shape covers Putrajaya. `districts.csv` therefore maps the Putrajaya polygon from the geoBoundaries ADM1 layer to WLY01. A `districts.csv` row whose shape comes from the ADM1 layer must lie inside exactly one ADM2 shape. `build` cuts it out of that shape, so Sepang keeps the land around Putrajaya and Putrajaya resolves to WLY01.
 
+#### State borders
+
+The geoBoundaries ADM2 district shapes and the ADM1 state shapes come from different sources. geoBoundaries records citypopulation.de for ADM2 and a 2017 OpenStreetMap export for ADM1. Along the land borders between states they disagree by up to about 5 kilometres, and neither is right everywhere. Sindumin and six other villages of Sipitang, Sabah, lie inside the ADM2 Lawas shape, which made them resolve to the Sarawak zone SWK01; ADM1 and current OpenStreetMap put them in Sabah. Kampung Jabur and other villages of Kemaman, Terengganu, lie inside ADM1 Pahang; the ADM2 shapes and current OpenStreetMap put them in Terengganu.
+
+`state_borders.csv` lists the borders that follow the ADM1 line. Each row names two states, a box and the evidence. Inside the box, `build` moves each border between a region of one state and a region of the other onto ADM1:
+
+1. The border is replaced by the line the two states share in ADM1.
+2. Each end of the border moves onto the ADM1 line. Where three regions meet inland, the end moves to the nearest vertex the states share in ADM1, and a district border inside one state that then crosses the new line is cut where it meets it. Where the border reaches the coast or a national border, the end moves to the end of the ADM1 line. If that point lies inside a district shape, the coastline or national border is cut at the point nearest to it.
+
+Every other border keeps the ADM2 line, so inside a state the district shapes still decide the zone.
+
+`build` then checks the result against ADM1. It resolves every point of a 0.002-degree grid (about 220 metres) that lies inside an ADM1 state, on 31 December 2026 and 1 January 2027. It groups the points that lie more than 150 metres inside a state but resolve to a zone of another state into areas. The 150 metres allow for the 100-metre simplification of both layers. Each area must lie inside a box in `state_exceptions.csv` for the same two states. `build` fails on every other area, and names its zones, the two states, its size, its deepest point and its bounding box. `build` also fails when moving the borders makes two arcs cross where they did not cross before.
+
+`state_exceptions.csv` lists the places where the check's reference, ADM1, is wrong: the borders that keep the ADM2 line, Pulau Tioman and Pulau Seri Buat, which ADM1 puts in Johor, and one wedge at the Sabah-Sarawak-Kalimantan tri-point that the national border causes. Each row names its evidence.
+
+The rows in both files were chosen against the OpenStreetMap state boundaries of 3 November 2026. A border follows ADM1 when OpenStreetMap agrees with ADM1 at most of the check's points along it and at the populated places on it. To change a border, confirm with a second source, such as OpenStreetMap or a state gazette, which line is right. Then add or narrow a row, rebuild, and add a fixture for each populated place on the changed stretch.
+
 #### Special areas
 
-`special_areas.csv` lists the island and highland zones as a centre, a radius and a parent district. A special area applies only to points that resolve to its parent district, so it never takes land from a neighbouring district. `build` makes each parent district its own region for this. It also samples each special area on a 100-metre grid and fails when a point that resolves to the special area's zone lies more than 500 metres inside another district.
+`special_areas.csv` lists the island and highland zones as a centre, a radius and a parent district. A special area applies only to points that resolve to its parent district, so it never takes land from a neighbouring district. `build` makes each parent district its own region for this. It also samples each special area on a 100-metre grid and fails when a point that resolves to the special area's zone lies more than 500 metres inside another district of the same state. Across a state border, the state check decides.
 
-SWK09, Zon Khas (Kampung Patarikan), has no special area. No map source, GeoNames or OpenStreetMap included, gives the position of Kampung Patarikan, so `lookup` never returns SWK09. Merapok and the villages around it resolve to SWK01, as the e-Solat wording for Lawas says. SWK09 stays in the catalog, and the times file keeps its timetable, so an app can offer it for manual selection.
+SWK09, Zon Khas (Kampung Patarikan), has no special area. No map source, GeoNames or OpenStreetMap included, gives the position of Kampung Patarikan, so `lookup` never returns SWK09. Merapok and the Lawas villages around it resolve to SWK01, as the e-Solat wording for Lawas says. The villages across the Sabah border, such as Sindumin, resolve to SBH09. SWK09 stays in the catalog, and the times file keeps its timetable, so an app can offer it for manual selection.
 
 #### Islands
 
-The geoBoundaries ADM2 layer leaves out some islands that the ADM0 layer of the same release includes, and both layers leave out small islands such as Pulau Mabul. `islands.csv` adds each of these as an island area: an octagon with its corners at the given radius from the centre, added to the named district. A point on the island resolves like a point in that district.
+The geoBoundaries ADM2 layer leaves out some islands that the ADM0 layer of the same release includes, and both layers leave out small islands such as Pulau Mabul. `islands.csv` adds each of these as an island area: an octagon with its corners at the given radius from the centre, added to the named district. A point inside the octagon resolves like a point in that district. The octagon may leave out part of a long or irregular island; see [Known limitations](#known-limitations).
 
 - Each row's `source` column names the GeoNames island, the settlement on it, whether geoBoundaries ADM0 has a ring for it, and the nearest district.
 - The district is the nearest ADM2 district unless a source says otherwise.
@@ -152,13 +171,15 @@ The list covers every GeoNames island and populated place (feature class P) that
 
 #### Fixtures
 
-`town_fixtures.csv` lists every place named in the e-Solat zone descriptions with its GeoNames coordinates and expected zone, plus populated islands and points on each side of the special-area and Putrajaya boundaries. `build` and `test/malaysia_zone_fixtures_test.dart` both fail when a fixture resolves to another zone. Add a fixture before you change a rule.
+`town_fixtures.csv` lists every place named in the e-Solat zone descriptions with its GeoNames coordinates and expected zone, plus populated islands, populated places along the borders between states, and points on each side of the special-area and Putrajaya boundaries. `build` and `test/malaysia_zone_fixtures_test.dart` both fail when a fixture resolves to another zone. Add a fixture before you change a rule.
 
 #### Known limitations
 
 - The split rules for Gua Musang, Rompin, Hulu Perak, Kinabatangan, Lahad Datu, Subis, Matu and Pusa are latitude or longitude lines drawn between the places the e-Solat wording names. No mukim polygon exists to check them, so each line is right at the named places but unproven between them, and land far from every named place can fall on the wrong side. Gua Musang's KTN01 side alone covers about 3,100 square kilometres.
-- A point outside every district within 500 metres of one resolves to that district. Near the land borders with Thailand, Brunei and Indonesia this gives a Malaysian zone to some places across the border. Of 13,844 GeoNames places and islands in the neighbouring countries near Malaysia, 70 resolve to a zone. 49 of them lie outside every district shape within about 500 metres of one. 12 lie inside a geoBoundaries ADM2 shape but outside the ADM0 boundary. 9 lie inside the ADM0 boundary; GeoNames lists one of those, Libarran Island, in the Philippines although it is Malaysia's Pulau Libaran.
-- Island areas are circles. They cover the island and some sea around it, and their districts come from the nearest district rather than an official list.
+- Neither state line matches OpenStreetMap everywhere. On the borders that keep the ADM2 line, 57 check areas (9.3 km2) where OpenStreetMap agrees with ADM1 keep the ADM2 line. On the borders that follow ADM1, 30 check areas (9.2 km2) where OpenStreetMap agrees with ADM2 now follow ADM1. No GeoNames populated place lies in them. Three GeoNames places resolve to a state other than OpenStreetMap's: the Genting Highlands town point and The Gap lie within 150 metres of the ADM1 line on its Selangor side, and Pulau Terus, at the Kesang estuary, is in Johor for GeoNames and in Melaka for OpenStreetMap.
+- Moving a border's end onto the ADM1 line also moves the end of each district border inside the state that meets it, by up to the distance between the two lines. Taman Sri Ehsan, 38 metres from the Petaling line, moves from Gombak to Petaling for 2027.
+- Points outside Malaysia near its borders can resolve to a Malaysian zone. The ADM2 district shapes run past the geoBoundaries ADM0 national border by up to about 2.7 kilometres, and a point outside every district within 500 metres of one resolves to that district. See [Notes for the public API](#notes-for-the-public-api) for the measured reach past each border.
+- Island areas are octagons, not island outlines. They cover the whole geoBoundaries ADM0 ring of 15 of the 22 islands that have one, and 95 to 99 percent of Pulau Kaniogan, Pulau Kukup and Pulau Sulok. Pulau Langgun, Pulau Sedam, Pulau Tanjung Dendang, and the ring that holds Pulau Puru Puru and Tanjong Nuig are only partly covered, because a larger octagon would touch a district or another island area. A point on the uncovered part resolves only when it lies within 500 metres of a district or island area. On a 50-metre grid, 26 of 2,755 points on Pulau Langgun, 139 of 549 on Pulau Tanjung Dendang and 153 of 723 on the Pulau Puru Puru ring resolve to no zone. No GeoNames populated place lies on those points. Island districts come from the nearest district rather than an official list.
 - `lookup` returns the Sabah zones for 2027, but Sabah has no 2027 timetable yet. A caller must check that the times file holds the zone and year before it uses official times.
 
 ### Zones format
@@ -186,9 +207,28 @@ A zone row is a zone code, optionally followed by `:` and a rule with no spaces,
 2. Districts with the same ordered zone rows merge into one region, except that the parent district of a special area keeps its own region. Island areas join their district first, and an ADM1 shape is cut out of the ADM2 shape that holds it.
 3. A border between two districts of one region drops out. A point is inside a region when a ray from it crosses the region's arcs an odd number of times, so holes and islands need no special handling.
 4. The remaining borders are cut into arcs at every junction. Each arc is stored once and shared by the regions on both sides.
-5. Each arc is simplified with Douglas-Peucker at 100 metres, keeping its end points.
+5. Each arc between regions of two different states follows the ADM1 line (see [State borders](#state-borders)).
+6. Each arc is simplified with Douglas-Peucker at 100 metres, keeping its end points.
 
-`build` fails when a district has no row, a row names an unknown zone, a rule is malformed, a fixture resolves to the wrong zone, a special area reaches more than 500 metres into another district, an island area touches land or another island area, or a point of a 0.02-degree grid falls in two regions.
+`build` fails when a district has no row, a row names an unknown zone, a rule is malformed, a fixture resolves to the wrong zone, a special area reaches more than 500 metres into another district of its state, an island area touches land or another island area, a point of a 0.02-degree grid falls in two regions, the state check finds an area that no exception explains, or following the ADM1 state borders makes two arcs cross.
+
+## Notes for the public API
+
+These notes are for anyone who builds a public API on the decoder and resolver in `lib/src/data/`.
+
+- The resolver answers for any point and does not know the country. Points outside Malaysia near its land borders resolve to a Malaysian zone. A caller must check that the user is in Malaysia, for example from the platform's reverse geocoder, before it uses official times.
+- The reach past each border, measured on a 100-metre grid of foreign land within 8 kilometres of the geoBoundaries ADM0 border of Malaysia, on 1 June 2026 and 1 June 2027:
+
+  | Country | Farthest point that resolves | Zone | Distance past the border | Foreign land that resolves, within 3 km |
+  | --- | --- | --- | --- | --- |
+  | Brunei | 4.89474, 115.05230 | SWK01 | 3.0 km | 219 km2 |
+  | Indonesia | 1.20936, 110.03502 | SWK08 | 2.9 km | 1,084 km2 |
+  | Singapore | 1.43623, 104.02910 | JHR02 | 2.9 km | 1.3 km2 |
+  | Thailand | 5.74876, 101.24499 | PRK03 | 1.0 km | 254 km2 |
+
+  The Philippines has no land within 8 kilometres. In Singapore no district shape covers land; the points lie within 500 metres of the Johor shape in the strait.
+- The resolver returns Sabah zones for 2027, but Sabah has no 2027 timetable yet. A caller must check that the times file holds the zone and year.
+- The resolver never returns SWK09, because no source locates Kampung Patarikan. Offer it for manual selection.
 
 ## Manifest format
 
@@ -223,4 +263,4 @@ Until JAKIM publishes the Sabah 2027 timetable, run `fetch 2027` weekly. When th
 
 ## Licences
 
-The district polygons are from geoBoundaries gbOpen MYS ADM2, the Putrajaya polygon from ADM1, and the island areas from ADM0 rings, all under CC BY 3.0. The town coordinates are from GeoNames under CC BY 4.0. Both credits are in `README.md`. The timetables are published by JAKIM and the Selangor State Mufti Department.
+The district polygons are from geoBoundaries gbOpen MYS ADM2 (sources geoBoundaries and citypopulation.de, CC BY 3.0). The Putrajaya polygon and the borders listed in `state_borders.csv` are from geoBoundaries ADM1, and the island positions were checked against ADM0. geoBoundaries records ADM1 and ADM0 as © OpenStreetMap contributors (Wambacher export, 2017) under the Open Database License 1.0. The town coordinates are from GeoNames under CC BY 4.0. Both credits are in `README.md`. The timetables are published by JAKIM and the Selangor State Mufti Department.
