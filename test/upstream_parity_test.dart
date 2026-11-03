@@ -476,6 +476,26 @@ void main() {
     });
   });
 
+  group('date components', () {
+    test('an overflowing day gives the times of the date it normalizes to', () {
+      final overflowing = {
+        DateComponents(2026, 1, 32): DateComponents(2026, 2, 1),
+        DateComponents(2020, 2, 30): DateComponents(2020, 3, 1),
+        DateComponents(2026, 12, 32): DateComponents(2027, 1, 1),
+        DateComponents(2026, 3, 0): DateComponents(2026, 2, 28),
+        DateComponents(2020, 13, 1): DateComponents(2021, 1, 1),
+      };
+      overflowing.forEach((components, normalized) {
+        final params = muslimWorldLeague();
+        final overflowed = PrayerTimes.utc(london, components, params);
+        expect(overflowed.dateComponents, normalized, reason: '$components');
+        expect(utcMinutes(overflowed),
+            utcMinutes(PrayerTimes.utc(london, normalized, params)),
+            reason: '$components');
+      });
+    });
+  });
+
   group('global sweep', () {
     test('every 5 degrees latitude, 10 degrees longitude, every day of 2025',
         () {
