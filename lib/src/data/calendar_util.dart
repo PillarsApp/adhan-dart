@@ -10,11 +10,6 @@ class CalendarUtil {
     return year % 4 == 0 && !(year % 100 == 0 && year % 400 != 0);
   }
 
-  /// Rounds [when] to the minute per [rounding].
-  ///
-  /// The arithmetic runs in UTC so a daylight saving transition in the host
-  /// time zone cannot move the result. The returned value is UTC when [when]
-  /// is UTC and local otherwise.
   static DateTime roundedMinute(DateTime when,
       [Rounding rounding = Rounding.nearest]) {
     final utc = when.toUtc();

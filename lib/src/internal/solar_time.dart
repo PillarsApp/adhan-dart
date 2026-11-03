@@ -70,9 +70,6 @@ class SolarTime {
         correction: _hourAngleCorrection);
   }
 
-  /// Hours from midnight at which the shadow reaches [shadowLength]. NaN when
-  /// the sun does not reach that angle on this day or the time is not after
-  /// transit, under [HourAngleCorrection.iterative].
   double afternoon(ShadowLength shadowLength) {
     final tangent = (_observer.latitude - _solar.declination).abs();
     final inverse = shadowLength.getShadowLength() + tan(radians(tangent));

@@ -4,13 +4,6 @@ import 'package:adhan/adhan.dart';
 
 import 'grid.dart';
 
-/// Prints the median microseconds per `PrayerTimes` construction for London
-/// with the Muslim World League method over 100,000 constructions, in the
-/// format of the adhan-swift probe's `--bench`.
-///
-/// Compile first so the number reflects AOT code:
-/// `dart compile exe tool/parity/bench.dart` then
-/// `tool/parity/bench.exe [--correction iterative|singlePass]`.
 void main(List<String> arguments) {
   final GridOptions options;
   try {

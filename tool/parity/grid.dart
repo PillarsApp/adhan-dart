@@ -51,8 +51,6 @@ class GridOptions {
   static const usage = '[--polar aqrabBalad|aqrabYaum|unresolved] '
       '[--correction iterative|singlePass]';
 
-  /// Reads the probe flags from [arguments]. Returns the unread arguments in
-  /// [rest] when given.
   static GridOptions parse(List<String> arguments, {List<String>? rest}) {
     PolarCircleResolution? polar;
     HourAngleCorrection? correction;
@@ -117,9 +115,6 @@ class GridOptions {
   }
 }
 
-/// The 10 city, 365 day, 6 method grid for 2026, one CSV row per cell group:
-/// `city,date,method,fajr,sunrise,dhuhr,asr,maghrib,isha`, each time as UTC
-/// epoch seconds, or `nil` when the library computes no times.
 Iterable<String> gridRows(GridOptions options) sync* {
   for (final city in cities) {
     for (final day in days2026) {

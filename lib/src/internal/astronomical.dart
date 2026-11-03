@@ -187,11 +187,8 @@ class Astronomical {
     /* Equation from page Astronomical Algorithms 102 */
     final Lw = L * -1;
     final theta = DoubleUtil.unwindAngle(theta0 + (360.985647 * m0));
-    final alpha = DoubleUtil.unwindAngle(interpolateAngles(
-        /* value */ alpha2,
-        /* previousValue */ alpha1,
-        /* nextValue */ alpha3,
-        /* factor */ m0));
+    final alpha = DoubleUtil.unwindAngle(interpolateAngles(/* value */ alpha2,
+        /* previousValue */ alpha1, /* nextValue */ alpha3, /* factor */ m0));
     final H = DoubleUtil.closestAngle(theta - Lw - alpha);
     final deltaM = H / -360;
     return (m0 + deltaM) * 24;
@@ -210,6 +207,8 @@ class Astronomical {
   /// @param δ1 the previous declination
   /// @param δ3 the next declination
   /// @return the corrected hour angle
+  static const hourAngleConvergence = 0.01;
+
   static double correctedHourAngle(
       double m0,
       double h0,
@@ -231,26 +230,13 @@ class Astronomical {
     final H0 = degrees(acos(term1 / term2));
     var m = afterTransit ? m0 + (H0 / 360) : m0 - (H0 / 360);
 
-    /* Astronomical Algorithms page 103 notes that the correction value of
-    delta m should be within 0.01 and to recalculate with the corrected m
-    value if needed. */
     for (var i = 0; i < correction.maximumIterations; i++) {
       final theta = DoubleUtil.unwindAngle(theta0 + (360.985647 * m));
-      final alpha = DoubleUtil.unwindAngle(interpolateAngles(
-          /* value */ alpha2,
-          /* previousValue */ alpha1,
-          /* nextValue */ alpha3,
-          /* factor */ m));
-      final delta = interpolate(
-          /* value */ delta2,
-          /* previousValue */ delta1,
-          /* nextValue */ delta3,
-          /* factor */ m);
+      final alpha =
+          DoubleUtil.unwindAngle(interpolateAngles(alpha2, alpha1, alpha3, m));
+      final delta = interpolate(delta2, delta1, delta3, m);
       final H = (theta - Lw - alpha);
-      final h = altitudeOfCelestialBody(
-          /* observerLatitude */ coordinates.latitude,
-          /* declination */ delta,
-          /* localHourAngle */ H);
+      final h = altitudeOfCelestialBody(coordinates.latitude, delta, H);
       final dmDenominator = 360 *
           cos(radians(delta)) *
           cos(radians(coordinates.latitude)) *
@@ -260,7 +246,7 @@ class Astronomical {
       }
       final deltaM = (h - h0) / dmDenominator;
       m += deltaM;
-      if (deltaM.abs() <= 0.01) {
+      if (deltaM.abs() <= hourAngleConvergence) {
         break;
       }
     }

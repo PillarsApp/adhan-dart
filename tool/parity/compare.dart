@@ -4,14 +4,6 @@ import 'package:adhan/adhan.dart';
 
 import 'grid.dart';
 
-/// Compares this library's grid with the adhan-swift grid for each
-/// `hourAngleCorrection` value and prints the number of differing cells.
-///
-/// The Singapore method rounds up in adhan-swift and to the nearest minute
-/// here, so a Singapore cell where Swift is exactly one minute later is
-/// excluded and counted separately. Every other difference is a defect.
-///
-/// usage: dart run tool/parity/compare.dart [--reference-dir tool/parity/reference]
 void main(List<String> arguments) {
   var referenceDir = 'tool/parity/reference';
   for (var i = 0; i < arguments.length; i++) {

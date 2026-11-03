@@ -4,13 +4,10 @@ import '../coordinates.dart';
 import '../data/calendar_util.dart';
 import '../data/time_components.dart';
 import '../extensions/datetime.dart';
-import '../hour_angle_correction.dart';
 import '../madhab.dart';
 import '../rounding.dart';
 import 'solar_time.dart';
 
-/// The six times of one day, as UTC instants with adjustments and rounding
-/// applied, computed from that day's own solar geometry.
 class DayTimes {
   final DateTime fajr;
   final DateTime sunrise;
@@ -30,7 +27,6 @@ class DayTimes {
 
   static const minimumPrayerGap = Duration(minutes: 5);
 
-  /// Whether [second] follows [first] by at least [minimumPrayerGap].
   static bool timesInOrder(DateTime? first, DateTime? second) {
     if (first == null || second == null) {
       return false;
@@ -38,8 +34,6 @@ class DayTimes {
     return second.difference(first) >= minimumPrayerGap;
   }
 
-  /// The same times moved by a whole number of days, used to relabel a polar
-  /// circle result onto the requested date.
   DayTimes shifted(int days) {
     if (days == 0) {
       return this;
@@ -55,9 +49,6 @@ class DayTimes {
     );
   }
 
-  /// Computes the times for [date], a UTC midnight, with no polar circle
-  /// resolution. Returns null when a time cannot be computed or, under
-  /// [HourAngleCorrection.iterative], when the times come out of order.
   static DayTimes? compute(Coordinates coordinates, DateTime date,
       CalculationParameters parameters) {
     final correction = parameters.hourAngleCorrection;

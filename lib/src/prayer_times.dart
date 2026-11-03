@@ -131,7 +131,6 @@ class PrayerTimes {
     _isha = _present(times.isha);
   }
 
-  /// The UTC midnight of [components], which must name a real calendar date.
   static DateTime _resolveDate(DateComponents components) {
     final date = CalendarUtil.resolveTimeByDateComponents(components);
     if (date.year != components.year ||
@@ -143,8 +142,6 @@ class PrayerTimes {
     return date;
   }
 
-  /// Expresses a rounded UTC instant as local time, or as UTC shifted by
-  /// [utcOffset] when one was given.
   DateTime _present(DateTime utc) {
     final offset = utcOffset;
     return offset == null ? utc.toLocal() : utc.add(offset);

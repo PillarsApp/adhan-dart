@@ -26,8 +26,6 @@ extension PolarCircleResolver on PolarCircleResolution {
 
   static const maximumDaysSearched = 183;
 
-  /// The resolved times for [date], a UTC midnight, or null when this
-  /// resolution finds none.
   DayTimes? resolve(Coordinates coordinates, DateTime date,
       CalculationParameters parameters) {
     switch (this) {
@@ -71,8 +69,6 @@ extension PolarCircleResolver on PolarCircleResolution {
     }
   }
 
-  /// One step toward the equator, never past it. The other hemisphere has the
-  /// wrong season's solar geometry for the requested date.
   static double _towardEquator(double latitude) {
     final magnitude = max(0.0, latitude.abs() - latitudeVariationStep);
     return latitude.isNegative ? -magnitude : magnitude;
