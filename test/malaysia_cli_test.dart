@@ -154,6 +154,20 @@ void main() {
     });
   }
 
+  test('build fails and names a geoBoundaries file that is not gzip', () async {
+    final root = _copyOfTool();
+    const fileName = 'geoBoundaries-MYS-ADM2_simplified.geojson.gz';
+    final raw = File('${root.path}/tool/malaysia/raw/$fileName');
+    raw.writeAsBytesSync(GZipCodec().decode(raw.readAsBytesSync()));
+
+    final result = await _build(root);
+
+    expect(result.exitCode, 1, reason: '${result.stdout}${result.stderr}');
+    expect(LineSplitter.split('${result.stdout}'),
+        contains(allOf(contains(fileName), contains('not gzip'))));
+    expect(Directory('${root.path}/data').existsSync(), isFalse);
+  });
+
   test('build fails when zones.csv lists a zone-year with rows as unpublished',
       () async {
     final root = _copyOfTool();
