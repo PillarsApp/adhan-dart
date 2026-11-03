@@ -111,11 +111,14 @@ params.adjustments.fajr = 2;
 | `method`    | CalculationMethod name |
 | `fajrAngle` | Angle of the sun used to calculate Fajr |
 | `maghribAngle` | The angle of the sun used to calculate Maghrib |
-| `ishaAngle` | Angle of the sun used to calculate Isha |
+| `ishaAngle` | Angle of the sun used to calculate Isha. With neither `ishaAngle` nor `ishaInterval` set, Isha falls at the safe bound that would otherwise cap it, the middle of the night by default |
 | `ishaInterval` | Minutes after Maghrib (if set, the time for Isha will be Maghrib plus ishaInterval) |
 | `madhab` | Value from the Madhab object, used to calculate Asr |
 | `highLatitudeRule` | Value from the HighLatitudeRule object, used to set a minimum time for Fajr and a max time for Isha |
 | `adjustments` | `PrayerAdjustments` object with custom prayer time adjustments in minutes for each prayer time |
+| `rounding` | Value from the Rounding object, how each time is rounded to the minute. Default `nearest` |
+| `polarCircleResolution` | Value from the PolarCircleResolution object, how days inside the polar circles without computable times are resolved. Default `aqrabBalad` |
+| `hourAngleCorrection` | Value from the HourAngleCorrection object, how the time the sun reaches each prayer's angle is corrected and validated. Default `iterative` |
 
 **CalculationMethod**
 
@@ -150,6 +153,50 @@ params.adjustments.fajr = 2;
 | `middle_of_the_night` | Fajr will never be earlier than the middle of the night and Isha will never be later than the middle of the night |
 | `seventh_of_the_night` | Fajr will never be earlier than the beginning of the last seventh of the night and Isha will never be later than the end of the first seventh of the night |
 | `twilight_angle` | Similar to `SEVENTH_OF_THE_NIGHT`, but instead of 1/7, the fraction of the night used is fajrAngle/60 and ishaAngle/60 |
+
+`HighLatitudeRule.recommended(coordinates)` returns `seventh_of_the_night` beyond 48 degrees from the equator in either hemisphere and `middle_of_the_night` otherwise.
+
+**Rounding**
+
+| Value | Description |
+| ----- | ----------- |
+| `nearest` | Round to the nearest minute. This is the default |
+| `up` | Round up to the next minute whenever the time has any seconds |
+| `none` | Keep the computed seconds |
+
+**PolarCircleResolution**
+
+Inside the polar circles the sun may not rise or set, or may not reach the angle a prayer needs, on some days of the year.
+
+| Value | Description |
+| ----- | ----------- |
+| `aqrabBalad` | Finds the closest location, moving toward the equator at the same longitude, for which prayer times can be computed. This is the default |
+| `aqrabYaum` | Finds the closest date, forward or backward, for which prayer times can be computed, and relabels its times onto the requested date |
+| `unresolved` | Leaves prayer times unresolved. `PrayerTimes` throws an `ArgumentError` when they cannot be computed, as versions before 2.4.0 did |
+
+**HourAngleCorrection**
+
+| Value | Description |
+| ----- | ----------- |
+| `iterative` | Repeats the hour angle correction until it converges or ten passes have run, rejects an Asr angle the sun does not reach that day, treats a day whose times come out of order, or less than five minutes apart, as one whose times cannot be computed, and at longitudes near 180 degrees picks the solar transit nearest the longitude's mean noon, so consecutive days never jump by a day. This is the default |
+| `singlePass` | Applies the hour angle correction once and keeps every time it produces, as versions before 2.4.0 did |
+
+#### Keeping the times of version 2.3.0
+
+The default, `iterative`, moves times most where the sun's altitude changes slowly. Measured for 2026 with the default `highLatitudeRule`, `middle_of_the_night`: Isha at London under `muslim_world_league` moves 4 minutes on 16 July, Isha at Reykjavik under `north_america` 41 minutes on 25 August, and Isha at Edmonton with 18 degree Fajr and Isha angles 43 minutes on 13 May. With `seventh_of_the_night`, which `HighLatitudeRule.recommended` picks above 48 degrees, those three places do not move on any day of 2026. At Tromso, Asr under `muslim_world_league` moves 50 minutes on 21 January and Fajr under `moon_sighting_committee` 116 minutes on 17 May, under either rule.
+
+Near longitude 180 the day can move. At Suva, version 2.3.0 returned the next local day's times from 20 September to 12 December 2026, and `iterative` returns the requested day. At the Chatham Islands, `iterative` returns the next local day's times on every day of 2026, because mean noon at that longitude on the requested date, counted in UTC, already falls on the next local day there. Version 2.3.0 did the same except from 4 to 19 February 2026, where it returned the requested day, so `iterative` moves those 16 days one day later.
+
+Inside the polar circles, days that threw now resolve through `polarCircleResolution`. To keep the times version 2.3.0 computed, set `hourAngleCorrection` to `singlePass` and `polarCircleResolution` to `unresolved`. With `singlePass` alone, the default `aqrabBalad` search keeps the first latitude whose times compute without checking their order. At Tromso, on 162 of the 2,190 day and method pairs of the 2026 parity grid in `tool/parity/`, where version 2.3.0 threw, it returns Asr before Dhuhr or Maghrib before Asr.
+
+With both set, these changes since version 2.3.0 still apply:
+
+- Rounding runs in UTC, so a clock change in the host's time zone no longer moves a time by an hour.
+- The night fractions behind the safe Fajr and Isha bounds keep sub-second precision, as adhan-swift does. On the 12 city, 365 day, 6 method grid in `tool/parity/`, 39 Fajr times move one minute earlier.
+- A latitude outside -90 to 90 throws an `ArgumentError`. Version 2.3.0 returned meaningless times for some of them, such as 180.
+- A Maghrib angle the sun does not reach, as with the `tehran` method in a polar summer, leaves Maghrib at sunset instead of throwing.
+- With neither `ishaAngle` nor `ishaInterval` set, Isha falls at the safe bound that would otherwise cap it, the middle of the night by default, instead of throwing. Under `twilight_angle`, a null `ishaAngle` throws a `FormatException`, as before.
+- `SunnahTimes` honours `rounding`. At the default, `nearest`, rounding alone changes none of its times. A middle or last third of the night that ends at one of those 39 Fajr times moves with it, one minute earlier, which is 38 values on the same grid.
 
 
 ### Prayer Times

@@ -3,6 +3,8 @@ import 'dart:math';
 import '../coordinates.dart';
 import 'double_util.dart';
 import 'math.dart';
+import '../hour_angle_correction.dart';
+import 'hour_angle_correction_rules.dart';
 
 /// Astronomical equations
 class Astronomical {
@@ -167,10 +169,24 @@ class Astronomical {
   /// @param Θ0 the sidereal time
   /// @param α2 the right ascension
   /// @return the approximate transite
-  static double approximateTransit(double L, double theta0, double alpha2) {
+  static double approximateTransit(double L, double theta0, double alpha2,
+      {HourAngleCorrection correction = HourAngleCorrection.iterative}) {
     /* Equation from page Astronomical Algorithms 102 */
     final Lw = L * -1;
-    return DoubleUtil.normalizeWithBound((alpha2 + Lw - theta0) / 360, 1);
+    final m0 = DoubleUtil.normalizeWithBound((alpha2 + Lw - theta0) / 360, 1);
+    if (!correction.anchorsTransitToLongitude) {
+      return m0;
+    }
+    /* Picks the solar transit nearest the longitude's mean noon, so
+    consecutive days never jump by a day. */
+    final expectedTransit =
+        DoubleUtil.normalizeWithBound((12.0 - L / 15.0) / 24.0, 1);
+    if (m0 - expectedTransit > 0.5) {
+      return m0 - 1.0;
+    } else if (expectedTransit - m0 > 0.5) {
+      return m0 + 1.0;
+    }
+    return m0;
   }
 
   /// The time at which the sun is at its highest point in the sky (in universal time)
@@ -186,11 +202,8 @@ class Astronomical {
     /* Equation from page Astronomical Algorithms 102 */
     final Lw = L * -1;
     final theta = DoubleUtil.unwindAngle(theta0 + (360.985647 * m0));
-    final alpha = DoubleUtil.unwindAngle(interpolateAngles(
-        /* value */ alpha2,
-        /* previousValue */ alpha1,
-        /* nextValue */ alpha3,
-        /* factor */ m0));
+    final alpha = DoubleUtil.unwindAngle(interpolateAngles(/* value */ alpha2,
+        /* previousValue */ alpha1, /* nextValue */ alpha3, /* factor */ m0));
     final H = DoubleUtil.closestAngle(theta - Lw - alpha);
     final deltaM = H / -360;
     return (m0 + deltaM) * 24;
@@ -209,6 +222,8 @@ class Astronomical {
   /// @param δ1 the previous declination
   /// @param δ3 the next declination
   /// @return the corrected hour angle
+  static const hourAngleConvergence = 0.01;
+
   static double correctedHourAngle(
       double m0,
       double h0,
@@ -220,37 +235,38 @@ class Astronomical {
       double alpha3,
       double delta2,
       double delta1,
-      double delta3) {
+      double delta3,
+      {HourAngleCorrection correction = HourAngleCorrection.iterative}) {
     /* Equation from page Astronomical Algorithms 102 */
     final Lw = coordinates.longitude * -1;
     final term1 = sin(radians(h0)) -
         (sin(radians(coordinates.latitude)) * sin(radians(delta2)));
     final term2 = cos(radians(coordinates.latitude)) * cos(radians(delta2));
     final H0 = degrees(acos(term1 / term2));
-    final m = afterTransit ? m0 + (H0 / 360) : m0 - (H0 / 360);
-    final theta = DoubleUtil.unwindAngle(theta0 + (360.985647 * m));
-    final alpha = DoubleUtil.unwindAngle(interpolateAngles(
-        /* value */ alpha2,
-        /* previousValue */ alpha1,
-        /* nextValue */ alpha3,
-        /* factor */ m));
-    final delta = interpolate(
-        /* value */ delta2,
-        /* previousValue */ delta1,
-        /* nextValue */ delta3,
-        /* factor */ m);
-    final H = (theta - Lw - alpha);
-    final h = altitudeOfCelestialBody(
-        /* observerLatitude */ coordinates.latitude,
-        /* declination */ delta,
-        /* localHourAngle */ H);
-    final term3 = h - h0;
-    final term4 = 360 *
-        cos(radians(delta)) *
-        cos(radians(coordinates.latitude)) *
-        sin(radians(H));
-    final deltaM = term3 / term4;
-    return (m + deltaM) * 24;
+    var m = afterTransit ? m0 + (H0 / 360) : m0 - (H0 / 360);
+
+    for (var i = 0; i < correction.maximumIterations; i++) {
+      final theta = DoubleUtil.unwindAngle(theta0 + (360.985647 * m));
+      final alpha =
+          DoubleUtil.unwindAngle(interpolateAngles(alpha2, alpha1, alpha3, m));
+      final delta = interpolate(delta2, delta1, delta3, m);
+      final H = (theta - Lw - alpha);
+      final h = altitudeOfCelestialBody(coordinates.latitude, delta, H);
+      final dmDenominator = 360 *
+          cos(radians(delta)) *
+          cos(radians(coordinates.latitude)) *
+          sin(radians(H));
+      if (dmDenominator == 0) {
+        return double.nan;
+      }
+      final deltaM = (h - h0) / dmDenominator;
+      m += deltaM;
+      if (deltaM.abs() <= hourAngleConvergence) {
+        break;
+      }
+    }
+
+    return m * 24;
   }
 
   /* Interpolation of a value given equidistant

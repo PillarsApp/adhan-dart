@@ -1,7 +1,10 @@
 import 'calculation_method.dart';
 import 'high_latitude_rule.dart';
+import 'hour_angle_correction.dart';
 import 'madhab.dart';
+import 'polar_circle_resolution.dart';
 import 'prayer_adjustments.dart';
+import 'rounding.dart';
 
 /// Parameters used for PrayerTime calculation customization
 ///
@@ -19,6 +22,12 @@ class CalculationParameters {
   double? maghribAngle;
 
   /// The angle of the sun used to calculate isha
+  ///
+  /// With neither [ishaAngle] nor [ishaInterval] set, Isha falls at the safe
+  /// bound that would otherwise cap it. That is the middle of the night under
+  /// the default [highLatitudeRule], or the season-adjusted twilight under
+  /// `moon_sighting_committee`. Under `twilight_angle`, a null [ishaAngle]
+  /// throws a [FormatException].
   double? ishaAngle;
 
   /// Minutes after Maghrib (if set, the time for Isha will be Maghrib plus IshaInterval)
@@ -36,6 +45,15 @@ class CalculationParameters {
   /// Used for method adjustments
   PrayerAdjustments methodAdjustments;
 
+  /// How each computed time is rounded to the minute
+  Rounding rounding;
+
+  /// How the hour angle correction runs and how strictly the times are validated
+  HourAngleCorrection hourAngleCorrection;
+
+  /// How days inside the polar circles without computable times are resolved
+  PolarCircleResolution polarCircleResolution;
+
   CalculationParameters(
       {this.method = CalculationMethod.other,
       required this.fajrAngle,
@@ -45,7 +63,10 @@ class CalculationParameters {
       this.madhab = Madhab.shafi,
       this.highLatitudeRule = HighLatitudeRule.middle_of_the_night,
       PrayerAdjustments? adjustments,
-      PrayerAdjustments? methodAdjustments})
+      PrayerAdjustments? methodAdjustments,
+      this.rounding = Rounding.nearest,
+      this.hourAngleCorrection = HourAngleCorrection.iterative,
+      this.polarCircleResolution = PolarCircleResolution.aqrabBalad})
       : adjustments = adjustments ?? PrayerAdjustments(),
         methodAdjustments = methodAdjustments ?? PrayerAdjustments();
 

@@ -1,8 +1,11 @@
 import 'dart:math';
 
 import '../coordinates.dart';
+import '../data/time_components.dart';
+import '../hour_angle_correction.dart';
 import 'astronomical.dart';
 import 'calendrical_helper.dart';
+import 'hour_angle_correction_rules.dart';
 import 'math.dart';
 import 'shadow_length.dart';
 import 'solar_coordinates.dart';
@@ -22,8 +25,10 @@ class SolarTime {
   late SolarCoordinates _prevSolar;
   late SolarCoordinates _nextSolar;
   late double _approximateTransit;
+  final HourAngleCorrection _hourAngleCorrection;
 
-  SolarTime(DateTime _today, Coordinates coordinates) {
+  SolarTime(DateTime _today, Coordinates coordinates,
+      [this._hourAngleCorrection = HourAngleCorrection.iterative]) {
     final today = _today;
 
     final tomorrow = today.add(Duration(days: 1));
@@ -35,7 +40,8 @@ class SolarTime {
     _nextSolar = SolarCoordinates(CalendricalHelper.julianDayByDate(tomorrow));
 
     _approximateTransit = Astronomical.approximateTransit(coordinates.longitude,
-        _solar.apparentSiderealTime, _solar.rightAscension);
+        _solar.apparentSiderealTime, _solar.rightAscension,
+        correction: _hourAngleCorrection);
     final solarAltitude = -50.0 / 60.0;
 
     _observer = coordinates;
@@ -46,30 +52,8 @@ class SolarTime {
         _solar.rightAscension,
         _prevSolar.rightAscension,
         _nextSolar.rightAscension);
-    _sunrise = Astronomical.correctedHourAngle(
-        _approximateTransit,
-        solarAltitude,
-        coordinates,
-        false,
-        _solar.apparentSiderealTime,
-        _solar.rightAscension,
-        _prevSolar.rightAscension,
-        _nextSolar.rightAscension,
-        _solar.declination,
-        _prevSolar.declination,
-        _nextSolar.declination);
-    _sunset = Astronomical.correctedHourAngle(
-        _approximateTransit,
-        solarAltitude,
-        coordinates,
-        true,
-        _solar.apparentSiderealTime,
-        _solar.rightAscension,
-        _prevSolar.rightAscension,
-        _nextSolar.rightAscension,
-        _solar.declination,
-        _prevSolar.declination,
-        _nextSolar.declination);
+    _sunrise = hourAngle(solarAltitude, false);
+    _sunset = hourAngle(solarAltitude, true);
   }
 
   double hourAngle(double angle, bool afterTransit) {
@@ -84,16 +68,41 @@ class SolarTime {
         _nextSolar.rightAscension,
         _solar.declination,
         _prevSolar.declination,
-        _nextSolar.declination);
+        _nextSolar.declination,
+        correction: _hourAngleCorrection);
   }
 
-  // hours from transit
   double afternoon(ShadowLength shadowLength) {
-    // TODO (from Swift version) source shadow angle calculation
     final tangent = (_observer.latitude - _solar.declination).abs();
     final inverse = shadowLength.getShadowLength() + tan(radians(tangent));
     final angle = degrees(atan(1.0 / inverse));
 
-    return hourAngle(angle, true);
+    if (!_hourAngleCorrection.validatesTimes) {
+      return hourAngle(angle, true);
+    }
+
+    const solarAngularDiameter = 32.0 / 60.0;
+    if (angle <= solarAngularDiameter / 2) {
+      return double.nan;
+    }
+
+    final maxAltitude = Astronomical.altitudeOfCelestialBody(
+        _observer.latitude, _solar.declination, 0);
+    if (maxAltitude < angle) {
+      return double.nan;
+    }
+
+    final result = hourAngle(angle, true);
+    if (!result.isFinite || _wholeSeconds(result) <= _wholeSeconds(_transit)) {
+      return double.nan;
+    }
+    return result;
+  }
+
+  static int _wholeSeconds(double hours) {
+    final components = TimeComponents.fromDouble(hours);
+    return components.hours * 3600 +
+        components.minutes * 60 +
+        components.seconds;
   }
 }

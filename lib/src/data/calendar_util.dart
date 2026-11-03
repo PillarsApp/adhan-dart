@@ -1,5 +1,4 @@
-import 'package:adhan/src/extensions/datetime.dart';
-
+import '../rounding.dart';
 import 'date_components.dart';
 
 class CalendarUtil {
@@ -11,15 +10,28 @@ class CalendarUtil {
     return year % 4 == 0 && !(year % 100 == 0 && year % 400 != 0);
   }
 
-  /// Date and time with a rounded minute
-  ///
-  /// This returns a date with the seconds rounded and added to the minute
-  /// [when] the date and time
-  /// return [DateTime] and time with 0 seconds and minutes including rounded seconds
-  static DateTime roundedMinute(DateTime when) {
-    final minute = when.minute;
-    final second = when.second;
-    return when.copyWith(minute: (minute + (second / 60).round()), second: 0);
+  static DateTime roundedMinute(DateTime when,
+      [Rounding rounding = Rounding.nearest]) {
+    final utc = when.toUtc();
+    final int minute;
+    final int second;
+    switch (rounding) {
+      case Rounding.nearest:
+        minute = utc.minute + (utc.second / 60).round();
+        second = 0;
+        break;
+      case Rounding.up:
+        minute = utc.minute + (utc.second / 60).ceil();
+        second = 0;
+        break;
+      case Rounding.none:
+        minute = utc.minute;
+        second = utc.second;
+        break;
+    }
+    final rounded =
+        DateTime.utc(utc.year, utc.month, utc.day, utc.hour, minute, second);
+    return when.isUtc ? rounded : rounded.toLocal();
   }
 
   /// Gets a UTC DateTime for the particular date

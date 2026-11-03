@@ -31,15 +31,17 @@ class SunnahTimes {
         prayerTimes.calculationParameters,
         utcOffset: prayerTimes.utcOffset);
 
-    final nightDurationInSeconds =
-        (tomorrowPrayerTimes.fajr.millisecondsSinceEpoch -
-                prayerTimes.maghrib.millisecondsSinceEpoch) ~/
-            1000;
+    final night = tomorrowPrayerTimes.fajr.difference(prayerTimes.maghrib);
+    final rounding = prayerTimes.calculationParameters.rounding;
 
-    _middleOfTheNight = CalendarUtil.roundedMinute(prayerTimes.maghrib
-        .add(Duration(seconds: nightDurationInSeconds ~/ 2.0)));
+    _middleOfTheNight = CalendarUtil.roundedMinute(
+        prayerTimes.maghrib
+            .add(Duration(microseconds: night.inMicroseconds ~/ 2)),
+        rounding);
 
-    _lastThirdOfTheNight = CalendarUtil.roundedMinute(prayerTimes.maghrib.add(
-        Duration(seconds: (nightDurationInSeconds * (2.0 / 3.0)).toInt())));
+    _lastThirdOfTheNight = CalendarUtil.roundedMinute(
+        prayerTimes.maghrib
+            .add(Duration(microseconds: night.inMicroseconds * 2 ~/ 3)),
+        rounding);
   }
 }
