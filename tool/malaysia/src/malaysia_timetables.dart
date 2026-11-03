@@ -196,10 +196,19 @@ Future<bool> fetchTimetables(Directory root, List<int> years,
         if (zone.source != _esolatSource || !zone.inForceDuring(year)) continue;
         final label = '${zone.code} $year';
         final file = File('${dir.path}/${zone.code}_$year.json.gz');
-        final stored = file.existsSync()
-            ? _EsolatResponse.parse(GZipCodec().decode(file.readAsBytesSync()))
-                .rows
-            : null;
+        List<Map<String, dynamic>>? stored;
+        if (file.existsSync()) {
+          final List<int> storedBody;
+          try {
+            storedBody = GZipCodec().decode(file.readAsBytesSync());
+          } on FormatException catch (error) {
+            print('$label: ${file.path} is not gzip (${error.message}); '
+                'kept it and fetched nothing');
+            ok = false;
+            continue;
+          }
+          stored = _EsolatResponse.parse(storedBody).rows;
+        }
         if (!refresh && stored != null) {
           print('$label kept ${stored.length} rows');
           continue;
@@ -568,8 +577,14 @@ void _loadEsolat(
     List<_ZoneYear> zoneYears,
     List<ManifestEntry> sources,
     List<String> errors) {
-  final body = GZipCodec()
-      .decode(File('${_esolatDir(root)}/$fileName').readAsBytesSync());
+  final file = File('${_esolatDir(root)}/$fileName');
+  final List<int> body;
+  try {
+    body = GZipCodec().decode(file.readAsBytesSync());
+  } on FormatException catch (error) {
+    errors.add('$zone $year: ${file.path} is not gzip (${error.message})');
+    return;
+  }
   final response = _EsolatResponse.parse(body);
   final rows = response.rows;
   if (rows == null) {
@@ -623,7 +638,14 @@ void _loadSelangor(Directory root, List<_ZoneYear> zoneYears,
       errors.add('missing ${file.path}');
       continue;
     }
-    final textBytes = GZipCodec().decode(file.readAsBytesSync());
+    final List<int> textBytes;
+    try {
+      textBytes = GZipCodec().decode(file.readAsBytesSync());
+    } on FormatException catch (error) {
+      errors.add('${source.zone} ${source.year}: ${file.path} is not gzip '
+          '(${error.message})');
+      continue;
+    }
     final List<List<int>> days;
     try {
       days = parseSelangorText(utf8.decode(textBytes), source.year);
