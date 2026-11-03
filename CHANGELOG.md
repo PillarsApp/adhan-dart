@@ -1,3 +1,16 @@
+## 2.4.0
+
+- Add `polarCircleResolution` with `aqrabBalad` (default), `aqrabYaum` and `unresolved`, so days inside the polar circles resolve to usable times instead of throwing.
+- Add `hourAngleCorrection` with `iterative` (default) and `singlePass`. `iterative` repeats the hour angle correction until it converges, validates Asr and the order of the times, and moves Isha by a few minutes on some summer days above about 48 degrees latitude. `singlePass` keeps the single-pass correction of 2.3.0.
+- Add `rounding` with `nearest` (default), `up` and `none`, and honour it in sunnah times.
+- Add `HighLatitudeRule.recommended`, which treats both hemispheres alike.
+- Throw `ArgumentError` for a latitude outside -90 to 90.
+- Under `iterative`, pick the solar transit nearest the longitude's mean noon, so consecutive days never jump by a day, as adhan-swift does. Locations such as Suva and Anadyr no longer get the next day's times for weeks at a time. `singlePass` keeps the 2.3.0 transit.
+- Round in UTC, so a daylight saving day in the host time zone no longer moves a result by an hour.
+- Keep sub-second precision in the night fractions behind the safe Fajr and Isha bounds, matching adhan-swift to the minute.
+- A Maghrib angle the sun does not reach, as with the Tehran method in a polar summer, leaves Maghrib at sunset instead of throwing.
+- Add `tool/parity/`, a grid probe, a comparison against the adhan-swift probe output, and a benchmark.
+
 ## 2.3.0
 
 - Rebase the Pillars fork onto upstream master.
