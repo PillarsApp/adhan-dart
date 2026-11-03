@@ -6,6 +6,7 @@ import '../data/time_components.dart';
 import '../extensions/datetime.dart';
 import '../madhab.dart';
 import '../rounding.dart';
+import 'hour_angle_correction_rules.dart';
 import 'solar_time.dart';
 
 class DayTimes {

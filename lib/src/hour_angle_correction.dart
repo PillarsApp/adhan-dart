@@ -9,12 +9,7 @@ enum HourAngleCorrection {
   iterative,
 
   /// Applies the hour angle correction once and keeps every time it produces,
-  /// as version 2.3.0 did. Isha can differ from [iterative] by a few minutes
-  /// above about 48 degrees latitude. With `polarCircleResolution` set to
-  /// `unresolved`, polar days behave as they did in 2.3.0 too.
-  singlePass;
-
-  int get maximumIterations => this == iterative ? 10 : 1;
-
-  bool get validatesTimes => this == iterative;
+  /// the correction versions before 2.4.0 used. Isha can differ from
+  /// [iterative] by a few minutes above about 48 degrees latitude.
+  singlePass,
 }

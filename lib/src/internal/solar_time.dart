@@ -5,6 +5,7 @@ import '../data/time_components.dart';
 import '../hour_angle_correction.dart';
 import 'astronomical.dart';
 import 'calendrical_helper.dart';
+import 'hour_angle_correction_rules.dart';
 import 'math.dart';
 import 'shadow_length.dart';
 import 'solar_coordinates.dart';

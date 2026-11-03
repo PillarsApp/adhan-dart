@@ -4,6 +4,7 @@ import '../coordinates.dart';
 import 'double_util.dart';
 import 'math.dart';
 import '../hour_angle_correction.dart';
+import 'hour_angle_correction_rules.dart';
 
 /// Astronomical equations
 class Astronomical {
