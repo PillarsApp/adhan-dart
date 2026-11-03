@@ -64,7 +64,10 @@ Genting Sempah,PHG05,2026-06-01,3.35,101.78333,1745114,Mountain pass (T.PASS); P
 Janda Baik,PHG05,2026-06-01,3.31667,101.86667,1735141,Kampung Janda Baik; special area.
 Bukit Tinggi,PHG05,2026-06-01,3.34944,101.82631,1735133,"Kampung Bukit Tinggi, Bentong; special area. The other GeoNames Bukit Tinggi features are hills elsewhere in Pahang."
 Cameron Highlands,PHG06,2026-06-01,4.46361,101.3763,1735262,"Tanah Rata, the district town."
-Genting Highlands,PHG06,2026-06-01,3.42453,101.79163,1735132,Special area inside the Bentong shape (PHG04).
+Genting Highlands,PHG06,2026-06-01,3.42368,101.79335,7799988,"Genting Highlands peak (T.PK), at the resort; special area inside Bentong. The GeoNames town point (1735132) lies 134 m inside the ADM1 Selangor line and resolves to SGR01, although OpenStreetMap puts it in Pahang."
+Resorts World Genting,PHG06,2026-06-01,3.42239,101.792,9951110,"Hotel (S.HTL) in Bentong, Pahang, per ADM1 and OpenStreetMap."
+Genting Ria Apartments,SGR01,2026-12-31,3.42007,101.78987,10107704,"Hulu Selangor side of Genting Highlands, per ADM1 and OpenStreetMap; the special area applies only inside Bentong."
+Genting Ria Apartments,SGRHSL,2027-01-01,3.42007,101.78987,10107704,"Hulu Selangor side of Genting Highlands, per ADM1 and OpenStreetMap; the special area applies only inside Bentong."
 Bukit Fraser,PHG06,2026-06-01,3.7126,101.7412,1732671,Special area inside the Raub shape (PHG04).
 Mukim Rompin,PHG07,2026-06-01,2.81667,103.48333,1734914,"Kuala Rompin, the mukim town, inside the Rompin shape east of the lon 103.2 split."
 Mukim Endau,PHG07,2026-06-01,2.67177,103.62056,1763424,"Kampung Tanjong Gemuk, on the Pahang side of the Endau estuary; GeoNames Endau town (1734897) is in Johor."
@@ -290,3 +293,22 @@ Pulau Rawa,JHR02,2026-06-01,2.52082,103.97557,1734889,Mersing island with Calet 
 Pulau Aman,PNG01,2026-06-01,5.26039,100.38661,1735083,Penang island with Kampung Pulau Aman (GeoNames 1765305).
 Pulau Rebak Besar,KDH06,2026-06-01,6.29742,99.69728,1222400,Langkawi island with the Rebak Island resort.
 Pulau Tenggul,TRG04,2026-06-01,4.8048,103.682,1734293,Dungun island (Pulau Tenggol) with dive resorts.
+Kampung Jabur,TRG04,2026-06-01,3.93333,103.3,1735217,"Kemaman, Terengganu, per OpenStreetMap and GeoNames; ADM1 puts it in Pahang (state_exceptions.csv)."
+Kampong Chendar,TRG04,2026-06-01,4.18333,103.41667,1769835,"Kemaman, Terengganu, per OpenStreetMap; ADM1 and GeoNames put it in Pahang (state_exceptions.csv)."
+Kampong Lubok Gokgek,PLS01,2026-06-01,6.3,100.21667,1767316,Perlis per OpenStreetMap and GeoNames; ADM1 puts it in Kedah (state_exceptions.csv).
+Kampung Padang Tok Kuning,PLS01,2026-06-01,6.41667,100.31667,1736089,Perlis per OpenStreetMap and GeoNames; ADM1 puts it in Kedah (state_exceptions.csv).
+Kota Simpang,MLK01,2026-06-01,2.4373,102.0305,7567398,Melaka per OpenStreetMap and GeoNames; ADM1 puts it in Negeri Sembilan (state_exceptions.csv).
+Kampung Tiga Ratus Kaki,KDH05,2026-06-01,5.2322,100.54069,6843755,Kedah per OpenStreetMap and GeoNames; ADM1 puts it in Penang (state_exceptions.csv).
+Kampung Lembah Baharu,KDH05,2026-06-01,5.22395,100.6832,1767509,"Kedah per ADM1, GeoNames and OpenStreetMap; the geoBoundaries ADM2 Kerian shape reaches it."
+Kampung Chohong,MLK01,2026-06-01,2.2971,102.5036,1769750,"Melaka per ADM1, GeoNames and OpenStreetMap; the geoBoundaries ADM2 Muar shape reaches it."
+Kampong Pengkalan Leban,MLK01,2026-06-01,2.11667,102.48333,1765715,"Melaka per ADM1, GeoNames and OpenStreetMap."
+Kampung Anak Ayer Lampam,NGS01,2026-06-01,2.65,102.63333,1771609,Negeri Sembilan per ADM1 and OpenStreetMap; GeoNames lists it in Johor.
+Sepang New Village,SGR01,2026-12-31,2.68333,101.75,1744664,"Sepang, Selangor, per ADM1, GeoNames and OpenStreetMap; the geoBoundaries ADM2 Seremban shape reaches it."
+Sepang New Village,SGRSPG,2027-01-01,2.68333,101.75,1744664,"Sepang, Selangor, per ADM1, GeoNames and OpenStreetMap; the geoBoundaries ADM2 Seremban shape reaches it."
+Taman Murni,SGR01,2026-12-31,2.6831,101.75,7697998,"Sepang, Selangor, per ADM1, GeoNames and OpenStreetMap; the geoBoundaries ADM2 Seremban shape reaches it."
+Taman Murni,SGRSPG,2027-01-01,2.6831,101.75,7697998,"Sepang, Selangor, per ADM1, GeoNames and OpenStreetMap; the geoBoundaries ADM2 Seremban shape reaches it."
+Kampong Sungai Dua,PHG04,2026-06-01,3.15,102.25,1764057,Pahang per ADM1 and OpenStreetMap; GeoNames lists it in Negeri Sembilan.
+Taman Melewar,WLY01,2026-06-01,3.22179,101.70018,12648583,Kuala Lumpur per ADM1 and OpenStreetMap; GeoNames lists it in Selangor.
+Kampung Lubok Nibong,SGR01,2026-12-31,3.70289,101.55575,1767273,"Hulu Selangor, Selangor, per ADM1 and OpenStreetMap; the geoBoundaries ADM2 Muallim shape reaches it."
+Kampung Lubok Nibong,SGRHSL,2027-01-01,3.70289,101.55575,1767273,"Hulu Selangor, Selangor, per ADM1 and OpenStreetMap; the geoBoundaries ADM2 Muallim shape reaches it."
+Pulau Seri Buat,PHG07,2026-06-01,2.6852,103.9131,1734887,"Island (T.ISL) of Rompin, Pahang, per OpenStreetMap; ADM1 puts it in Johor (state_exceptions.csv)."

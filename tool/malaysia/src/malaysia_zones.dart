@@ -8,6 +8,7 @@ import 'package:adhan/src/data/malaysia_zones_data.dart';
 
 import 'csv.dart';
 import 'malaysia_manifest.dart';
+import 'malaysia_states.dart';
 
 const geoBoundariesRelease = '9469f09';
 const geoBoundariesRetrieved = '2026-11-03';
@@ -34,6 +35,18 @@ DataBuild buildZones(Directory root) {
   final specialAreas = readCsv(File('$tool/special_areas.csv'));
   final islands = readCsv(File('$tool/islands.csv'));
   final fixtures = readCsv(File('$tool/town_fixtures.csv'));
+  List<StateBox> readBoxes(String file) => [
+        for (final row in readCsv(File('$tool/$file')))
+          StateBox(
+              row['state_a']!,
+              row['state_b']!,
+              double.parse(row['min_lat']!),
+              double.parse(row['max_lat']!),
+              double.parse(row['min_lon']!),
+              double.parse(row['max_lon']!))
+      ];
+  final stateBorders = readBoxes('state_borders.csv');
+  final stateExceptions = readBoxes('state_exceptions.csv');
   final zoneCodes = {for (final zone in zones) zone['code']!};
 
   for (final zone in zones) {
@@ -139,7 +152,35 @@ DataBuild buildZones(Directory root) {
   final points = _Points();
   final regions = _mergeRegions(districts, rowsByShape, shapes,
       parentShapeIds.whereType<String>().toSet(), points);
-  final arcs = _buildArcs(regions, points);
+  final zoneStates = {for (final zone in zones) zone['code']!: zone['state']!};
+  final regionStates = [
+    for (var r = 0; r < regions.length; r++)
+      _singleState({
+        for (final row in regions[r].rows) zoneStates[row.split(':').first]!,
+        for (var i = 0; i < specialAreas.length; i++)
+          if (regions[r].shapeIds.contains(parentShapeIds[i]))
+            zoneStates[specialAreas[i]['zone']]!,
+      })
+  ];
+  final states = [
+    for (final shape in adm1.values)
+      StatePolygon(_adm1StateNames[shape.name] ?? shape.name, shape.rings)
+  ];
+  final rawArcs = _buildArcs(regions, points);
+  final arcs = followStateBorders(
+    arcs: rawArcs.vertices,
+    arcUsers: rawArcs.users,
+    regionStates: regionStates,
+    states: states,
+    followBoxes: stateBorders,
+    errors: errors,
+  ).map(_simplify).toList();
+  final crossingsBefore =
+      _arcCrossings([for (final arc in rawArcs.vertices) _simplify(arc)])
+          .toSet();
+  errors.addAll(_arcCrossings(arcs)
+      .where((crossing) => !crossingsBefore.contains(crossing))
+      .map((crossing) => 'following ADM1 state borders made $crossing'));
   final output = StringBuffer();
   for (final zone in zones) {
     output.writeln([
@@ -198,17 +239,50 @@ DataBuild buildZones(Directory root) {
     }
   }
   errors.addAll(_gridOverlaps(map, regions).map((line) => 'overlap $line'));
+  String stateOfShape(String id) =>
+      zoneStates[rowsByShape[id]!.first.split(':').first]!;
   for (var i = 0; i < map.specialAreas.length; i++) {
+    final parentState = stateOfShape(parentShapeIds[i]!);
     errors.addAll(_specialAreaReach(
-        map, map.specialAreas[i], parentShapeIds[i]!, shapes.values));
+        map,
+        map.specialAreas[i],
+        parentShapeIds[i]!,
+        shapes.values.where((shape) => stateOfShape(shape.id) == parentState)));
   }
+
+  final mismatches = findStateMismatches(
+    map: map,
+    arcs: arcs,
+    regionArcs: [for (final region in regions) region.arcIndices],
+    regionStates: regionStates,
+    states: states,
+    dates: [DateComponents(2026, 12, 31), DateComponents(2027, 1, 1)],
+  );
+  final unexplained = [
+    for (final area in mismatches)
+      if (!stateExceptions.any((exception) => exception.explains(area))) area
+  ];
+  errors.addAll(unexplained.map((area) => 'state mismatch ${area.describe()}'));
 
   final summary = '${zones.length} zones, ${shapes.length} districts in '
       '${regions.length} regions, ${specialAreas.length} special areas, '
       '${islands.length} island areas, ${arcs.length} arcs, '
-      '$resolved fixtures resolved';
+      '$resolved fixtures resolved, '
+      '${mismatches.length - unexplained.length} state mismatch areas '
+      'explained by state_exceptions.csv';
   return DataBuild(output.toString(), errors, sources, summary);
 }
+
+const _adm1StateNames = {
+  'Malacca': 'Melaka',
+  'Penang': 'Pulau Pinang',
+  'Kuala Lumpur': 'Wilayah Persekutuan',
+  'Putrajaya': 'Wilayah Persekutuan',
+  'Labuan': 'Wilayah Persekutuan',
+};
+
+String? _singleState(Set<String> states) =>
+    states.length == 1 ? states.single : null;
 
 String _normalizeRule(String rule) {
   final compact = rule.replaceAll(' ', '');
@@ -459,7 +533,12 @@ List<_Region> _mergeRegions(
   return regions;
 }
 
-List<List<int>> _buildArcs(List<_Region> regions, _Points points) {
+class _Arcs {
+  final List<List<int>> vertices = [];
+  final List<List<int>> users = [];
+}
+
+_Arcs _buildArcs(List<_Region> regions, _Points points) {
   final regionsBySegment = <int, String>{};
   final usersBySegment = <int, List<int>>{};
   for (var r = 0; r < regions.length; r++) {
@@ -488,7 +567,7 @@ List<List<int>> _buildArcs(List<_Region> regions, _Points points) {
     return incident[0] == segment ? incident[1] : incident[0];
   }
 
-  final arcs = <List<int>>[];
+  final arcs = _Arcs();
   final visited = <int>{};
   final orderedSegments = usersBySegment.keys.toList()..sort();
   for (final start in orderedSegments) {
@@ -524,9 +603,10 @@ List<List<int>> _buildArcs(List<_Region> regions, _Points points) {
         ..add(points.lons[n]);
     }
     for (final r in usersBySegment[start]!) {
-      regions[r].arcIndices.add(arcs.length);
+      regions[r].arcIndices.add(arcs.vertices.length);
     }
-    arcs.add(_simplify(vertices));
+    arcs.vertices.add(vertices);
+    arcs.users.add(usersBySegment[start]!);
   }
   return arcs;
 }
@@ -610,6 +690,37 @@ double _segmentDistanceMetres(List<int> points, int a, int b, int p) {
   final qx = ax + t * dx;
   final qy = ay + t * dy;
   return math.sqrt((px - qx) * (px - qx) + (py - qy) * (py - qy));
+}
+
+List<String> _arcCrossings(List<List<int>> arcs) {
+  final boxes = [
+    for (final arc in arcs) _Shape('', '', [arc]).bounds,
+  ];
+  final found = <String>[];
+  for (var a = 0; a < arcs.length; a++) {
+    for (var b = a; b < arcs.length; b++) {
+      final p = boxes[a];
+      final q = boxes[b];
+      if (p[1] < q[0] || q[1] < p[0] || p[3] < q[2] || q[3] < p[2]) continue;
+      final x = arcs[a];
+      final y = arcs[b];
+      for (var i = 2; i < x.length; i += 2) {
+        for (var j = a == b ? i + 4 : 2; j < y.length; j += 2) {
+          final shared = (x[i - 2] == y[j - 2] && x[i - 1] == y[j - 1]) ||
+              (x[i - 2] == y[j] && x[i - 1] == y[j + 1]) ||
+              (x[i] == y[j - 2] && x[i + 1] == y[j - 1]) ||
+              (x[i] == y[j] && x[i + 1] == y[j + 1]);
+          if (shared) continue;
+          if (_segmentsIntersect(x[i - 2], x[i - 1], x[i], x[i + 1], y[j - 2],
+              y[j - 1], y[j], y[j + 1])) {
+            found.add('two arcs cross near '
+                '${x[i] / 100000},${x[i + 1] / 100000}');
+          }
+        }
+      }
+    }
+  }
+  return found;
 }
 
 List<String> _gridOverlaps(MalaysiaZoneMap map, List<_Region> regions) {
