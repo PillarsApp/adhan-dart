@@ -1,15 +1,16 @@
 ## 2.4.0
 
 - Add `polarCircleResolution` with `aqrabBalad` (default), `aqrabYaum` and `unresolved`, so days inside the polar circles resolve to usable times instead of throwing.
-- Add `hourAngleCorrection` with `iterative` (default) and `singlePass`. `iterative` repeats the hour angle correction until it converges, validates Asr and the order of the times, and moves Isha by a few minutes on some summer days above about 48 degrees latitude. `singlePass` keeps the single-pass correction of 2.3.0.
+- Add `hourAngleCorrection` with `iterative` (default) and `singlePass`. `iterative` repeats the hour angle correction until it converges and validates Asr and the order of the times. The times move most where the sun's altitude changes slowly. Measured for 2026 with the default `middle_of_the_night`, Isha moves 4 minutes at London under `muslim_world_league` on 16 July and 41 minutes at Reykjavik under `north_america` on 25 August, and Fajr under `moon_sighting_committee` moves 116 minutes at Tromso on 17 May. `singlePass` keeps the single-pass correction of 2.3.0. Set `polarCircleResolution` to `unresolved` as well to keep the 2.3.0 times, because `singlePass` with `aqrabBalad` can return the times of a polar day out of order.
 - Add `rounding` with `nearest` (default), `up` and `none`, and honour it in sunnah times.
 - Add `HighLatitudeRule.recommended`, which treats both hemispheres alike.
-- Throw `ArgumentError` for a latitude outside -90 to 90.
-- Under `iterative`, pick the solar transit nearest the longitude's mean noon, so consecutive days never jump by a day, as adhan-swift does. Locations such as Suva and Anadyr no longer get the next day's times for weeks at a time. `singlePass` keeps the 2.3.0 transit.
+- Throw `ArgumentError` for a latitude outside -90 to 90. The error thrown when no times can be computed names the latitude and longitude.
+- Under `iterative`, pick the solar transit nearest the longitude's mean noon, so consecutive days never jump by a day, as adhan-swift does. Suva gets the requested day's times from 20 September to 12 December 2026, where 2.3.0 returned the next local day's. At the Chatham Islands the times for 4 to 19 February 2026 move one day later, to the next local day, as on every other day of the year there. `singlePass` keeps the 2.3.0 transit.
 - Round in UTC, so a daylight saving day in the host time zone no longer moves a result by an hour.
-- Keep sub-second precision in the night fractions behind the safe Fajr and Isha bounds, matching adhan-swift to the minute.
+- Keep sub-second precision in the night fractions behind the safe Fajr and Isha bounds, matching adhan-swift to the minute. With `singlePass` and `unresolved`, 39 Fajr times of the 12 city, 365 day, 6 method grid in `tool/parity/` move one minute earlier than in 2.3.0.
 - A Maghrib angle the sun does not reach, as with the Tehran method in a polar summer, leaves Maghrib at sunset instead of throwing.
-- Add `tool/parity/`, a grid probe, a comparison against the adhan-swift probe output, and a benchmark.
+- With neither `ishaAngle` nor `ishaInterval` set, Isha falls at the safe bound that would otherwise cap it, the middle of the night by default, instead of throwing.
+- Add `tool/parity/`: a grid probe, a comparison against the adhan-swift probe output that fails on any differing, duplicate or malformed row, and a benchmark with a variant that also compiles at 2.3.0.
 
 ## 2.3.0
 

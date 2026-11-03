@@ -3,7 +3,7 @@
 Output of the adhan-swift probe at `Tests/Probe` for the same 12 city, 365 day,
 6 method grid as `tool/parity/probe.dart`, taken from
 [PillarsApp/adhan-swift](https://github.com/PillarsApp/adhan-swift) commit
-`46a5f21cad82fab54b4a0e86362a4d1e302625ed` with these commands, run from
+`f22e5cd0834f861f19c12538967f70ffcc21f885` with these commands, run from
 `Tests/Probe` after `swift build -c release`:
 
 - `swift-iterative.csv.gz`: `.build/release/Probe --correction iterative`
