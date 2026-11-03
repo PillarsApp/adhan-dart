@@ -1,8 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:adhan/src/data/date_components.dart';
 import 'package:adhan/src/data/malaysia_times_codec.dart';
 import 'package:adhan/src/data/malaysia_times_data.dart';
+import 'package:adhan/src/data/malaysia_zone_map.dart';
+import 'package:adhan/src/data/malaysia_zones_data.dart';
 import 'package:test/test.dart';
 
 import '../bin/src/csv.dart';
@@ -120,6 +123,18 @@ void main() {
     }
     expect(differing, corrections);
     expect(corrections, hasLength(8));
+  });
+
+  test('every zone-year names a catalog zone in force for the whole year', () {
+    final map = MalaysiaZoneMap.parse(malaysiaZonesData);
+    for (final zoneYear in zoneYears) {
+      final zone = map.zone(zoneYear.zone);
+      expect(zone, isNotNull, reason: zoneYear.zone);
+      expect(zone!.inForceOn(DateComponents(zoneYear.year, 1, 1)), isTrue,
+          reason: '${zoneYear.zone} ${zoneYear.year}');
+      expect(zone.inForceOn(DateComponents(zoneYear.year, 12, 31)), isTrue,
+          reason: '${zoneYear.zone} ${zoneYear.year}');
+    }
   });
 
   test('the Dart constant equals the data file byte for byte', () {
