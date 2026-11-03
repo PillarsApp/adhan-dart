@@ -21,6 +21,8 @@ const cities = [
   City('Auckland', -36.8485, 174.7633),
   City('Apia', -13.8333, -171.7500),
   City('BuenosAires', -34.6037, -58.3816),
+  City('Suva', -18.1416, 178.4419),
+  City('ChathamIslands', -43.95, -176.55),
 ];
 
 const methodKeys = [
