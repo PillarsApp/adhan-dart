@@ -113,7 +113,8 @@ class PrayerTimes {
     _dateComponents = DateComponents.from(date);
 
     // Special handling for London lookup times
-    if (calculationParameters.method == CalculationMethod.unified_london_times) {
+    if (calculationParameters.method ==
+        CalculationMethod.unified_london_times) {
       _initializeFromLondonLookup(date);
       return;
     }
@@ -237,40 +238,35 @@ class PrayerTimes {
       }
     }
 
-    // Assign final times to public struct members with all offsets
-    _fajr = CalendarUtil.roundedMinute(tempFajr
+    _fajr = _present(tempFajr
         .add(Duration(minutes: calculationParameters.adjustments.fajr))
-        .add(Duration(minutes: calculationParameters.methodAdjustments.fajr))
-        .toLocal());
-    _sunrise = CalendarUtil.roundedMinute(tempSunrise
+        .add(Duration(minutes: calculationParameters.methodAdjustments.fajr)));
+    _sunrise = _present(tempSunrise
         .add(Duration(minutes: calculationParameters.adjustments.sunrise))
-        .add(Duration(minutes: calculationParameters.methodAdjustments.sunrise))
-        .toLocal());
-    _dhuhr = CalendarUtil.roundedMinute(tempDhuhr
+        .add(Duration(
+            minutes: calculationParameters.methodAdjustments.sunrise)));
+    _dhuhr = _present(tempDhuhr
         .add(Duration(minutes: calculationParameters.adjustments.dhuhr))
-        .add(Duration(minutes: calculationParameters.methodAdjustments.dhuhr))
-        .toLocal());
-    _asr = CalendarUtil.roundedMinute(tempAsr
+        .add(Duration(minutes: calculationParameters.methodAdjustments.dhuhr)));
+    _asr = _present(tempAsr
         .add(Duration(minutes: calculationParameters.adjustments.asr))
-        .add(Duration(minutes: calculationParameters.methodAdjustments.asr))
-        .toLocal());
-    _maghrib = CalendarUtil.roundedMinute(tempMaghrib
+        .add(Duration(minutes: calculationParameters.methodAdjustments.asr)));
+    _maghrib = _present(tempMaghrib
         .add(Duration(minutes: calculationParameters.adjustments.maghrib))
-        .add(Duration(minutes: calculationParameters.methodAdjustments.maghrib))
-        .toLocal());
-    _isha = CalendarUtil.roundedMinute(tempIsha
+        .add(Duration(
+            minutes: calculationParameters.methodAdjustments.maghrib)));
+    _isha = _present(tempIsha
         .add(Duration(minutes: calculationParameters.adjustments.isha))
-        .add(Duration(minutes: calculationParameters.methodAdjustments.isha))
-        .toLocal());
+        .add(Duration(minutes: calculationParameters.methodAdjustments.isha)));
+  }
 
-    if (utcOffset != null) {
-      _fajr = fajr.toUtc().add(utcOffset!);
-      _sunrise = sunrise.toUtc().add(utcOffset!);
-      _dhuhr = dhuhr.toUtc().add(utcOffset!);
-      _asr = asr.toUtc().add(utcOffset!);
-      _maghrib = maghrib.toUtc().add(utcOffset!);
-      _isha = isha.toUtc().add(utcOffset!);
-    }
+  /// Rounds a UTC instant per the configured rounding, then expresses it as
+  /// local time, or as UTC shifted by [utcOffset] when one was given.
+  DateTime _present(DateTime utc) {
+    final rounded =
+        CalendarUtil.roundedMinute(utc, calculationParameters.rounding);
+    final offset = utcOffset;
+    return offset == null ? rounded.toLocal() : rounded.add(offset);
   }
 
   Prayer currentPrayer() {
@@ -416,54 +412,46 @@ class PrayerTimes {
   void _initializeFromLondonLookup(DateTime date) {
     final dateComponents = DateComponents.from(date);
     final londonTimes = LondonTimesLookup.getTimesForDate(dateComponents);
-    
+
     if (londonTimes == null) {
-      throw ArgumentError('No London prayer times available for date ${dateComponents.year}-${dateComponents.month.toString().padLeft(2, '0')}-${dateComponents.day.toString().padLeft(2, '0')}');
+      throw ArgumentError(
+          'No London prayer times available for date ${dateComponents.year}-${dateComponents.month.toString().padLeft(2, '0')}-${dateComponents.day.toString().padLeft(2, '0')}');
     }
 
-    // Parse times from JSON and create DateTime objects  
+    // Parse times from JSON and create DateTime objects
     // These represent London local times, which need to be converted to UTC for processing
-    final tempFajr = londonTimes.parseTime(londonTimes.fajr, dateComponents).toUtc();
-    final tempSunrise = londonTimes.parseTime(londonTimes.sunrise, dateComponents).toUtc();
-    final tempDhuhr = londonTimes.parseTime(londonTimes.dhuhr, dateComponents).toUtc();
-    final tempAsr = londonTimes.parseTime(londonTimes.asr, dateComponents).toUtc();
-    final tempMaghrib = londonTimes.parseTime(londonTimes.maghrib, dateComponents).toUtc();
-    final tempIsha = londonTimes.parseTime(londonTimes.isha, dateComponents).toUtc();
+    final tempFajr =
+        londonTimes.parseTime(londonTimes.fajr, dateComponents).toUtc();
+    final tempSunrise =
+        londonTimes.parseTime(londonTimes.sunrise, dateComponents).toUtc();
+    final tempDhuhr =
+        londonTimes.parseTime(londonTimes.dhuhr, dateComponents).toUtc();
+    final tempAsr =
+        londonTimes.parseTime(londonTimes.asr, dateComponents).toUtc();
+    final tempMaghrib =
+        londonTimes.parseTime(londonTimes.maghrib, dateComponents).toUtc();
+    final tempIsha =
+        londonTimes.parseTime(londonTimes.isha, dateComponents).toUtc();
 
-    // Apply any adjustments and convert to local time
-    _fajr = CalendarUtil.roundedMinute(tempFajr
+    _fajr = _present(tempFajr
         .add(Duration(minutes: calculationParameters.adjustments.fajr))
-        .add(Duration(minutes: calculationParameters.methodAdjustments.fajr))
-        .toLocal());
-    _sunrise = CalendarUtil.roundedMinute(tempSunrise
+        .add(Duration(minutes: calculationParameters.methodAdjustments.fajr)));
+    _sunrise = _present(tempSunrise
         .add(Duration(minutes: calculationParameters.adjustments.sunrise))
-        .add(Duration(minutes: calculationParameters.methodAdjustments.sunrise))
-        .toLocal());
-    _dhuhr = CalendarUtil.roundedMinute(tempDhuhr
+        .add(Duration(
+            minutes: calculationParameters.methodAdjustments.sunrise)));
+    _dhuhr = _present(tempDhuhr
         .add(Duration(minutes: calculationParameters.adjustments.dhuhr))
-        .add(Duration(minutes: calculationParameters.methodAdjustments.dhuhr))
-        .toLocal());
-    _asr = CalendarUtil.roundedMinute(tempAsr
+        .add(Duration(minutes: calculationParameters.methodAdjustments.dhuhr)));
+    _asr = _present(tempAsr
         .add(Duration(minutes: calculationParameters.adjustments.asr))
-        .add(Duration(minutes: calculationParameters.methodAdjustments.asr))
-        .toLocal());
-    _maghrib = CalendarUtil.roundedMinute(tempMaghrib
+        .add(Duration(minutes: calculationParameters.methodAdjustments.asr)));
+    _maghrib = _present(tempMaghrib
         .add(Duration(minutes: calculationParameters.adjustments.maghrib))
-        .add(Duration(minutes: calculationParameters.methodAdjustments.maghrib))
-        .toLocal());
-    _isha = CalendarUtil.roundedMinute(tempIsha
+        .add(Duration(
+            minutes: calculationParameters.methodAdjustments.maghrib)));
+    _isha = _present(tempIsha
         .add(Duration(minutes: calculationParameters.adjustments.isha))
-        .add(Duration(minutes: calculationParameters.methodAdjustments.isha))
-        .toLocal());
-
-    // Apply UTC offset if specified
-    if (utcOffset != null) {
-      _fajr = fajr.toUtc().add(utcOffset!);
-      _sunrise = sunrise.toUtc().add(utcOffset!);
-      _dhuhr = dhuhr.toUtc().add(utcOffset!);
-      _asr = asr.toUtc().add(utcOffset!);
-      _maghrib = maghrib.toUtc().add(utcOffset!);
-      _isha = isha.toUtc().add(utcOffset!);
-    }
+        .add(Duration(minutes: calculationParameters.methodAdjustments.isha)));
   }
 }

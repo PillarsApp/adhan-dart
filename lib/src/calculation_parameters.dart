@@ -2,6 +2,7 @@ import 'calculation_method.dart';
 import 'high_latitude_rule.dart';
 import 'madhab.dart';
 import 'prayer_adjustments.dart';
+import 'rounding.dart';
 
 /// Parameters used for PrayerTime calculation customization
 ///
@@ -36,6 +37,9 @@ class CalculationParameters {
   /// Used for method adjustments
   PrayerAdjustments methodAdjustments;
 
+  /// How each computed time is rounded to the minute
+  Rounding rounding;
+
   CalculationParameters(
       {this.method = CalculationMethod.other,
       required this.fajrAngle,
@@ -45,7 +49,8 @@ class CalculationParameters {
       this.madhab = Madhab.shafi,
       this.highLatitudeRule = HighLatitudeRule.middle_of_the_night,
       PrayerAdjustments? adjustments,
-      PrayerAdjustments? methodAdjustments})
+      PrayerAdjustments? methodAdjustments,
+      this.rounding = Rounding.nearest})
       : adjustments = adjustments ?? PrayerAdjustments(),
         methodAdjustments = methodAdjustments ?? PrayerAdjustments();
 
