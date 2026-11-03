@@ -7,6 +7,10 @@ const stateCheckGridStepDegrees = 0.002;
 const stateCheckToleranceMetres = 150.0;
 const stateBorderSearchMetres = 5000.0;
 const stateBorderMinimumShare = 0.8;
+const gridMinLatitude = 0.8;
+const gridMaxLatitude = 7.5;
+const gridMinLongitude = 99.5;
+const gridMaxLongitude = 119.5;
 
 class StatePolygon {
   final String state;
@@ -475,10 +479,10 @@ List<MismatchArea> findStateMismatches({
   }
 
   final step = MalaysiaZoneMap.quantize(stateCheckGridStepDegrees);
-  final minLat = MalaysiaZoneMap.quantize(0.8);
-  final maxLat = MalaysiaZoneMap.quantize(7.5);
-  final minLon = MalaysiaZoneMap.quantize(99.5);
-  final maxLon = MalaysiaZoneMap.quantize(119.5);
+  final minLat = MalaysiaZoneMap.quantize(gridMinLatitude);
+  final maxLat = MalaysiaZoneMap.quantize(gridMaxLatitude);
+  final minLon = MalaysiaZoneMap.quantize(gridMinLongitude);
+  final maxLon = MalaysiaZoneMap.quantize(gridMaxLongitude);
   final columns = (maxLon - minLon) ~/ step + 1;
 
   final mismatchState = <int, String>{};

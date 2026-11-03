@@ -263,7 +263,13 @@ DataBuild buildZones(Directory root) {
     regionArcs: [for (final region in regions) region.arcIndices],
     regionStates: regionStates,
     states: states,
-    dates: [DateComponents(2026, 12, 31), DateComponents(2027, 1, 1)],
+    dates: [
+      for (final iso in {
+        for (final zone in zones) ...[zone['valid_from']!, zone['valid_to']!]
+      }.where((iso) => iso.isNotEmpty))
+        DateComponents(int.parse(iso.substring(0, 4)),
+            int.parse(iso.substring(5, 7)), int.parse(iso.substring(8, 10)))
+    ],
   );
   final unexplained = [
     for (final area in mismatches)
@@ -732,8 +738,12 @@ List<String> _arcCrossings(List<List<int>> arcs) {
 
 List<String> _gridOverlaps(MalaysiaZoneMap map, List<_Region> regions) {
   final found = <String, int>{};
-  for (var lat = 0.8; lat <= 7.5; lat += overlapGridStepDegrees) {
-    for (var lon = 99.5; lon <= 119.5; lon += overlapGridStepDegrees) {
+  for (var lat = gridMinLatitude;
+      lat <= gridMaxLatitude;
+      lat += overlapGridStepDegrees) {
+    for (var lon = gridMinLongitude;
+        lon <= gridMaxLongitude;
+        lon += overlapGridStepDegrees) {
       final containing = map.regionsAt(lat, lon);
       if (containing.length > 1) {
         final key = containing.map((i) => regions[i].label).join(' & ');
