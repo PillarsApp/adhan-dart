@@ -5,6 +5,7 @@
 - Add `PrayerTimes.source`, `malaysiaZone` and `malaysiaDay`. `source` is `official` for a published row (Malaysia and London), `calculated` for every other method, and `calculatedNoZone` or `calculatedNoRow` when the Malaysian method had to calculate.
 - Add `MalaysiaZones` (`resolve`, `on`, `zone`), `MalaysiaZone` with validity dates and successors, and `MalaysiaTimetable.day` with Imsak and Dhuha.
 - Add `tool/parity/bench_malaysia.dart`.
+- Breaking for Dart 3 consumers: the new `CalculationMethod.malaysia_official` value makes an exhaustive `switch` over `CalculationMethod` a compile error until it handles the value. Existing indices do not move.
 
 ## 2.4.0
 

@@ -60,11 +60,14 @@ enum CalculationMethod {
   /// [CalculationParameters] object. Sets a Fajr angle of 0 and an Isha angle of 0.
   other,
 
-  /// The official Malaysian timetable
+  /// The official Malaysian timetable.
   /// Reads the published times for the zone in force at the coordinates, or
-  /// for [CalculationParameters.malaysiaZone] when set. Where no row covers the
-  /// zone and date it uses a Fajr angle of 18 and an Isha angle of 18 with the
-  /// method adjustments that approximate the table.
+  /// for [CalculationParameters.malaysiaZone] when set. A manual zone wins over
+  /// the coordinates, which are then not validated. Where no zone covers the
+  /// coordinates or no row covers the zone and date, it calculates with the
+  /// angles and method adjustments in the parameters, which are a Fajr angle of
+  /// 18, an Isha angle of 18 and adjustments that approximate the table unless
+  /// changed.
   malaysia_official
 }
 

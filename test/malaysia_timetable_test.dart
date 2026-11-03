@@ -229,22 +229,51 @@ void main() {
     expect(firstDay.malaysiaZone!.code, 'SGRPTG');
   });
 
-  test('Hanafi shifts the published Asar by the calculated difference', () {
-    final shafi = PrayerTimes.utc(_kualaLumpur, _nov2, _official());
-    final hanafi = PrayerTimes.utc(
-        _kualaLumpur, _nov2, _official()..madhab = Madhab.hanafi);
-    final solar = SolarTime(
-        DateTime.utc(2026, 11, 2), MalaysiaZones.zone('WLY01')!.referencePoint);
-    final shift = ((solar.afternoon(ShadowLength.double) -
-                solar.afternoon(ShadowLength.single)) *
-            60)
-        .round();
+  test('Hanafi shifts the published Asar by the shift at the zone reference',
+      () {
+    final zone = MalaysiaZones.zone('WLY02')!;
+    final shafi =
+        PrayerTimes.utc(_kualaLumpur, _nov2, _official(zone: zone.code));
+    final hanafi = PrayerTimes.utc(_kualaLumpur, _nov2,
+        _official(zone: zone.code)..madhab = Madhab.hanafi);
+    int shiftAt(Coordinates point) {
+      final solar = SolarTime(DateTime.utc(2026, 11, 2), point);
+      return ((solar.afternoon(ShadowLength.double) -
+                  solar.afternoon(ShadowLength.single)) *
+              60)
+          .round();
+    }
+
+    final shift = shiftAt(zone.referencePoint);
+    expect(shift, isNot(shiftAt(_kualaLumpur)));
     expect(shift, greaterThan(0));
     expect(shift, lessThan(90));
     expect(hanafi.asr, shafi.malaysiaDay!.asar.add(Duration(minutes: shift)));
     expect(hanafi.malaysiaDay!.asar, shafi.malaysiaDay!.asar);
     expect([hanafi.fajr, hanafi.dhuhr, hanafi.maghrib, hanafi.isha],
         [shafi.fajr, shafi.dhuhr, shafi.maghrib, shafi.isha]);
+  });
+
+  group('coordinates', () {
+    test('a non-finite coordinate throws ArgumentError with no manual zone',
+        () {
+      for (final point in [
+        Coordinates(double.nan, 101.6869),
+        Coordinates(3.1390, double.nan),
+        Coordinates(double.infinity, 101.6869),
+        Coordinates(3.1390, double.negativeInfinity),
+      ]) {
+        expect(() => PrayerTimes.utc(point, _nov2, _official()),
+            throwsArgumentError);
+      }
+    });
+
+    test('a manual zone wins and the coordinates are not validated', () {
+      final times = PrayerTimes.utc(
+          Coordinates(double.nan, double.nan), _nov2, _official(zone: 'WLY01'));
+      expect(times.source, PrayerTimesSource.official);
+      expect(times.malaysiaZone!.code, 'WLY01');
+    });
   });
 
   group('adjustments on an official row', () {

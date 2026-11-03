@@ -19,7 +19,8 @@ enum _Column { imsak, subuh, syuruk, dhuha, zohor, asar, maghrib, isyak }
 DateTime _instant(DateTime midnight, int minuteOfDay) =>
     midnight.add(Duration(minutes: minuteOfDay)).subtract(_malaysiaOffset);
 
-/// One day of the official Malaysian timetable, as published for a zone.
+/// One day of the official Malaysian timetable for a zone, as published and
+/// after the reviewed corrections to it.
 class MalaysiaDay {
   final MalaysiaZone zone;
 
@@ -40,7 +41,7 @@ class MalaysiaDay {
   /// Zohor, the noon prayer.
   final DateTime zohor;
 
-  /// Asar, the afternoon prayer as published, by the Shafi rule.
+  /// Asar, the afternoon prayer as published and corrected, by the Shafi rule.
   final DateTime asar;
 
   /// Maghrib, the sunset prayer.
@@ -82,6 +83,8 @@ class MalaysiaTimetable {
 
   /// The revision of the embedded data: the first eight hexadecimal digits of
   /// the SHA-256 of the times file, a hyphen, and the same for the zones file.
+  /// Update it with every data release; the revision test fails when it is
+  /// stale.
   static const String revision = 'badfebbb-d6bb4355';
 
   static final Map<String, _ZoneYearLine> _lines = _index();
@@ -138,12 +141,22 @@ class MalaysiaOfficialTimes {
 
   MalaysiaOfficialTimes._(this.times, this.source, this.zone, this.day);
 
+  static void _requireFinite(double value, String name) {
+    if (!value.isFinite) {
+      throw ArgumentError.value(value, name, 'must be a finite number');
+    }
+  }
+
   static MalaysiaOfficialTimes lookup(
       Coordinates coordinates,
       DateTime midnight,
       CalculationParameters parameters,
       Duration? utcOffset) {
     final code = parameters.malaysiaZone;
+    if (code == null) {
+      _requireFinite(coordinates.latitude, 'latitude');
+      _requireFinite(coordinates.longitude, 'longitude');
+    }
     final zone = code == null
         ? MalaysiaZones.resolve(coordinates, DateComponents.from(midnight))
         : MalaysiaZones.zone(code);

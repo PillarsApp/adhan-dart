@@ -39,9 +39,9 @@ class PrayerTimes {
   MalaysiaZone? _malaysiaZone;
 
   /// The official Malaysian zone the times were read for, or would have been:
-  /// the manual zone when its code is known, else the zone resolved from the
-  /// coordinates. Null for every other method, for an unknown code and outside
-  /// every zone.
+  /// the manual zone when [CalculationParameters.malaysiaZone] is set, else the
+  /// zone resolved from the coordinates. Null for every other method, for a
+  /// manual code the data does not know and outside every zone.
   MalaysiaZone? get malaysiaZone => _malaysiaZone;
 
   MalaysiaDay? _malaysiaDay;

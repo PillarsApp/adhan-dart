@@ -6,7 +6,9 @@ class MalaysiaZone {
 
   MalaysiaZone._(this._record);
 
-  /// The zone code as e-Solat publishes it, such as WLY01.
+  /// The zone code, such as WLY01. e-Solat publishes it, except for the nine
+  /// Selangor district zones, whose codes are provisional because JAKIM has
+  /// not published any.
   String get code => _record.code;
 
   /// The state or federal territory the zone belongs to.
@@ -23,8 +25,9 @@ class MalaysiaZone {
   DateComponents? get validTo =>
       _record.validToDay == 99999999 ? null : _date(_record.validToDay);
 
-  /// A town inside the zone, used where a calculation must stand in for the
-  /// whole zone.
+  /// A town in the zone, such as the one the Hanafi shift of Asr is calculated
+  /// at. It need not resolve to this zone: the point of SWK09, which has no
+  /// geometry, resolves to SWK01.
   Coordinates get referencePoint =>
       Coordinates(_record.referenceLatitude, _record.referenceLongitude);
 
