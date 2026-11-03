@@ -201,6 +201,17 @@ void main() {
           throwsArgumentError);
     });
 
+    test('the unresolved error names the latitude and longitude', () {
+      expect(
+          () => PrayerTimes.utc(arjeplogSweden, dateAffectedByMidnightSun,
+              muslimWorldLeague(polar: PolarCircleResolution.unresolved)),
+          throwsA(isArgumentError.having(
+              (error) => error.message,
+              'message',
+              allOf(contains('${arjeplogSweden.latitude}'),
+                  contains('${arjeplogSweden.longitude}')))));
+    });
+
     test('midnight sun, aqrabBalad', () {
       final p = PrayerTimes.utc(arjeplogSweden, dateAffectedByMidnightSun,
           muslimWorldLeague(polar: PolarCircleResolution.aqrabBalad));

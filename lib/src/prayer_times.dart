@@ -125,8 +125,9 @@ class PrayerTimes {
         calculationParameters.polarCircleResolution
             .resolve(coordinates, date, calculationParameters);
     if (times == null) {
-      throw ArgumentError(
-          'Prayer times cannot be computed at $coordinates on $_dateComponents');
+      throw ArgumentError('Prayer times cannot be computed at latitude '
+          '${coordinates.latitude}, longitude ${coordinates.longitude} '
+          'on $_dateComponents');
     }
 
     _fajr = _present(times.fajr);
