@@ -108,7 +108,7 @@ shape_id,district,zone,rule,source
 92858781B73026696392194,Sipitang,SBH09,,"e-Solat SBH09 ""Sipitang, Long Pasia""."
 92858781B47862255723096,Tenom,SBH09,,"e-Solat SBH09 ""Tenom""."
 92858781B30612990862702,Limbang,SWK01,,"e-Solat SWK01 ""Limbang""."
-92858781B12558233193799,Lawas,SWK01,,"e-Solat SWK01 ""Lawas, Sundar, Trusan""; Kampung Patarikan goes to SWK09 through a special area."
+92858781B12558233193799,Lawas,SWK01,,"e-Solat SWK01 ""Lawas, Sundar, Trusan"". SWK09 (Kampung Patarikan) lies somewhere in Lawas, but no source gives its position, so it has no special area."
 92858781B82463401188704,Miri,SWK02,,"e-Solat SWK02 ""Miri""."
 92858781B11912366303886,Subis,SWK03,lon<113.68,"e-Solat SWK03 ""Suai"": the Suai basin in the south-west of Subis district (Suai, GeoNames 1737248, lon 113.6333). Line drawn between Suai and Niah (GeoNames 1737247, lon 113.7152)."
 92858781B11912366303886,Subis,SWK02,,"e-Solat SWK02 ""Niah, Bekenu, Sibuti"": the rest of Subis."

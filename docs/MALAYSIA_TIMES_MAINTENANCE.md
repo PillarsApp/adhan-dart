@@ -53,7 +53,7 @@ dart run tool/malaysia/malaysia_times_cli.dart lookup 3.1390 101.6869 2027-01-01
 - `fetch <year>...` posts `datestart` and `dateend` to `https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&period=duration&zone=<code>` for every `e-solat` zone that `zones.csv` has in force during the year, and stores each response that holds rows. It keeps a zone and year that already holds rows unless you pass `--refresh`. It stores nothing for a `NO_RECORD!` response. It exits 1, naming the zone and year, when a response is unusable (not JSON, not a JSON object, or without rows for another reason), when a request fails three times, or when `--refresh` gets no rows for a zone and year that already holds rows. In each of those cases it keeps the stored response.
 - `import-selangor <pdf>...` runs `pdftotext -layout` (Poppler) on each PDF, checks that it holds every day of the year, stores the text, and records the PDF's SHA-256.
 - `build` validates, corrects and encodes everything. It prints every rejected row and exits 1 without writing anything when a row is rejected, an output is over budget, or the timetables do not match the catalog (see [Catalog](#catalog)). On success it prints a summary such as `117 zone-years, 0 rejected, 8 corrected, 24 waived` and the size of each output.
-- `lookup <latitude> <longitude> <yyyy-mm-dd>` prints the zone in force at that point on that date, or `none`.
+- `lookup <latitude> <longitude> <yyyy-mm-dd>` prints the zone in force at that point on that date, or `none`. It does not check the times file, so it prints a Sabah zone for a date in 2027 although Sabah has no 2027 timetable yet.
 
 ## Validation
 
