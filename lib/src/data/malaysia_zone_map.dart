@@ -2,32 +2,10 @@ import 'dart:math' as math;
 
 import 'date_components.dart';
 
-/// Resolves a point and date to a Malaysian prayer-time zone code.
+/// Decodes `malaysia_zones.txt` and resolves a point and date to a zone code.
 ///
-/// The map is parsed from `malaysia_zones.txt`, a line-oriented, tab-separated
-/// file. Every line is one record whose first field is its type:
-///
-/// * `Z` zone: `code`, `state`, `areas`, `valid_from`, `valid_to`,
-///   `successors`, `reference_lat`, `reference_lon`. Dates are `yyyy-mm-dd`
-///   or empty for open-ended. Successors are space-separated codes.
-/// * `S` special area: `zone`, `name`, `lat`, `lon`, `radius_m`.
-/// * `A` arc: one Google-encoded polyline (precision 1e5, latitude then
-///   longitude) of quantized boundary vertices shared by every region that
-///   borders it.
-/// * `R` region: space-separated arc indices (0-based in `A` order), then
-///   space-separated zone rows. A row is `ZONE` or `ZONE:rule`, where a rule is
-///   comparisons on `lat` and `lon` joined by `&`, such as
-///   `WLY01:lat>=2.875&lon>=101.67&lon<=101.735`.
-///
-/// Resolution: the first region whose arcs enclose the point under the
-/// even-odd rule gives the district rows; when no region encloses it, the
-/// nearest region boundary within [boundaryToleranceMetres] does (coastal
-/// towns whose GeoNames point lies a few hundred metres seaward of the
-/// simplified coastline). The first row whose zone is in force on the date and
-/// whose rule matches names the district zone. Then the first special area in
-/// file order within its radius, whose zone is in force, and whose zone shares
-/// a `state` with the district zone (or where there is no district zone) wins
-/// over the district.
+/// docs/MALAYSIA_TIMES_MAINTENANCE.md describes the format and the resolution
+/// order.
 class MalaysiaZoneMap {
   final List<MalaysiaZone> zones;
   final List<MalaysiaSpecialArea> specialAreas;
