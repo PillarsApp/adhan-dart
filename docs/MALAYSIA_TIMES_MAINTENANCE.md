@@ -20,9 +20,9 @@ The two Dart constants hold the same bytes as the text files. Other language ver
 
 | Path | Purpose |
 | --- | --- |
-| `bin/malaysia_times_cli.dart` | The `fetch`, `import-selangor`, `build` and `lookup` commands |
-| `bin/src/malaysia_timetables.dart` | Fetching, parsing, validation and correction of the timetables |
-| `bin/src/malaysia_zones.dart` | The zone catalog, district rules, polygon simplification and arc encoding |
+| `tool/malaysia/malaysia_times_cli.dart` | The `fetch`, `import-selangor`, `build` and `lookup` commands |
+| `tool/malaysia/src/malaysia_timetables.dart` | Fetching, parsing, validation and correction of the timetables |
+| `tool/malaysia/src/malaysia_zones.dart` | The zone catalog, district rules, polygon simplification and arc encoding |
 | `lib/src/data/malaysia_times_codec.dart` | Encoder and decoder for the times file |
 | `lib/src/data/malaysia_zone_map.dart` | Decoder and point-to-zone resolver for the zones file |
 | `tool/malaysia/raw/esolat/` | Each e-Solat response, gzipped, exactly as fetched |
@@ -42,10 +42,10 @@ The Selangor PDFs are not committed because they total 182 MB. Their URLs and SH
 Run every command from the repository root.
 
 ```bash
-dart run bin/malaysia_times_cli.dart fetch 2028
-dart run bin/malaysia_times_cli.dart import-selangor ~/Downloads/selangor-2028/*.pdf
-dart run bin/malaysia_times_cli.dart build
-dart run bin/malaysia_times_cli.dart lookup 3.1390 101.6869 2027-01-01
+dart run tool/malaysia/malaysia_times_cli.dart fetch 2028
+dart run tool/malaysia/malaysia_times_cli.dart import-selangor ~/Downloads/selangor-2028/*.pdf
+dart run tool/malaysia/malaysia_times_cli.dart build
+dart run tool/malaysia/malaysia_times_cli.dart lookup 3.1390 101.6869 2027-01-01
 ```
 
 - `fetch <year>...` posts `datestart` and `dateend` to `https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&period=duration&zone=<code>` for every zone and stores the response. It keeps a zone and year that already holds rows unless you pass `--refresh`. It always retries a zone and year recorded as `NO_RECORD!`.

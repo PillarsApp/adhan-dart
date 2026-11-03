@@ -32,7 +32,7 @@ void main() {
     raw.writeAsBytesSync(GZipCodec().encode(utf8.encode(edited)));
 
     final result = await Process.run(Platform.resolvedExecutable,
-        ['run', 'bin/malaysia_times_cli.dart', 'build', '--root', root.path]);
+        ['run', 'tool/malaysia/malaysia_times_cli.dart', 'build', '--root', root.path]);
 
     expect(result.exitCode, 1, reason: '${result.stdout}${result.stderr}');
     expect(result.stdout, contains('rejected JHR01 2026-01-01 maghrib'));

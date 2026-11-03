@@ -8,8 +8,8 @@ import 'package:adhan/src/data/malaysia_zone_map.dart';
 import 'package:adhan/src/data/malaysia_zones_data.dart';
 import 'package:test/test.dart';
 
-import '../bin/src/csv.dart';
-import '../bin/src/malaysia_timetables.dart';
+import '../tool/malaysia/src/csv.dart';
+import '../tool/malaysia/src/malaysia_timetables.dart';
 
 const _months = [
   'Jan',
