@@ -40,7 +40,8 @@ class SolarTime {
     _nextSolar = SolarCoordinates(CalendricalHelper.julianDayByDate(tomorrow));
 
     _approximateTransit = Astronomical.approximateTransit(coordinates.longitude,
-        _solar.apparentSiderealTime, _solar.rightAscension);
+        _solar.apparentSiderealTime, _solar.rightAscension,
+        correction: _hourAngleCorrection);
     final solarAltitude = -50.0 / 60.0;
 
     _observer = coordinates;

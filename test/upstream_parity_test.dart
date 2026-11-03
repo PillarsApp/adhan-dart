@@ -337,6 +337,36 @@ void main() {
     });
   });
 
+  group('date line', () {
+    final suva = Coordinates(-18.1416, 178.4419);
+    final chatham = Coordinates(-43.95, -176.55);
+    DateTime epoch(int seconds) =>
+        DateTime.fromMillisecondsSinceEpoch(seconds * 1000, isUtc: true);
+
+    test('iterative keeps the transit on the requested day', () {
+      expectOrdered(PrayerTimes.utc(
+          suva, DateComponents(2026, 12, 12), muslimWorldLeague()));
+      expectOrdered(PrayerTimes.utc(
+          chatham, DateComponents(2026, 2, 3), muslimWorldLeague()));
+    });
+
+    test('singlePass keeps the 2.3.0 day selection', () {
+      final params = muslimWorldLeague(
+          correction: HourAngleCorrection.singlePass,
+          polar: PolarCircleResolution.unresolved);
+      final suvaTimes =
+          PrayerTimes.utc(suva, DateComponents(2026, 12, 12), params);
+      expect(suvaTimes.fajr, epoch(1797120000));
+      expect(suvaTimes.sunrise, epoch(1797096240));
+      expect(suvaTimes.isha, epoch(1797120000));
+      final chathamTimes =
+          PrayerTimes.utc(chatham, DateComponents(2026, 2, 3), params);
+      expect(chathamTimes.fajr, epoch(1770163200));
+      expect(chathamTimes.sunrise, epoch(1770137340));
+      expect(chathamTimes.isha, epoch(1770163200));
+    });
+  });
+
   group('global sweep', () {
     test('every 5 degrees latitude, 10 degrees longitude, every day of 2025',
         () {

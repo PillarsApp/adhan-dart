@@ -9,7 +9,8 @@ enum HourAngleCorrection {
   iterative,
 
   /// Applies the hour angle correction once and keeps every time it produces,
-  /// the correction versions before 2.4.0 used. Isha can differ from
-  /// [iterative] by a few minutes above about 48 degrees latitude.
+  /// and keeps the day selection near longitude 180, as versions before 2.4.0
+  /// did. Isha can differ from [iterative] by a few minutes above about 48
+  /// degrees latitude.
   singlePass,
 }

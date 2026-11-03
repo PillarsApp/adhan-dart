@@ -181,7 +181,7 @@ Inside the polar circles the sun may not rise or set, or may not reach the angle
 | `iterative` | Repeats the hour angle correction until it converges or ten passes have run, rejects an Asr angle the sun does not reach that day, and treats a day whose times come out of order, or less than five minutes apart, as one whose times cannot be computed. This is the default |
 | `singlePass` | Applies the hour angle correction once and keeps every time it produces, the correction versions before 2.4.0 used. Isha can differ from `iterative` by a few minutes above about 48 degrees latitude |
 
-To keep the single-pass correction and the throwing polar days of versions before 2.4.0, set `hourAngleCorrection` to `singlePass` and `polarCircleResolution` to `unresolved`. Fixes outside the correction, such as the date line transit fix and the UTC rounding, apply under both values.
+To keep the single-pass correction, the day selection near longitude 180 and the throwing polar days of versions before 2.4.0, set `hourAngleCorrection` to `singlePass` and `polarCircleResolution` to `unresolved`. The UTC rounding and the sub-second night fractions apply under both values.
 
 
 ### Prayer Times

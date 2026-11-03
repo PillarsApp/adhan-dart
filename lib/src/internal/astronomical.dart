@@ -169,10 +169,14 @@ class Astronomical {
   /// @param Θ0 the sidereal time
   /// @param α2 the right ascension
   /// @return the approximate transite
-  static double approximateTransit(double L, double theta0, double alpha2) {
+  static double approximateTransit(double L, double theta0, double alpha2,
+      {HourAngleCorrection correction = HourAngleCorrection.iterative}) {
     /* Equation from page Astronomical Algorithms 102 */
     final Lw = L * -1;
     final m0 = DoubleUtil.normalizeWithBound((alpha2 + Lw - theta0) / 360, 1);
+    if (!correction.keepsTransitOnRequestedDay) {
+      return m0;
+    }
     /* Near longitude 180 the normalized m0 can land on the wrong calendar
     day, so compare it with the transit the longitude alone predicts and
     move it back by one cycle when the two disagree by over half a day. */
