@@ -274,6 +274,24 @@ void main() {
       expect(times.source, PrayerTimesSource.official);
       expect(times.malaysiaZone!.code, 'WLY01');
     });
+
+    test('a manual zone on a day with no row validates the coordinates', () {
+      expect(
+          () => PrayerTimes.utc(Coordinates(double.nan, double.nan),
+              DateComponents(2027, 1, 1), _official(zone: 'SBH07')),
+          throwsArgumentError);
+    });
+
+    test('MalaysiaZones.resolve throws ArgumentError for non-finite input', () {
+      for (final point in [
+        Coordinates(double.nan, 101.6869),
+        Coordinates(3.1390, double.nan),
+        Coordinates(double.infinity, 101.6869),
+        Coordinates(3.1390, double.negativeInfinity),
+      ]) {
+        expect(() => MalaysiaZones.resolve(point, _nov2), throwsArgumentError);
+      }
+    });
   });
 
   group('adjustments on an official row', () {

@@ -21,12 +21,22 @@ class MalaysiaZones {
   };
 
   /// The zone in force at [coordinates] on [date], or null outside every zone.
-  /// A manual-only zone such as SWK09 is never returned here.
+  /// A manual-only zone such as SWK09 is never returned here. Throws
+  /// [ArgumentError] for a non-finite coordinate.
   /// Points up to 3.0 km outside Malaysia's land borders can resolve to a
   /// zone, so a caller that must not serve a neighbouring country should also
   /// check the country. See the notes for the public API in
   /// docs/MALAYSIA_TIMES_MAINTENANCE.md.
   static MalaysiaZone? resolve(Coordinates coordinates, DateComponents date) {
+    for (final entry in {
+      'latitude': coordinates.latitude,
+      'longitude': coordinates.longitude
+    }.entries) {
+      if (!entry.value.isFinite) {
+        throw ArgumentError.value(
+            entry.value, entry.key, 'must be a finite number');
+      }
+    }
     final code = _map.zoneAt(coordinates.latitude, coordinates.longitude, date);
     return code == null ? null : _byCode[code];
   }

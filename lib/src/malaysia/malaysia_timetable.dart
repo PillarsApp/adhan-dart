@@ -141,22 +141,12 @@ class MalaysiaOfficialTimes {
 
   MalaysiaOfficialTimes._(this.times, this.source, this.zone, this.day);
 
-  static void _requireFinite(double value, String name) {
-    if (!value.isFinite) {
-      throw ArgumentError.value(value, name, 'must be a finite number');
-    }
-  }
-
   static MalaysiaOfficialTimes lookup(
       Coordinates coordinates,
       DateTime midnight,
       CalculationParameters parameters,
       Duration? utcOffset) {
     final code = parameters.malaysiaZone;
-    if (code == null) {
-      _requireFinite(coordinates.latitude, 'latitude');
-      _requireFinite(coordinates.longitude, 'longitude');
-    }
     final zone = code == null
         ? MalaysiaZones.resolve(coordinates, DateComponents.from(midnight))
         : MalaysiaZones.zone(code);

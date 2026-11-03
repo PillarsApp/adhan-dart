@@ -25,8 +25,9 @@ class MalaysiaZone {
   DateComponents? get validTo =>
       _record.validToDay == 99999999 ? null : _date(_record.validToDay);
 
-  /// A town in the zone, such as the one the Hanafi shift of Asr is calculated
-  /// at. It need not resolve to this zone: the point of SWK09, which has no
+  /// The GeoNames position of the zone's first named town, or the centre of
+  /// its special area, such as a summit, a hill, an island or a pass. The
+  /// Hanafi shift of Asr is calculated here. It need not resolve to this zone: the point of SWK09, which has no
   /// geometry, resolves to SWK01.
   Coordinates get referencePoint =>
       Coordinates(_record.referenceLatitude, _record.referenceLongitude);
