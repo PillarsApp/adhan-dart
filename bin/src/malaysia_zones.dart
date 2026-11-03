@@ -130,10 +130,7 @@ DataBuild buildZones(Directory root) {
           'regions: ${containing.map((i) => regions[i].label).join(', ')}');
     }
   }
-  final overlaps = _gridOverlaps(map, regions);
-  for (final line in overlaps) {
-    print('overlap $line');
-  }
+  errors.addAll(_gridOverlaps(map, regions).map((line) => 'overlap $line'));
 
   final summary = '${zones.length} zones, ${shapes.length} districts in '
       '${regions.length} regions, ${specialAreas.length} special areas, '
