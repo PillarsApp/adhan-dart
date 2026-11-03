@@ -125,6 +125,30 @@ void main() {
     expect(corrections, hasLength(8));
   });
 
+  test('MANIFEST records each e-Solat source as the POST request fetch sends',
+      () {
+    final lines = File('data/malaysia/MANIFEST').readAsLinesSync();
+    final header = lines.first.split('\t');
+    final esolat = [
+      for (final line in lines.skip(1))
+        if (line.startsWith('esolat\t'))
+          Map.fromIterables(header, line.split('\t')),
+    ];
+    expect(esolat, hasLength(esolatRows.length));
+    for (final row in esolat) {
+      final zoneYear = row['name']!.split(' ');
+      expect(row['method'], 'POST', reason: row['name']);
+      expect(
+          row['url'],
+          'https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat'
+          '&period=duration&zone=${zoneYear[0]}',
+          reason: row['name']);
+      expect(row['form'],
+          'datestart=${zoneYear[1]}-01-01&dateend=${zoneYear[1]}-12-31',
+          reason: row['name']);
+    }
+  });
+
   test('every zone-year names a catalog zone in force for the whole year', () {
     final map = MalaysiaZoneMap.parse(malaysiaZonesData);
     for (final zoneYear in zoneYears) {
