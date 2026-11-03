@@ -50,7 +50,9 @@ class PrayerTimes {
       CalculationParameters calculationParameters,
       {Duration? utcOffset}) {
     return PrayerTimes._(
-        coordinates, _resolveDate(dateComponents), calculationParameters,
+        coordinates,
+        CalendarUtil.resolveTimeByDateComponents(dateComponents),
+        calculationParameters,
         utcOffset: utcOffset);
   }
 
@@ -80,7 +82,9 @@ class PrayerTimes {
       DateComponents dateComponents,
       CalculationParameters calculationParameters) {
     return PrayerTimes._(
-        coordinates, _resolveDate(dateComponents), calculationParameters,
+        coordinates,
+        CalendarUtil.resolveTimeByDateComponents(dateComponents),
+        calculationParameters,
         utcOffset: Duration());
   }
 
@@ -95,7 +99,9 @@ class PrayerTimes {
       CalculationParameters calculationParameters,
       Duration utcOffset) {
     return PrayerTimes._(
-        coordinates, _resolveDate(dateComponents), calculationParameters,
+        coordinates,
+        CalendarUtil.resolveTimeByDateComponents(dateComponents),
+        calculationParameters,
         utcOffset: utcOffset);
   }
 
@@ -129,17 +135,6 @@ class PrayerTimes {
     _asr = _present(times.asr);
     _maghrib = _present(times.maghrib);
     _isha = _present(times.isha);
-  }
-
-  static DateTime _resolveDate(DateComponents components) {
-    final date = CalendarUtil.resolveTimeByDateComponents(components);
-    if (date.year != components.year ||
-        date.month != components.month ||
-        date.day != components.day) {
-      throw ArgumentError.value(
-          components, 'dateComponents', 'must form a valid calendar date');
-    }
-    return date;
   }
 
   DateTime _present(DateTime utc) {
