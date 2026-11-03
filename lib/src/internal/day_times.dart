@@ -171,7 +171,7 @@ class DayTimes {
   }
 
   static Duration _fraction(Duration night, double portion) {
-    return Duration(seconds: (portion * night.inMilliseconds) ~/ 1000);
+    return Duration(microseconds: (portion * night.inMicroseconds).round());
   }
 
   static DateTime _finish(
