@@ -201,7 +201,7 @@ Kuching,SWK08,2026-06-01,1.55,110.33333,1735634,
 Bau,SWK08,2026-06-01,1.41667,110.15,1734539,
 Lundu,SWK08,2026-06-01,1.67439,109.85171,1737012,
 Sematan,SWK08,2026-06-01,1.8,109.76667,1737015,Lundu shape.
-Zon Khas (Kampung Patarikan),SWK09,2026-06-01,4.9539,115.5078,1737579,"Merapok, the mukim centre the Lawas listing names for Kampung Patarikan; GeoNames and OpenStreetMap have no entry for the kampung. SWK09 is a special area inside the Lawas shape (SWK01)."
+Merapok,SWK01,2026-06-01,4.9539,115.5078,1737579,"Lawas mukim centre. No source locates Kampung Patarikan, so automatic resolution never returns SWK09."
 Gombak,SGR01,2026-12-31,3.3213,101.5767,1735150,"Rawang, in Gombak district; GeoNames has no populated place named Gombak."
 Gombak,SGRGBK,2027-01-01,3.3213,101.5767,1735150,"Rawang, in Gombak district; GeoNames has no populated place named Gombak."
 Petaling,SGR01,2026-12-31,3.10726,101.60671,1735158,Petaling Jaya.
@@ -254,3 +254,32 @@ Klang (verifier),SGRKLG,2027-01-01,3.0449,101.4455,,Verifier point.
 Singapore,,2026-06-01,1.3521,103.8198,,Outside Malaysia: no zone.
 Bandar Seri Begawan,,2026-06-01,4.9031,114.9398,,Outside Malaysia: no zone.
 Pontianak,,2026-06-01,-0.0263,109.3425,,Outside Malaysia: no zone.
+Sindumin,SWK01,2026-06-01,4.9642,115.5075,1734128,Lawas shape near the Sabah border.
+Luagan,SWK01,2026-06-01,4.96667,115.5,1756921,Lawas shape near the Sabah border.
+Kampung Paya B,SWK01,2026-06-01,4.965,115.4961,7767642,Lawas shape near the Sabah border.
+Kampung Ladang Lalang,SWK01,2026-06-01,4.9491,115.5304,7767893,Lawas shape.
+Kampung Terikan,SWK01,2026-06-01,4.9657,115.4876,1762741,Lawas shape near the Sabah border.
+Kampong Jenderam Hilir,SGR01,2026-12-31,2.88333,101.73333,1768801,Sepang shape 4 km outside the geoBoundaries ADM1 Putrajaya polygon.
+Kampong Jenderam Hilir,SGRSPG,2027-01-01,2.88333,101.73333,1768801,Sepang shape 4 km outside the geoBoundaries ADM1 Putrajaya polygon.
+Ladang Galloway,WLY01,2026-12-31,2.8974,101.6616,7697686,South-west of the geoBoundaries ADM1 Putrajaya polygon.
+Ladang Galloway,WLY01,2027-01-01,2.8974,101.6616,7697686,South-west of the geoBoundaries ADM1 Putrajaya polygon.
+Pulau Tulai Candang,PHG01,2026-06-01,2.9121,104.1071,1734940,"Pulau Tulai, an island of Mukim Tioman 14 km north-west of the PHG01 reference point."
+Yan side of Gunung Jerai (verifier),KDH02,2026-06-01,5.79943,100.40985,,"Verifier point 2.8 km inside the Yan shape, within 3 km of the KDH07 centre."
+Kuala Kangsar side of Bukit Larut (verifier),PRK02,2026-06-01,4.85334,100.8181,,"Verifier point 965 m inside the Kuala Kangsar shape, within 3 km of the PRK07 centre."
+Kota Belud side of Gunung Kinabalu (verifier),SBH07,2026-06-01,6.09232,116.507,,"Verifier point 4.2 km inside the Kota Belud shape, within 6 km of the SBH06 centre."
+Pulau Mabul,SBH03,2026-06-01,4.24621,118.63059,1733710,"Semporna island with the village Mabul (GeoNames 7536133), 14 km off the geoBoundaries coast."
+Pulau Selakan,SBH03,2026-06-01,4.5765,118.6974,1733672,Semporna island with Kampung Selakan (GeoNames 7064105).
+Pulau Sipanggau,SBH03,2026-06-01,4.37059,118.60079,1733696,Semporna island with Kampung Sipanggau (GeoNames 1764280).
+Pulau Menampilik,SBH03,2026-06-01,4.34229,118.56899,1733706,Semporna island with Kampung Menampilik (GeoNames 1766917).
+Pulau Larapan,SBH03,2026-06-01,4.5593,118.6063,1733668,Semporna island with Kampung Larapan Hujung (GeoNames 7064108).
+Pulau Sabangkat,SBH03,2026-06-01,4.5599,118.6637,1733673,Semporna island with New Sabangkat (GeoNames 7064106).
+Pulau Adal,SBH03,2026-06-01,4.7454,118.5167,1733657,Semporna island with Adal (GeoNames 7064102).
+Pulau Mantanani Besar,SBH07,2026-06-01,6.7119,116.35244,1736450,"Kota Belud island with Kampong Mantanani (GeoNames 1767083), 24 km off the geoBoundaries coast."
+Pulau Tiga (Kudat),SBH05,2026-06-01,7.3411,117.04782,1736310,Kudat island with Simanguak (GeoNames 1755998).
+Pulau Sinamgil,SBH05,2026-06-01,6.80733,117.25839,7786863,Pitas island with Sinamgil (GeoNames 1736533).
+Pulau Kaniogan,SBH02,2026-06-01,6.2209,117.6476,1736586,Beluran island with Kampong Kaniogan (GeoNames 1768604).
+Pulau Besar (Melaka),MLK01,2026-06-01,2.11154,102.32768,12041365,Melaka island with Palau Besar (GeoNames 10057026) and a resort.
+Pulau Rawa,JHR02,2026-06-01,2.52082,103.97557,1734889,Mersing island with Calet Rawa (GeoNames 7797654).
+Pulau Aman,PNG01,2026-06-01,5.26039,100.38661,1735083,Penang island with Kampung Pulau Aman (GeoNames 1765305).
+Pulau Rebak Besar,KDH06,2026-06-01,6.29742,99.69728,1222400,Langkawi island with the Rebak Island resort.
+Pulau Tenggul,TRG04,2026-06-01,4.8048,103.682,1734293,Dungun island (Pulau Tenggol) with dive resorts.
