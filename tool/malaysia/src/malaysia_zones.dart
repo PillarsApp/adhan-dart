@@ -65,8 +65,14 @@ DataBuild buildZones(Directory root) {
 
   final sources = <ManifestEntry>[];
   Map<String, _Shape> readLevel(String level) {
-    final bytes = GZipCodec().decode(
-        File('$tool/raw/${_geoBoundariesFile(level)}.gz').readAsBytesSync());
+    final file = File('$tool/raw/${_geoBoundariesFile(level)}.gz');
+    final List<int> bytes;
+    try {
+      bytes = GZipCodec().decode(file.readAsBytesSync());
+    } on FormatException catch (error) {
+      errors.add('${file.path} is not gzip (${error.message})');
+      return {};
+    }
     sources.add(ManifestEntry(
         'geoboundaries',
         'MYS $level simplified $geoBoundariesRelease',
@@ -79,6 +85,7 @@ DataBuild buildZones(Directory root) {
 
   final adm2 = readLevel('ADM2');
   final adm1 = readLevel('ADM1');
+  if (errors.isNotEmpty) return DataBuild('', errors, [], 'zones: not built');
   final shapes = <String, _Shape>{...adm2};
   final shapeIdsByDistrict = <String, String>{};
   final rowsByShape = <String, List<String>>{};
