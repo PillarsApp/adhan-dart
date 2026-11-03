@@ -5,5 +5,5 @@ extension HourAngleCorrectionRules on HourAngleCorrection {
 
   bool get validatesTimes => this == HourAngleCorrection.iterative;
 
-  bool get keepsTransitOnRequestedDay => this == HourAngleCorrection.iterative;
+  bool get anchorsTransitToLongitude => this == HourAngleCorrection.iterative;
 }

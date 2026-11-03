@@ -343,14 +343,14 @@ void main() {
     DateTime epoch(int seconds) =>
         DateTime.fromMillisecondsSinceEpoch(seconds * 1000, isUtc: true);
 
-    test('iterative keeps the transit on the requested day', () {
+    test('iterative anchors the transit to the longitude', () {
       expectOrdered(PrayerTimes.utc(
           suva, DateComponents(2026, 12, 12), muslimWorldLeague()));
       expectOrdered(PrayerTimes.utc(
           chatham, DateComponents(2026, 2, 3), muslimWorldLeague()));
     });
 
-    test('singlePass keeps the 2.3.0 day selection', () {
+    test('singlePass keeps the 2.3.0 unanchored transit', () {
       final params = muslimWorldLeague(
           correction: HourAngleCorrection.singlePass,
           polar: PolarCircleResolution.unresolved);

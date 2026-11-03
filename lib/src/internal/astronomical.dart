@@ -174,12 +174,11 @@ class Astronomical {
     /* Equation from page Astronomical Algorithms 102 */
     final Lw = L * -1;
     final m0 = DoubleUtil.normalizeWithBound((alpha2 + Lw - theta0) / 360, 1);
-    if (!correction.keepsTransitOnRequestedDay) {
+    if (!correction.anchorsTransitToLongitude) {
       return m0;
     }
-    /* Near longitude 180 the normalized m0 can land on the wrong calendar
-    day, so compare it with the transit the longitude alone predicts and
-    move it back by one cycle when the two disagree by over half a day. */
+    /* Picks the solar transit nearest the longitude's mean noon, so
+    consecutive days never jump by a day. */
     final expectedTransit =
         DoubleUtil.normalizeWithBound((12.0 - L / 15.0) / 24.0, 1);
     if (m0 - expectedTransit > 0.5) {
