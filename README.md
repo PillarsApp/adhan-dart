@@ -196,7 +196,7 @@ With both set, these changes since version 2.3.0 still apply:
 - A latitude outside -90 to 90 throws an `ArgumentError`. Version 2.3.0 returned meaningless times for some of them, such as 180.
 - A Maghrib angle the sun does not reach, as with the `tehran` method in a polar summer, leaves Maghrib at sunset instead of throwing.
 - With neither `ishaAngle` nor `ishaInterval` set, Isha falls at the safe bound that would otherwise cap it, the middle of the night by default, instead of throwing. Under `twilight_angle`, a null `ishaAngle` throws a `FormatException`, as before.
-- `SunnahTimes` honours `rounding`. At the default, `nearest`, rounding alone changes none of its times. A middle or last third of the night that ends at one of those 39 Fajr times moves with it, one minute earlier, which is 38 values on the same grid.
+- `SunnahTimes` honours `rounding`. At the default, `nearest`, rounding alone changes none of its times. A middle or last third of the night that ends at one of those 39 Fajr times can move with it, one minute earlier, which is 38 values on the same grid.
 
 
 ### Prayer Times
