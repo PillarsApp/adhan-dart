@@ -1,4 +1,7 @@
+import 'dart:convert';
 import 'dart:math' as math;
+
+import 'package:adhan/src/data/malaysia_zone_map.dart';
 
 const double metresPerDegreeLatitude = 110574;
 const double metresPerDegreeLongitudeAtEquator = 111320;
@@ -259,4 +262,73 @@ List<int> lineMidpoint(List<int> line) {
   final i = (line.length ~/ 4) * 2;
   final j = math.min(i + 2, line.length - 2);
   return [(line[i] + line[j]) ~/ 2, (line[i + 1] + line[j + 1]) ~/ 2];
+}
+
+Map<String, Shape> readShapes(String geoJson) {
+  final features = (json.decode(geoJson) as Map)['features'] as List;
+  final shapes = <String, Shape>{};
+  for (final feature in features) {
+    final properties = feature['properties'] as Map;
+    final geometry = feature['geometry'] as Map;
+    final polygons = geometry['type'] == 'MultiPolygon'
+        ? geometry['coordinates'] as List
+        : [geometry['coordinates']];
+    final rings = <List<int>>[];
+    for (final polygon in polygons) {
+      for (final ring in polygon as List) {
+        final quantized = <int>[];
+        for (final point in ring as List) {
+          final lat = MalaysiaZoneMap.quantize((point[1] as num).toDouble());
+          final lon = MalaysiaZoneMap.quantize((point[0] as num).toDouble());
+          final n = quantized.length;
+          if (n >= 2 && quantized[n - 2] == lat && quantized[n - 1] == lon) {
+            continue;
+          }
+          quantized
+            ..add(lat)
+            ..add(lon);
+        }
+        final n = quantized.length;
+        if (n >= 4 &&
+            quantized[0] == quantized[n - 2] &&
+            quantized[1] == quantized[n - 1]) {
+          quantized.removeRange(n - 2, n);
+        }
+        if (quantized.length >= 6) rings.add(quantized);
+      }
+    }
+    final id = properties['shapeID'] as String;
+    shapes[id] = Shape(id, properties['shapeName'] as String, rings);
+  }
+  return shapes;
+}
+
+class PolygonIndex {
+  static const int bandSize = 1000;
+  final Map<int, List<List<int>>> _bands = {};
+
+  PolygonIndex(Iterable<List<int>> rings) {
+    for (final ring in rings) {
+      for (var i = 0, j = ring.length - 2; i < ring.length; j = i, i += 2) {
+        if (ring[i] == ring[j]) continue;
+        final segment = [ring[j], ring[j + 1], ring[i], ring[i + 1]];
+        final low = math.min(ring[i], ring[j]) ~/ bandSize;
+        final high = math.max(ring[i], ring[j]) ~/ bandSize;
+        for (var band = low; band <= high; band++) {
+          _bands.putIfAbsent(band, () => []).add(segment);
+        }
+      }
+    }
+  }
+
+  bool contains(int lat, int lon) {
+    var inside = false;
+    for (final s in _bands[lat ~/ bandSize] ?? const <List<int>>[]) {
+      if ((s[0] > lat) == (s[2] > lat)) continue;
+      if (lon < s[1] + (lat - s[0]) * (s[3] - s[1]) / (s[2] - s[0])) {
+        inside = !inside;
+      }
+    }
+    return inside;
+  }
 }

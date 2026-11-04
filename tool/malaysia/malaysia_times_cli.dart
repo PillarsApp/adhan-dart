@@ -2,10 +2,12 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:adhan/src/data/date_components.dart';
+import 'package:adhan/src/data/malaysia_times_codec.dart';
 
 import 'src/malaysia_manifest.dart';
 import 'src/malaysia_timetables.dart';
 import 'src/malaysia_zones.dart';
+import 'src/osm_extract.dart';
 import 'src/osm_fetch.dart';
 
 const usage = '''
@@ -15,6 +17,7 @@ Usage:
   dart run tool/malaysia/malaysia_times_cli.dart fetch <year>... [--refresh] [--root <dir>]
   dart run tool/malaysia/malaysia_times_cli.dart import-selangor <pdf>... [--root <dir>]
   dart run tool/malaysia/malaysia_times_cli.dart fetch-osm [--root <dir>]
+  dart run tool/malaysia/malaysia_times_cli.dart import-osm-extract <pbf> [--root <dir>]
   dart run tool/malaysia/malaysia_times_cli.dart build [--root <dir>]
   dart run tool/malaysia/malaysia_times_cli.dart check <zones file> [--root <dir>]
   dart run tool/malaysia/malaysia_times_cli.dart lookup <latitude> <longitude> <yyyy-mm-dd>
@@ -36,13 +39,21 @@ fetch-osm        Download the pinned OpenStreetMap snapshot of Malaysia's state
                  pinned date, and at least as many rings per state and role as the
                  stored snapshot. Delete the stored snapshot first when a ring is
                  meant to go.
+import-osm-extract  Filter the pinned Geofabrik extract with osmium to the
+                 buildings, places, stays, schools and places of worship within
+                 150 m of a state line, and to those inside a state but more than
+                 400 m outside every district, into tool/malaysia/raw/. Checks the
+                 extract's SHA-256 first.
 build            Validate every zone-year, apply tool/malaysia/corrections.csv, and write
                  data/malaysia/ and lib/src/data/malaysia_*_data.dart. Exits 1 and writes
                  nothing when any row is rejected, a zone-year that zones.csv has in
                  force has no rows, a stored file is not gzip, or a zone check fails.
 check            Measure a zones file against the OpenStreetMap snapshot and
-                 print every area that resolves to another state's zone.
-                 Exits 1 when there is one.
+                 print every area that resolves to another state's or
+                 territory's zone, special areas included, and every area of
+                 land or OpenStreetMap places with no zone. Exits 1 when there
+                 is one that tool/malaysia/no_zone_areas.csv does not name, or
+                 when an input file is malformed, naming the file.
 lookup           Print the zone in force at a point on a date, or none.
 
 --root <dir>     Repository root. Defaults to the current directory.
@@ -68,13 +79,18 @@ Future<void> main(List<String> args) async {
     case 'fetch-osm':
       if (!await fetchOsmSnapshot(options.root)) exitCode = 1;
       break;
+    case 'import-osm-extract':
+      if (!await importOsmExtract(options.root, options.positional[0])) {
+        exitCode = 1;
+      }
+      break;
     case 'build':
       exitCode = build(options.root);
       break;
     case 'check':
-      final lines = checkZones(options.root, File(options.positional[0]));
-      lines.forEach(print);
-      if (lines.any((line) => line.startsWith('state mismatch'))) exitCode = 1;
+      final check = checkZones(options.root, File(options.positional[0]));
+      check.lines.forEach(print);
+      if (check.failed) exitCode = 1;
       break;
     case 'lookup':
       final date = DateTime.parse(options.positional[2]);
@@ -92,7 +108,7 @@ const maxGzippedOutputBytes = 60000;
 
 int build(Directory root) {
   final timetables = buildTimetables(root);
-  final zones = buildZones(root);
+  final zones = buildZones(root, decodeMalaysiaTimes(timetables.output));
   final outputs = {
     'malaysia_times.txt': utf8.encode(timetables.output),
     'malaysia_zones.txt': utf8.encode(zones.output),
@@ -143,6 +159,7 @@ class _Options {
 
   static const _arity = {
     'fetch-osm': 0,
+    'import-osm-extract': 1,
     'build': 0,
     'check': 1,
     'lookup': 3,
@@ -155,6 +172,7 @@ class _Options {
       'fetch',
       'import-selangor',
       'fetch-osm',
+      'import-osm-extract',
       'build',
       'check',
       'lookup'

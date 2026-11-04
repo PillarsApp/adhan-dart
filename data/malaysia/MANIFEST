@@ -1,6 +1,6 @@
 kind	name	retrieved	method	url	form	sha256
 output	malaysia_times.txt					badfebbb3fea9ef41e3ce98b10da20d35186f3f3e86df2118e80bef4f358585e
-output	malaysia_zones.txt					6466a3b8f500ee5d1ba00e09b5fb8afba9e55bd4eeac8f19504d08dfb8c56265
+output	malaysia_zones.txt					7dee90cd8517a714ba0fcd10d6d9955f81b499e50a8e3b4faf49f4eda6e3ece1
 esolat	JHR01 2026	2026-11-03	POST	https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&period=duration&zone=JHR01	datestart=2026-01-01&dateend=2026-12-31	9de49d083b48edd48d10227953ec88ab94593a8d4f9b57c892010d63cad271a0
 esolat	JHR02 2026	2026-11-03	POST	https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&period=duration&zone=JHR02	datestart=2026-01-01&dateend=2026-12-31	733e384a378b78d419ff71d73e45add55adb96ce43e9eee702edfe0a71083c25
 esolat	JHR03 2026	2026-11-03	POST	https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&period=duration&zone=JHR03	datestart=2026-01-01&dateend=2026-12-31	4e2efc18a68f90512fd48405f90f47393d347ee99fdf2eea7dacadb62a810491
@@ -129,3 +129,6 @@ selangor-text	SGRSBN 2027	2026-11-02		tool/malaysia/raw/selangor/SGRSBN_2027.txt
 selangor-text	SGRSPG 2027	2026-11-02		tool/malaysia/raw/selangor/SGRSPG_2027.txt.gz		b9581209d3a9d4bb1b865a6c2a91392c0bcc055cf5d8d45f928e25f864583e54
 geoboundaries	MYS ADM2 simplified 9469f09	2026-11-03	GET	https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData/gbOpen/MYS/ADM2/geoBoundaries-MYS-ADM2_simplified.geojson		2370e1df1da8e8db2d582ea404d2bcb538127a01785dd994cbe4c1bbf33a951f
 openstreetmap	MYS admin_level=4 2026-11-04T00:00:00Z	2026-11-04	POST	https://overpass-api.de/api/interpreter	data=[out:json][timeout:900][maxsize:1073741824][date:"2026-11-04T00:00:00Z"];relation["boundary"="administrative"]["admin_level"="4"]["ISO3166-2"~"^MY-"];out geom;	8b74b7e485bd5ea0396995241ba56c25f64038482eb9e651036ea2b0bc50b0ee
+geofabrik	malaysia-singapore-brunei 2026-11-03T21:24:23Z	2026-11-03	GET	https://download.geofabrik.de/asia/malaysia-singapore-brunei-261103.osm.pbf		4807c977d1cf559928f41ca004f6e0a51722db0e994d06ab4597088189c60668
+openstreetmap	MYS features within 150 m of a state line 2026-11-03T21:24:23Z	2026-11-03	osmium	https://download.geofabrik.de/asia/malaysia-singapore-brunei-261103.osm.pbf	tags-filter nwr/building nwr/place nwr/tourism=hotel,motel,guest_house,hostel,chalet,apartment,camp_site,caravan_site,alpine_hut,wilderness_hut nwr/amenity=school,place_of_worship	dd86066f829fdd6b96304be3b8ecbbda4cb120195e32c35ecc02dd64c49fa924
+openstreetmap	MYS features more than 400 m outside every district 2026-11-03T21:24:23Z	2026-11-03	osmium	https://download.geofabrik.de/asia/malaysia-singapore-brunei-261103.osm.pbf	tags-filter nwr/building nwr/place nwr/tourism=hotel,motel,guest_house,hostel,chalet,apartment,camp_site,caravan_site,alpine_hut,wilderness_hut nwr/amenity=school,place_of_worship	b532a23599cd1f017a58d55ee736935b9eefb607e873beb463434c20635d6a40

@@ -9,6 +9,7 @@ import 'dart:math';
 import 'package:test/test.dart';
 
 import '../tool/malaysia/src/malaysia_timetables.dart';
+import '../tool/malaysia/src/malaysia_zones.dart';
 import '../tool/malaysia/src/osm_fetch.dart';
 
 void _copyDirectory(Directory from, Directory to) {
@@ -154,6 +155,31 @@ Future<ProcessResult> _build(Directory root) =>
       '--root',
       root.path
     ]);
+
+String _plantedZones(String Function(List<String> fields, int region) edit) {
+  var region = -1;
+  final lines = [
+    for (final line in File('data/malaysia/malaysia_zones.txt')
+        .readAsStringSync()
+        .split('\n'))
+      () {
+        final fields = line.split('\t');
+        if (fields[0] == 'R') region++;
+        return edit(fields, region);
+      }()
+  ];
+  final file = File(
+      '${Directory.systemTemp.createTempSync('malaysia_zones').path}/zones.txt')
+    ..writeAsStringSync(lines.join('\n'));
+  addTearDown(() => file.parent.deleteSync(recursive: true));
+  return file.path;
+}
+
+int _regionOf(String rows) => File('data/malaysia/malaysia_zones.txt')
+    .readAsLinesSync()
+    .where((line) => line.startsWith('R\t'))
+    .toList()
+    .indexWhere((line) => line.split('\t')[2] == rows);
 
 void main() {
   test('build rejects a row whose maghrib falls before asr and writes nothing',
@@ -582,6 +608,88 @@ void main() {
       expect(fake.requests, 0);
       expect(lines, contains(allOf(contains(stored.path), contains('gzip'))));
       expect(stored.readAsStringSync(), 'not gzip');
+    });
+  });
+
+  group('check', () {
+    test('passes the committed zones file', () {
+      final check = checkZones(
+          Directory.current, File('data/malaysia/malaysia_zones.txt'));
+
+      expect(check.failed, isFalse, reason: check.lines.join('\n'));
+      expect(check.lines.last, contains('0 areas on land'));
+    });
+
+    test('fails when a special area moves onto another state\'s land', () {
+      final selangor = _regionOf('SGR01 SGRHSL');
+      final zones = _plantedZones((fields, region) =>
+          fields[0] == 'S' && fields[2] == 'Genting Highlands'
+              ? [...fields.sublist(0, 6), '$selangor'].join('\t')
+              : fields.join('\t'));
+
+      final check = checkZones(Directory.current, File(zones));
+
+      expect(check.failed, isTrue);
+      expect(
+          check.lines,
+          contains(startsWith(
+              'state mismatch PHG06 (Pahang) inside OpenStreetMap Selangor')));
+    });
+
+    test('fails when land resolves to no zone', () {
+      final perlis = _regionOf('PLS01');
+      final zones = _plantedZones((fields, region) =>
+          fields[0] == 'R' && region == perlis
+              ? [fields[0], fields[1], 'PLS01:lat>90'].join('\t')
+              : fields.join('\t'));
+
+      final check = checkZones(Directory.current, File(zones));
+
+      expect(check.failed, isTrue);
+      expect(check.lines,
+          contains(startsWith('no zone inside OpenStreetMap Perlis')));
+    });
+
+    test('fails when the Labuan zone covers Kuala Lumpur', () {
+      final federal = _regionOf('WLY01');
+      final zones = _plantedZones((fields, region) =>
+          fields[0] == 'R' && region == federal
+              ? [fields[0], fields[1], 'WLY02'].join('\t')
+              : fields.join('\t'));
+
+      final check = checkZones(Directory.current, File(zones));
+
+      expect(check.failed, isTrue);
+      expect(
+          check.lines,
+          contains(startsWith('state mismatch WLY02 (Wilayah Persekutuan) '
+              'inside OpenStreetMap Kuala Lumpur')));
+    });
+
+    test('names the snapshot when it is not an Overpass response', () {
+      final root = _copyOfTool();
+      File('${root.path}/$_osmSnapshot')
+          .writeAsBytesSync(GZipCodec().encode(utf8.encode('{}')));
+
+      final check = checkZones(root, File('data/malaysia/malaysia_zones.txt'));
+
+      expect(check.failed, isTrue);
+      expect(check.lines.single, contains(_osmSnapshot));
+    });
+
+    test('names a state line exception whose path is off the line', () {
+      final root = _copyOfTool();
+      final exceptions =
+          File('${root.path}/tool/malaysia/state_line_exceptions.csv');
+      exceptions.writeAsStringSync(exceptions
+          .readAsStringSync()
+          .replaceFirst('3.12096 101.64422', '3.12196 101.64422'));
+
+      final check = checkZones(root, File('data/malaysia/malaysia_zones.txt'));
+
+      expect(check.failed, isTrue);
+      expect(check.lines.single,
+          contains('state_line_exceptions.csv Jalan 16/2, Section 16'));
     });
   });
 }

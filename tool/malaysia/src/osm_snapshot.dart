@@ -1,7 +1,10 @@
 import 'dart:convert';
+import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:adhan/src/data/malaysia_zone_map.dart';
 
+import 'csv.dart';
 import 'geometry.dart';
 
 const osmSnapshotDate = '2026-11-04T00:00:00Z';
@@ -36,6 +39,12 @@ const osmStateNames = {
   'MY-16': 'Wilayah Persekutuan',
 };
 
+const osmTerritoryNames = {
+  'MY-14': 'Kuala Lumpur',
+  'MY-15': 'Labuan',
+  'MY-16': 'Putrajaya',
+};
+
 class OsmRing {
   final String iso;
   final String state;
@@ -43,6 +52,8 @@ class OsmRing {
   final List<int> points;
 
   OsmRing(this.iso, this.state, this.inner, this.points);
+
+  String get territory => osmTerritoryNames[iso] ?? state;
 
   bool contains(int lat, int lon) => ringContains(points, lat, lon);
 }
@@ -54,6 +65,7 @@ class OsmSnapshot {
   final Map<int, Set<String>> _statesByVertex = {};
   final Map<int, Set<String>> _statesBySegment = {};
   final Map<String, Set<int>> _ringsByState = {};
+  final Map<String, Set<int>> _ringsByTerritory = {};
   final SegmentIndex _index = SegmentIndex();
 
   OsmSnapshot._(this.timestamp, this.rings) {
@@ -61,6 +73,7 @@ class OsmSnapshot {
       final ring = rings[r];
       _index.addRing(ring.points, r);
       _ringsByState.putIfAbsent(ring.state, () => {}).add(r);
+      _ringsByTerritory.putIfAbsent(ring.territory, () => {}).add(r);
       final points = ring.points;
       for (var i = 0, j = points.length - 2; i < points.length; j = i, i += 2) {
         _statesByVertex
@@ -84,7 +97,16 @@ class OsmSnapshot {
     return a < b ? a * (1 << 24) + b : b * (1 << 24) + a;
   }
 
-  static OsmSnapshot parse(String json) {
+  static OsmSnapshot parse(String json,
+      {List<StateLineException> exceptions = const []}) {
+    try {
+      return _parse(json, exceptions);
+    } on TypeError catch (error) {
+      throw FormatException('not an Overpass response ($error)');
+    }
+  }
+
+  static OsmSnapshot _parse(String json, List<StateLineException> exceptions) {
     final document = jsonDecode(json) as Map;
     if (document.containsKey('remark')) {
       throw FormatException('Overpass remark: ${document['remark']}');
@@ -121,6 +143,9 @@ class OsmSnapshot {
     if (missing.isNotEmpty) {
       throw FormatException(
           'OpenStreetMap snapshot lacks ${missing.join(', ')}');
+    }
+    for (final exception in exceptions) {
+      exception.applyTo(rings);
     }
     return OsmSnapshot._(timestamp, rings);
   }
@@ -179,6 +204,48 @@ class OsmSnapshot {
 
   Iterable<String> get states => osmStateNames.values.toSet();
 
+  Iterable<String> get territories => _ringsByTerritory.keys;
+
+  SegmentIndex stateLines() {
+    final index = SegmentIndex();
+    for (final ring in rings) {
+      final points = ring.points;
+      for (var i = 0, j = points.length - 2; i < points.length; j = i, i += 2) {
+        if (isShared(points[j], points[j + 1], points[i], points[i + 1])) {
+          index.addPolyline(
+              [points[j], points[j + 1], points[i], points[i + 1]], 0);
+        }
+      }
+    }
+    return index;
+  }
+
+  late final Map<String, PolygonIndex> _territoryIndex = {
+    for (final territory in territories)
+      territory: PolygonIndex(
+          [for (final r in _ringsByTerritory[territory]!) rings[r].points])
+  };
+
+  String? territoryAt(int lat, int lon) {
+    final found = [
+      for (final entry in _territoryIndex.entries)
+        if (entry.value.contains(lat, lon)) entry.key
+    ];
+    return found.length == 1 ? found.single : null;
+  }
+
+  List<int> get bounds {
+    final box = [1 << 40, -(1 << 40), 1 << 40, -(1 << 40)];
+    for (final ring in rings) {
+      final b = ringBounds(ring.points);
+      box[0] = math.min(box[0], b[0]);
+      box[1] = math.max(box[1], b[1]);
+      box[2] = math.min(box[2], b[2]);
+      box[3] = math.max(box[3], b[3]);
+    }
+    return box;
+  }
+
   Iterable<List<int>> segmentsNear(int lat, int lon, double metres) =>
       _index.near(lat, lon, metres);
 
@@ -227,8 +294,8 @@ class OsmSnapshot {
   bool isShared(int lat1, int lon1, int lat2, int lon2) =>
       statesOfSegment(lat1, lon1, lat2, lon2).length >= 2;
 
-  double depthMetres(String state, int lat, int lon) {
-    final owners = _ringsByState[state] ?? const <int>{};
+  double depthMetres(String territory, int lat, int lon) {
+    final owners = _ringsByTerritory[territory] ?? const <int>{};
     var best = double.infinity;
     var radius = 2000.0;
     while (best == double.infinity && radius < 3000000) {
@@ -240,5 +307,135 @@ class OsmSnapshot {
       radius *= 2;
     }
     return best;
+  }
+}
+
+const stateLineExceptionsFile = 'state_line_exceptions.csv';
+const stateLinePathEndMetres = 2.0;
+
+List<StateLineException> readStateLineExceptions(String tool) => [
+      for (final row in readCsv(File('$tool/$stateLineExceptionsFile')))
+        StateLineException.parse(row)
+    ];
+
+class StateLineException {
+  final String name;
+  final String from;
+  final String to;
+  final List<int> path;
+
+  StateLineException(this.name, this.from, this.to, this.path);
+
+  static StateLineException parse(Map<String, String> row) {
+    final path = <int>[];
+    for (final point in row['path']!.split(';')) {
+      final parts = point.trim().split(' ');
+      if (parts.length != 2) {
+        throw FormatException(
+            'state_line_exceptions.csv ${row['name']}: bad point $point');
+      }
+      path
+        ..add(MalaysiaZoneMap.quantize(double.parse(parts[0])))
+        ..add(MalaysiaZoneMap.quantize(double.parse(parts[1])));
+    }
+    if (path.length < 6) {
+      throw FormatException('state_line_exceptions.csv ${row['name']}: '
+          'the path needs two ends and a point between');
+    }
+    return StateLineException(row['name']!, row['from']!, row['to']!, path);
+  }
+
+  void applyTo(List<OsmRing> rings) {
+    final runs = <List<int>>[];
+    for (final territory in [from, to]) {
+      final matches = <OsmRing>[];
+      for (final ring in rings) {
+        if (ring.territory != territory) continue;
+        final points = ring.points;
+        final start = _insertNear(points, path[0], path[1]);
+        final end = _insertNear(points, path[path.length - 2], path.last);
+        if (start == null || end == null) continue;
+        matches.add(ring);
+        final run = _shorterRun(points, start, end);
+        runs.add(run);
+        _replaceRun(points, start, end, run);
+      }
+      if (matches.length != 1) {
+        throw FormatException('state_line_exceptions.csv $name: '
+            '${matches.length} $territory rings hold both ends of the path');
+      }
+    }
+    final fromRun = {
+      for (var i = 0; i < runs[0].length; i += 2)
+        vertexKey(runs[0][i], runs[0][i + 1])
+    };
+    final toRun = {
+      for (var i = 0; i < runs[1].length; i += 2)
+        vertexKey(runs[1][i], runs[1][i + 1])
+    };
+    if (fromRun.length != toRun.length || !fromRun.containsAll(toRun)) {
+      throw FormatException('state_line_exceptions.csv $name: the path does '
+          'not replace a stretch of the line between $from and $to');
+    }
+  }
+
+  int? _insertNear(List<int> points, int lat, int lon) {
+    for (var i = 0; i < points.length; i += 2) {
+      if (points[i] == lat && points[i + 1] == lon) return i;
+    }
+    for (var i = 0; i < points.length; i += 2) {
+      final j = (i + 2) % points.length;
+      if (pointSegmentMetres(
+              lat, lon, points[i], points[i + 1], points[j], points[j + 1]) <=
+          stateLinePathEndMetres) {
+        points.insertAll(i + 2, [lat, lon]);
+        return i + 2;
+      }
+    }
+    return null;
+  }
+
+  List<int> _shorterRun(List<int> points, int start, int end) {
+    List<int> walk(int from, int to) {
+      final run = <int>[];
+      for (var i = from; i != to; i = (i + 2) % points.length) {
+        run
+          ..add(points[i])
+          ..add(points[i + 1]);
+      }
+      return run..addAll([points[to], points[to + 1]]);
+    }
+
+    double length(List<int> run) {
+      var total = 0.0;
+      for (var i = 2; i < run.length; i += 2) {
+        total += metresBetween(run[i - 2], run[i - 1], run[i], run[i + 1]);
+      }
+      return total;
+    }
+
+    final forward = walk(start, end);
+    final backward = walk(end, start);
+    return length(forward) <= length(backward) ? forward : backward;
+  }
+
+  void _replaceRun(List<int> points, int start, int end, List<int> run) {
+    final forward = run[0] == points[start] && run[1] == points[start + 1];
+    final interior = path.sublist(2, path.length - 2);
+    final replacement = forward ? interior : reversedLine(interior);
+    final first = forward ? start : end;
+    final removed = run.length ~/ 2 - 2;
+    final rotated = [
+      ...points.sublist(first),
+      ...points.sublist(0, first),
+    ];
+    final rebuilt = [
+      ...rotated.sublist(0, 2),
+      ...replacement,
+      ...rotated.sublist(2 + removed * 2),
+    ];
+    points
+      ..clear()
+      ..addAll(rebuilt);
   }
 }

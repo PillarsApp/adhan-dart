@@ -3,20 +3,22 @@ import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:adhan/src/data/date_components.dart';
+import 'package:adhan/src/data/malaysia_times_codec.dart';
 import 'package:adhan/src/data/malaysia_zone_map.dart';
 import 'package:adhan/src/data/malaysia_zones_data.dart';
 
+import 'border_simplify.dart';
 import 'csv.dart';
 import 'geometry.dart';
 import 'gzip_input.dart';
 import 'malaysia_manifest.dart';
 import 'malaysia_states.dart';
+import 'osm_extract.dart';
 import 'osm_snapshot.dart';
 import 'stitch_borders.dart';
 
 const geoBoundariesRelease = '9469f09';
 const geoBoundariesRetrieved = '2026-11-03';
-const simplifyToleranceMetres = 100.0;
 const overlapGridStepDegrees = 0.02;
 const specialAreaReachLimitMetres = 500.0;
 const specialAreaGridStepMetres = 100.0;
@@ -31,25 +33,80 @@ String _geoBoundariesUrl(String level) =>
 String? lookupZone(double latitude, double longitude, DateComponents date) =>
     MalaysiaZoneMap.parse(malaysiaZonesData).zoneAt(latitude, longitude, date);
 
-List<String> checkZones(Directory root, File zonesFile) {
-  final tool = '${root.path}/tool/malaysia';
-  final snapshot = OsmSnapshot.parse(
-      utf8.decode(readGzipInput(File('$tool/raw/$osmSnapshotFile'))));
-  final areas = findStateMismatches(
-    shipped: ShippedZoneMap.parse(zonesFile.readAsStringSync()),
-    snapshot: snapshot,
-    dates: catalogDates(readCsv(File('$tool/zones.csv'))),
-  );
-  return [
-    for (final area in areas)
-      if (!area.snappedOnly) 'state mismatch ${area.describe()}',
-    for (final area in areas)
-      if (area.snappedOnly) 'snap only ${area.describe()}',
-    '${zonesFile.path}: ${describeStateCheck(snapshot, areas)}',
-  ];
+class ZoneCheck {
+  final List<String> lines;
+  final bool failed;
+
+  ZoneCheck(this.lines, this.failed);
 }
 
-DataBuild buildZones(Directory root) {
+ZoneCheck checkZones(Directory root, File zonesFile) {
+  final tool = '${root.path}/tool/malaysia';
+  final errors = <String>[];
+  final layers = _Layers.read(tool, errors);
+  final snapshot = layers.snapshot;
+  if (errors.isNotEmpty || snapshot == null) return ZoneCheck(errors, true);
+  final ShippedZoneMap shipped;
+  try {
+    shipped = ShippedZoneMap.parse(zonesFile.readAsStringSync());
+  } on FormatException catch (error) {
+    return ZoneCheck(
+        ['${zonesFile.path} is not a zones file (${error.message})'], true);
+  }
+  final report = _ZoneReport(shipped, layers, snapshot,
+      catalogDates(readCsv(File('$tool/zones.csv'))));
+  return ZoneCheck([
+    ...report.lines,
+    '${zonesFile.path}: ${report.summary}',
+  ], report.failed);
+}
+
+class _ZoneReport {
+  late final List<MismatchArea> areas;
+  late final List<MismatchArea> offMap;
+  late final List<String> unused;
+  final OsmSnapshot snapshot;
+
+  _ZoneReport(ShippedZoneMap shipped, _Layers layers, this.snapshot,
+      List<DateComponents> dates) {
+    areas = findStateMismatches(
+        shipped: shipped, snapshot: snapshot, land: layers.land, dates: dates);
+    offMap = offMapWithoutZone(shipped.map, layers.offMap, snapshot, dates);
+    unused = applyNoZoneExceptions([...areas, ...offMap], layers.noZoneAreas);
+  }
+
+  bool get failed => [...areas, ...offMap].any((area) => area.fails);
+
+  List<String> get lines => [
+        for (final area in [...areas, ...offMap])
+          '${_label(area)} ${area.describe()}',
+        for (final name in unused) '$noZoneAreasFile $name matches no area',
+      ];
+
+  List<String> get failures => [
+        for (final area in [...areas, ...offMap])
+          if (area.fails) '${_label(area)} ${area.describe()}',
+        for (final name in unused) '$noZoneAreasFile $name matches no area',
+      ];
+
+  String get summary {
+    final known = offMap.where((area) => area.exception != null);
+    return '${describeStateCheck(snapshot, areas)}, '
+        '${offMap.fold<int>(0, (sum, area) => sum + area.points)} '
+        'OpenStreetMap features off the map in ${offMap.length} areas with no '
+        'zone, ${known.length} of them named in $noZoneAreasFile';
+  }
+}
+
+const noZoneAreasFile = 'no_zone_areas.csv';
+
+String _label(MismatchArea area) => area.noZone
+    ? 'no zone'
+    : area.snappedOnly
+        ? 'snap only'
+        : 'state mismatch';
+
+DataBuild buildZones(Directory root, List<MalaysiaZoneYear> zoneYears) {
   final tool = '${root.path}/tool/malaysia';
   final errors = <String>[];
   final zones = readCsv(File('$tool/zones.csv'));
@@ -167,56 +224,73 @@ DataBuild buildZones(Directory root) {
   final points = _Points();
   final regions = _mergeRegions(districts, rowsByShape, shapes,
       parentShapeIds.whereType<String>().toSet(), points);
-  final regionStates = [
-    for (var r = 0; r < regions.length; r++)
-      _singleState({
-        for (final row in regions[r].rows) zoneStates[row.split(':').first]!,
-        for (var i = 0; i < specialAreas.length; i++)
-          if (regions[r].shapeIds.contains(parentShapeIds[i]))
-            zoneStates[specialAreas[i]['zone']]!,
-      })
-  ];
   final rawArcs = _buildArcs(regions, points);
   errors.addAll(_arcCrossings(rawArcs.vertices)
       .where((crossing) => !crossingsBefore.contains(crossing))
       .map((crossing) => 'stitching the state borders made $crossing'));
-  final anchors = [
+  final tolerances = _arcTolerances(rawArcs, regions, zoneStates, specialAreas,
+      parentShapeIds, differingZonePairs(zoneYears));
+  final fixtureAnchors = [
     for (final fixture in fixtures)
       [
         MalaysiaZoneMap.quantize(double.parse(fixture['lat']!)),
         MalaysiaZoneMap.quantize(double.parse(fixture['lon']!)),
       ]
   ];
-  final arcs = [for (final arc in rawArcs.vertices) _simplify(arc, anchors)];
-  final output =
-      _encodeZones(zones, specialAreas, regions, parentShapeIds, arcs);
-  final map = MalaysiaZoneMap.parse(output);
+  final border = BorderFeatures(layers.border, snapshot, catalogDates(zones));
+  final anchored = <String>{};
+  late List<List<int>> arcs;
+  late String output;
+  late MalaysiaZoneMap map;
+  while (true) {
+    final anchors = AnchorIndex([
+      ...fixtureAnchors,
+      for (final feature in border.features)
+        if (anchored.contains(feature.id)) [feature.lat, feature.lon]
+    ]);
+    arcs = [
+      for (var a = 0; a < rawArcs.vertices.length; a++)
+        simplifyArc(rawArcs.vertices[a], tolerances[a], anchors)
+    ];
+    output = _encodeZones(zones, specialAreas, regions, parentShapeIds, arcs);
+    map = MalaysiaZoneMap.parse(output);
+    final fresh = [
+      for (final feature in border.wrongFeatures(map))
+        if (anchored.add(feature.id)) feature
+    ];
+    if (fresh.isEmpty) break;
+  }
+  final wrong = border.wrongFeatures(map);
+  errors.addAll([
+    for (final feature in wrong)
+      if (feature.metresToLine <= stateCheckToleranceMetres)
+        'border feature ${feature.describe()}'
+  ]);
   final resolved = _verifyMap(map, regions, fixtures, shapes, rowsByShape,
       zoneStates, parentShapeIds.whereType<String>().toList(), errors);
-
-  final mismatches = findStateMismatches(
-    shipped: ShippedZoneMap(map, arcs,
-        [for (final region in regions) region.arcIndices], regionStates),
-    snapshot: snapshot,
-    dates: catalogDates(zones),
-  );
-  errors.addAll(mismatches
-      .where((area) => !area.snappedOnly)
-      .map((area) => 'state mismatch ${area.describe()}'));
+  final report = _ZoneReport(
+      ShippedZoneMap.parse(output), layers, snapshot, catalogDates(zones));
+  errors.addAll(report.failures);
 
   final summary = '${zones.length} zones, ${shapes.length} districts in '
       '${regions.length} regions, ${specialAreas.length} special areas, '
       '${islands.length} island areas, ${arcs.length} arcs, '
-      '$resolved fixtures resolved, ${describeStateCheck(snapshot, mismatches)}';
+      '$resolved fixtures resolved, '
+      '${border.describe(wrong, anchored.length)}, ${report.summary}';
   return DataBuild(output, errors, layers.sources, summary);
 }
 
 class _Layers {
   final Map<String, Shape> adm2;
+  final PolygonIndex land;
   final OsmSnapshot? snapshot;
+  final List<OsmFeature> border;
+  final List<OsmFeature> offMap;
+  final List<Map<String, String>> noZoneAreas;
   final List<ManifestEntry> sources;
 
-  _Layers(this.adm2, this.snapshot, this.sources);
+  _Layers(this.adm2, this.land, this.snapshot, this.border, this.offMap,
+      this.noZoneAreas, this.sources);
 
   static _Layers read(String tool, List<String> errors) {
     final sources = <ManifestEntry>[];
@@ -241,7 +315,7 @@ class _Layers {
           sha256Hex(adm2Bytes),
           method: 'GET'));
       try {
-        adm2 = _readShapes(utf8.decode(adm2Bytes));
+        adm2 = readShapes(utf8.decode(adm2Bytes));
       } on FormatException catch (error) {
         errors.add('$tool/raw/${_geoBoundariesFile('ADM2')}.gz is not geoJSON '
             '(${error.message})');
@@ -262,16 +336,48 @@ class _Layers {
           method: 'POST',
           form: 'data=${overpassQuery(osmSnapshotDate)}'));
       try {
-        snapshot = OsmSnapshot.parse(utf8.decode(osmBytes));
+        snapshot = OsmSnapshot.parse(utf8.decode(osmBytes),
+            exceptions: readStateLineExceptions(tool));
       } on FormatException catch (error) {
-        errors.add('$tool/raw/$osmSnapshotFile is not an Overpass response '
-            '(${error.message})');
-      } on TypeError catch (error) {
-        errors.add('$tool/raw/$osmSnapshotFile is not an Overpass response '
-            '($error)');
+        errors.add('$tool/raw/$osmSnapshotFile is not a usable OpenStreetMap '
+            'snapshot (${error.message})');
       }
     }
-    return _Layers(adm2, snapshot, sources);
+    sources.add(ManifestEntry(
+        'geofabrik',
+        'malaysia-singapore-brunei $osmExtractTimestamp',
+        osmExtractTimestamp.substring(0, 10),
+        osmExtractUrl,
+        osmExtractSha256,
+        method: 'GET'));
+    List<OsmFeature> readFeatures(String file, String name) {
+      final bytes = readRaw(file);
+      if (bytes == null) return const [];
+      sources.add(ManifestEntry('openstreetmap', '$name $osmExtractTimestamp',
+          osmExtractTimestamp.substring(0, 10), osmExtractUrl, sha256Hex(bytes),
+          method: 'osmium',
+          form: 'tags-filter ${osmExtractFilters.join(' ')}'));
+      try {
+        return readOsmFeatures(bytes);
+      } on FormatException catch (error) {
+        errors.add('$tool/raw/$file is not an OpenStreetMap feature extract '
+            '(${error.message})');
+        return const [];
+      }
+    }
+
+    final border = readFeatures(osmBorderFeaturesFile,
+        'MYS features within ${osmExtractReachMetres.round()} m of a state line');
+    final offMap = readFeatures(osmOffMapFeaturesFile,
+        'MYS features more than ${osmOffMapMetres.round()} m outside every district');
+    return _Layers(
+        adm2,
+        PolygonIndex([for (final shape in adm2.values) ...shape.rings]),
+        snapshot,
+        border,
+        offMap,
+        readCsv(File('$tool/$noZoneAreasFile')),
+        sources);
   }
 }
 
@@ -399,9 +505,6 @@ List<DateComponents> catalogDates(List<Map<String, String>> zones) => [
             int.parse(iso.substring(5, 7)), int.parse(iso.substring(8, 10)))
     ];
 
-String? _singleState(Set<String> states) =>
-    states.length == 1 ? states.single : null;
-
 String _normalizeRule(String rule) {
   final compact = rule.replaceAll(' ', '');
   if (compact.isEmpty) return '';
@@ -423,45 +526,6 @@ List<int> _octagon(double latitude, double longitude, double radiusMetres) {
           longitude + radiusMetres * math.sin(k * math.pi / 4) / lonMetres),
     ],
   ];
-}
-
-Map<String, Shape> _readShapes(String geoJson) {
-  final features = (json.decode(geoJson) as Map)['features'] as List;
-  final shapes = <String, Shape>{};
-  for (final feature in features) {
-    final properties = feature['properties'] as Map;
-    final geometry = feature['geometry'] as Map;
-    final polygons = geometry['type'] == 'MultiPolygon'
-        ? geometry['coordinates'] as List
-        : [geometry['coordinates']];
-    final rings = <List<int>>[];
-    for (final polygon in polygons) {
-      for (final ring in polygon as List) {
-        final quantized = <int>[];
-        for (final point in ring as List) {
-          final lat = MalaysiaZoneMap.quantize((point[1] as num).toDouble());
-          final lon = MalaysiaZoneMap.quantize((point[0] as num).toDouble());
-          final n = quantized.length;
-          if (n >= 2 && quantized[n - 2] == lat && quantized[n - 1] == lon) {
-            continue;
-          }
-          quantized
-            ..add(lat)
-            ..add(lon);
-        }
-        final n = quantized.length;
-        if (n >= 4 &&
-            quantized[0] == quantized[n - 2] &&
-            quantized[1] == quantized[n - 1]) {
-          quantized.removeRange(n - 2, n);
-        }
-        if (quantized.length >= 6) rings.add(quantized);
-      }
-    }
-    final id = properties['shapeID'] as String;
-    shapes[id] = Shape(id, properties['shapeName'] as String, rings);
-  }
-  return shapes;
 }
 
 class _Region {
@@ -607,94 +671,50 @@ _Arcs _buildArcs(List<_Region> regions, _Points points) {
   return arcs;
 }
 
-const anchorKeepMetres = 150.0;
-
-List<int> _simplify(List<int> points, List<List<int>> anchors) {
-  final count = points.length ~/ 2;
-  if (count <= 2) return points;
-  final closed = points[0] == points[points.length - 2] &&
-      points[1] == points[points.length - 1];
-  if (closed && count > 3) {
-    var farthest = 1;
-    var farthestDistance = -1.0;
-    for (var i = 1; i < count - 1; i++) {
-      final d = _metres(points, 0, i);
-      if (d > farthestDistance) {
-        farthestDistance = d;
-        farthest = i;
-      }
-    }
-    final head = _simplify(points.sublist(0, farthest * 2 + 2), anchors);
-    final tail = _simplify(points.sublist(farthest * 2), anchors);
-    return [...head, ...tail.sublist(2)];
+List<List<double>> _arcTolerances(
+    _Arcs rawArcs,
+    List<_Region> regions,
+    Map<String, String> zoneStates,
+    List<Map<String, String>> specialAreas,
+    List<String?> parentShapeIds,
+    Set<String> differing) {
+  final specialsByRegion = <int, List<Map<String, String>>>{};
+  for (var i = 0; i < specialAreas.length; i++) {
+    final region = regions
+        .indexWhere((region) => region.shapeIds.contains(parentShapeIds[i]));
+    specialsByRegion.putIfAbsent(region, () => []).add(specialAreas[i]);
   }
-  final keep = _anchoredVertices(points, anchors);
-  keep[0] = true;
-  keep[count - 1] = true;
-  final stack = <List<int>>[];
-  var previous = 0;
-  for (var i = 1; i < count; i++) {
-    if (!keep[i]) continue;
-    stack.add([previous, i]);
-    previous = i;
-  }
-  while (stack.isNotEmpty) {
-    final range = stack.removeLast();
-    var worst = -1;
-    var worstDistance = simplifyToleranceMetres;
-    for (var i = range[0] + 1; i < range[1]; i++) {
-      final d = _segmentDistanceMetres(points, range[0], range[1], i);
-      if (d > worstDistance) {
-        worstDistance = d;
-        worst = i;
-      }
-    }
-    if (worst >= 0) {
-      keep[worst] = true;
-      stack
-        ..add([range[0], worst])
-        ..add([worst, range[1]]);
-    }
-  }
+  Set<String> zonesAt(int region, int lat, int lon) => {
+        for (final row in regions[region].rows)
+          if (rowMatches(row, lat, lon)) zoneOfRow(row),
+        for (final area in specialsByRegion[region] ?? const [])
+          if (metresBetween(
+                  lat,
+                  lon,
+                  MalaysiaZoneMap.quantize(double.parse(area['lat']!)),
+                  MalaysiaZoneMap.quantize(double.parse(area['lon']!))) <=
+              double.parse(area['radius_m']!) + simplifyToleranceMetres)
+            area['zone']!,
+      };
+  bool differ(Set<String> one, Set<String> other) =>
+      one.any((a) => other.any((b) =>
+          zoneStates[a] != zoneStates[b] &&
+          differing.contains(zonePair(a, b))));
   return [
-    for (var i = 0; i < count; i++)
-      if (keep[i]) ...[points[i * 2], points[i * 2 + 1]]
+    for (var a = 0; a < rawArcs.vertices.length; a++)
+      [
+        for (var i = 0; i < rawArcs.vertices[a].length; i += 2)
+          rawArcs.users[a].length == 2 &&
+                  differ(
+                      zonesAt(rawArcs.users[a][0], rawArcs.vertices[a][i],
+                          rawArcs.vertices[a][i + 1]),
+                      zonesAt(rawArcs.users[a][1], rawArcs.vertices[a][i],
+                          rawArcs.vertices[a][i + 1]))
+              ? borderToleranceMetres
+              : simplifyToleranceMetres
+      ]
   ];
 }
-
-List<bool> _anchoredVertices(List<int> points, List<List<int>> anchors) {
-  final count = points.length ~/ 2;
-  final keep = List<bool>.filled(count, false);
-  final box = ringBounds(points);
-  final margin = MalaysiaZoneMap.quantize(anchorKeepMetres / 100000);
-  final near = [
-    for (final anchor in anchors)
-      if (anchor[0] >= box[0] - margin &&
-          anchor[0] <= box[1] + margin &&
-          anchor[1] >= box[2] - margin &&
-          anchor[1] <= box[3] + margin)
-        anchor
-  ];
-  if (near.isEmpty) return keep;
-  for (var i = 0; i < count; i++) {
-    for (final anchor in near) {
-      if (metresBetween(
-              points[i * 2], points[i * 2 + 1], anchor[0], anchor[1]) <=
-          anchorKeepMetres) {
-        keep[i] = true;
-        break;
-      }
-    }
-  }
-  return keep;
-}
-
-double _metres(List<int> points, int i, int j) => metresBetween(
-    points[i * 2], points[i * 2 + 1], points[j * 2], points[j * 2 + 1]);
-
-double _segmentDistanceMetres(List<int> points, int a, int b, int p) =>
-    pointSegmentMetres(points[p * 2], points[p * 2 + 1], points[a * 2],
-        points[a * 2 + 1], points[b * 2], points[b * 2 + 1]);
 
 List<String> _arcCrossings(List<List<int>> arcs) {
   final boxes = [

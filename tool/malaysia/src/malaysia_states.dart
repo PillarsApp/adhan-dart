@@ -4,6 +4,7 @@ import 'package:adhan/src/data/date_components.dart';
 import 'package:adhan/src/data/malaysia_zone_map.dart';
 
 import 'geometry.dart';
+import 'osm_extract.dart';
 import 'osm_snapshot.dart';
 
 const stateCheckGridStepDegrees = 0.001;
@@ -17,37 +18,79 @@ class ShippedZoneMap {
   final MalaysiaZoneMap map;
   final List<List<int>> arcs;
   final List<List<int>> regionArcs;
-  final List<String?> regionStates;
+  final List<List<String>> regionRows;
+  final List<Set<String>> regionZones;
 
-  ShippedZoneMap(this.map, this.arcs, this.regionArcs, this.regionStates);
+  ShippedZoneMap(
+      this.map, this.arcs, this.regionArcs, this.regionRows, this.regionZones);
 
   static ShippedZoneMap parse(String text) {
     final map = MalaysiaZoneMap.parse(text);
-    final zoneStates = {for (final zone in map.zones) zone.code: zone.state};
     final arcs = <List<int>>[];
     final regionArcs = <List<int>>[];
-    final regionStates = <String?>[];
+    final regionRows = <List<String>>[];
     for (final line in text.split('\n')) {
       final fields = line.split('\t');
       if (fields[0] == 'A') {
         arcs.add(MalaysiaZoneMap.decodePolyline(fields[1]));
       } else if (fields[0] == 'R') {
         regionArcs.add(fields[1].split(' ').map(int.parse).toList());
-        final states = {
-          for (final row in fields[2].split(' '))
-            zoneStates[row.split(':').first]
-        };
-        regionStates.add(states.length == 1 ? states.single : null);
+        regionRows.add(fields[2].split(' '));
       }
     }
-    return ShippedZoneMap(map, arcs, regionArcs, regionStates);
+    final regionZones = [
+      for (final rows in regionRows) {for (final row in rows) zoneOfRow(row)}
+    ];
+    for (final area in map.specialAreas) {
+      if (area.region >= 0 && area.region < regionZones.length) {
+        regionZones[area.region].add(area.zone);
+      }
+    }
+    return ShippedZoneMap(map, arcs, regionArcs, regionRows, regionZones);
   }
 }
 
+String zoneOfRow(String row) => row.split(':').first;
+
+bool rowMatches(String row, int lat, int lon) {
+  final colon = row.indexOf(':');
+  if (colon < 0) return true;
+  for (final part in row.substring(colon + 1).split('&')) {
+    final match = _rulePart.firstMatch(part)!;
+    final subject = (match.group(1) == 'lat' ? lat : lon) / 100000;
+    final value = double.parse(match.group(3)!);
+    final operator = match.group(2);
+    final holds = operator == '<'
+        ? subject < value
+        : operator == '<='
+            ? subject <= value
+            : operator == '>'
+                ? subject > value
+                : subject >= value;
+    if (!holds) return false;
+  }
+  return true;
+}
+
+final _rulePart = RegExp(r'^(lat|lon)(<=|>=|<|>)(-?\d+(?:\.\d+)?)$');
+
+Map<String, Set<String>> zoneTerritories(Iterable<MalaysiaZone> zones) {
+  final federal = {
+    for (final iso in osmTerritoryNames.keys) osmStateNames[iso],
+  };
+  return {
+    for (final zone in zones)
+      zone.code: federal.contains(zone.state)
+          ? osmTerritoryNames.values.where(zone.areas.contains).toSet()
+          : {zone.state},
+  };
+}
+
 class MismatchArea {
-  final String osmState;
-  final String zoneState;
+  final String territory;
+  final String? zoneState;
   final Set<String> zones = {};
+  String? exception;
   int points = 0;
   int snappedPoints = 0;
   double squareKilometres = 0;
@@ -59,39 +102,113 @@ class MismatchArea {
   int minLon = 1 << 40;
   int maxLon = -(1 << 40);
 
-  MismatchArea(this.osmState, this.zoneState);
+  final List<String> features = [];
 
-  bool get snappedOnly => snappedPoints == points;
+  MismatchArea(this.territory, this.zoneState);
 
-  String describe() => '${zones.join('/')} ($zoneState) inside OpenStreetMap '
-      '$osmState, ${squareKilometres.toStringAsFixed(2)} km2, '
-      '${depthMetres.round()} m deep at ${degrees(deepestLat)},'
-      '${degrees(deepestLon)}, box ${degrees(minLat)}..${degrees(maxLat)} '
-      '${degrees(minLon)}..${degrees(maxLon)}'
-      '${snappedPoints == 0 ? '' : ', $snappedPoints of $points points outside every district polygon (${MalaysiaZoneMap.boundaryToleranceMetres} m snap)'}';
+  bool get noZone => zoneState == null;
+
+  bool get snappedOnly => !noZone && snappedPoints == points;
+
+  bool get fails => !snappedOnly && exception == null;
+
+  String describe() {
+    final box = 'box ${degrees(minLat)}..${degrees(maxLat)} '
+        '${degrees(minLon)}..${degrees(maxLon)}';
+    final known = exception == null ? '' : ', known: $exception';
+    if (features.isNotEmpty) {
+      final named = features.where((name) => name.isNotEmpty).take(3);
+      return 'at $points OpenStreetMap features inside OpenStreetMap '
+          '$territory${named.isEmpty ? '' : ' (${named.join(', ')})'}, '
+          '$box$known';
+    }
+    return '${noZone ? '' : '${zones.join('/')} ($zoneState) '}'
+        'inside OpenStreetMap $territory, '
+        '${squareKilometres.toStringAsFixed(2)} km2, '
+        '${depthMetres.round()} m deep at ${degrees(deepestLat)},'
+        '${degrees(deepestLon)}, $box'
+        '${snappedPoints == 0 || noZone ? '' : ', $snappedPoints of $points points outside every district polygon (${MalaysiaZoneMap.boundaryToleranceMetres} m snap)'}'
+        '$known';
+  }
+}
+
+List<String> applyNoZoneExceptions(
+    List<MismatchArea> areas, List<Map<String, String>> exceptions) {
+  final unused = <String>[];
+  for (final row in exceptions) {
+    final box = [
+      for (final key in const ['min_lat', 'max_lat', 'min_lon', 'max_lon'])
+        MalaysiaZoneMap.quantize(double.parse(row[key]!))
+    ];
+    var used = false;
+    for (final area in areas) {
+      if (!area.noZone ||
+          area.territory != row['territory'] ||
+          area.minLat < box[0] ||
+          area.maxLat > box[1] ||
+          area.minLon < box[2] ||
+          area.maxLon > box[3]) {
+        continue;
+      }
+      area.exception = row['name'];
+      used = true;
+    }
+    if (!used) unused.add(row['name']!);
+  }
+  return unused;
 }
 
 List<MismatchArea> findStateMismatches({
   required ShippedZoneMap shipped,
   required OsmSnapshot snapshot,
+  required PolygonIndex land,
   required List<DateComponents> dates,
 }) {
   final map = shipped.map;
   final zoneStates = {for (final zone in map.zones) zone.code: zone.state};
+  final allowed = zoneTerritories(map.zones);
+  final days = [
+    for (final date in dates) date.year * 10000 + date.month * 100 + date.day
+  ];
   final regionsByArc = List.generate(shipped.arcs.length, (_) => <int>[]);
   for (var r = 0; r < shipped.regionArcs.length; r++) {
     for (final a in shipped.regionArcs[r]) {
       regionsByArc[a].add(r);
     }
   }
-  final states = snapshot.states.toList();
-  final ringsByState = [for (final state in states) snapshot.ringsOf(state)];
+  final territories = snapshot.territories.toList();
+  final ringsByTerritory = [
+    for (final territory in territories)
+      [
+        for (final ring in snapshot.rings)
+          if (ring.territory == territory) ring.points
+      ]
+  ];
+  final regionTerritories = [
+    for (final zones in shipped.regionZones)
+      territories
+          .where((territory) =>
+              zones.every((zone) => allowed[zone]!.contains(territory)))
+          .toSet()
+  ];
+  final regionRules = [
+    for (final rows in shipped.regionRows)
+      days.every((day) => rows.any((row) =>
+              !row.contains(':') && map.zone(zoneOfRow(row))!.inForce(day)))
+          ? const <String>[]
+          : rows
+  ];
+  bool resolvesEveryDay(List<String> rows, int lat, int lon) =>
+      rows.isEmpty ||
+      days.every((day) => rows.any((row) =>
+          map.zone(zoneOfRow(row))!.inForce(day) && rowMatches(row, lat, lon)));
 
   final step = MalaysiaZoneMap.quantize(stateCheckGridStepDegrees);
-  final minLat = MalaysiaZoneMap.quantize(gridMinLatitude);
-  final maxLat = MalaysiaZoneMap.quantize(gridMaxLatitude);
-  final minLon = MalaysiaZoneMap.quantize(gridMinLongitude);
-  final maxLon = MalaysiaZoneMap.quantize(gridMaxLongitude);
+  final bounds = snapshot.bounds;
+  final minLat = (bounds[0] ~/ step) * step;
+  final maxLat = bounds[1];
+  final minLon = (bounds[2] ~/ step) * step;
+  final maxLon = bounds[3];
   final columns = (maxLon - minLon) ~/ step + 1;
 
   final arcIndex = SegmentIndex();
@@ -102,13 +219,11 @@ List<MismatchArea> findStateMismatches({
   bool nearAnArc(int lat, int lon) => arcIndex
       .near(lat, lon, snap)
       .any((s) => pointSegmentMetres(lat, lon, s[0], s[1], s[2], s[3]) <= snap);
-  final stateScan = _Scanline([
-    for (final rings in ringsByState) [for (final r in rings) r.points]
-  ]);
+  final stateScan = _Scanline(ringsByTerritory);
   final regionScan = _Scanline([
     for (final arc in shipped.arcs) [arc]
   ], open: true);
-  final mismatchState = <int, String>{};
+  final mismatchLabel = <int, String>{};
   final mismatchZones = <int, Set<String>>{};
   final mismatchDepth = <int, double>{};
   final mismatchSnapped = <int>{};
@@ -119,7 +234,7 @@ List<MismatchArea> findStateMismatches({
     final regionSpans = regionScan.spans(lat, (index) => regionsByArc[index]);
     var regionSpan = 0;
     for (final span in stateSpans) {
-      final state = states[span.owner];
+      final territory = territories[span.owner];
       final firstColumn = ((span.fromLon - minLon) / step).ceil();
       final lastColumn = ((span.toLon - minLon) / step).floor();
       for (var column = firstColumn; column <= lastColumn; column++) {
@@ -132,30 +247,41 @@ List<MismatchArea> findStateMismatches({
                 regionSpans[regionSpan].fromLon <= lon
             ? regionSpans[regionSpan].owner
             : -1;
-        if (region >= 0 && shipped.regionStates[region] == state) continue;
-        if (region < 0 && !nearAnArc(lat, lon)) continue;
-        final zones = <String>{};
-        for (final date in dates) {
-          final zone = map.zoneAt(lat / 100000, lon / 100000, date);
-          if (zone != null && zoneStates[zone] != state) zones.add(zone);
+        if (region >= 0 &&
+            regionTerritories[region].contains(territory) &&
+            resolvesEveryDay(regionRules[region], lat, lon)) {
+          continue;
         }
-        if (zones.isEmpty) continue;
-        final depth = snapshot.depthMetres(state, lat, lon);
+        final zones = <String>{};
+        var none = region < 0 && !nearAnArc(lat, lon);
+        if (none && !land.contains(lat, lon)) continue;
+        if (!none) {
+          for (final date in dates) {
+            final zone = map.zoneAt(lat / 100000, lon / 100000, date);
+            if (zone == null) {
+              none = true;
+            } else if (!allowed[zone]!.contains(territory)) {
+              zones.add(zone);
+            }
+          }
+        }
+        if (zones.isEmpty && !none) continue;
+        final depth = snapshot.depthMetres(territory, lat, lon);
         if (depth <= stateCheckToleranceMetres) continue;
         final key = row * columns + column;
-        mismatchState[key] = state;
+        mismatchLabel[key] = zones.isEmpty ? '$territory|' : '$territory|zone';
         mismatchZones[key] = zones;
         mismatchDepth[key] = depth;
         if (region < 0) mismatchSnapped.add(key);
       }
     }
   }
-  return _groupAreas(mismatchState, mismatchZones, mismatchDepth,
+  return _groupAreas(mismatchLabel, mismatchZones, mismatchDepth,
       mismatchSnapped, zoneStates, columns, minLat, minLon, step);
 }
 
 List<MismatchArea> _groupAreas(
-    Map<int, String> mismatchState,
+    Map<int, String> mismatchLabel,
     Map<int, Set<String>> mismatchZones,
     Map<int, double> mismatchDepth,
     Set<int> mismatchSnapped,
@@ -164,7 +290,7 @@ List<MismatchArea> _groupAreas(
     int minLat,
     int minLon,
     int step) {
-  final parent = <int, int>{for (final key in mismatchState.keys) key: key};
+  final parent = <int, int>{for (final key in mismatchLabel.keys) key: key};
   int find(int key) {
     while (parent[key] != key) {
       parent[key] = parent[parent[key]!]!;
@@ -173,26 +299,28 @@ List<MismatchArea> _groupAreas(
     return key;
   }
 
-  for (final key in mismatchState.keys) {
+  for (final key in mismatchLabel.keys) {
     for (final neighbour in [
       key - columns - 1,
       key - columns,
       key - columns + 1,
       key - 1,
     ]) {
-      if (mismatchState[neighbour] == mismatchState[key]) {
+      if (mismatchLabel[neighbour] == mismatchLabel[key]) {
         parent[find(neighbour)] = find(key);
       }
     }
   }
 
   final areas = <int, MismatchArea>{};
-  for (final key in mismatchState.keys) {
+  for (final key in mismatchLabel.keys) {
     final lat = minLat + key ~/ columns * step;
     final lon = minLon + key % columns * step;
     final zones = mismatchZones[key]!;
-    final area = areas.putIfAbsent(find(key),
-        () => MismatchArea(mismatchState[key]!, zoneStates[zones.first]!));
+    final area = areas.putIfAbsent(
+        find(key),
+        () => MismatchArea(mismatchLabel[key]!.split('|').first,
+            zones.isEmpty ? null : zoneStates[zones.first]!));
     area.zones.addAll(zones);
     area.points++;
     if (mismatchSnapped.contains(key)) area.snappedPoints++;
@@ -274,4 +402,62 @@ class _Scanline {
     }
     return spans;
   }
+}
+
+List<MismatchArea> offMapWithoutZone(
+    MalaysiaZoneMap map,
+    List<OsmFeature> features,
+    OsmSnapshot snapshot,
+    List<DateComponents> dates) {
+  const cell = 1000;
+  final byCell = <String, List<OsmFeature>>{};
+  final territoryOf = <String, String>{};
+  for (final feature in features) {
+    final territory = snapshot.territoryAt(feature.lat, feature.lon);
+    if (territory == null ||
+        dates.every((date) =>
+            map.zoneAt(feature.lat / 100000, feature.lon / 100000, date) !=
+            null)) {
+      continue;
+    }
+    territoryOf[feature.id] = territory;
+    byCell
+        .putIfAbsent('$territory ${feature.lat ~/ cell} ${feature.lon ~/ cell}',
+            () => [])
+        .add(feature);
+  }
+  final parent = {for (final key in byCell.keys) key: key};
+  String find(String key) {
+    while (parent[key] != key) {
+      key = parent[key] = parent[parent[key]!]!;
+    }
+    return key;
+  }
+
+  for (final key in byCell.keys) {
+    final parts = key.split(' ');
+    final territory = parts.sublist(0, parts.length - 2).join(' ');
+    final row = int.parse(parts[parts.length - 2]);
+    final column = int.parse(parts.last);
+    for (var dy = -1; dy <= 1; dy++) {
+      for (var dx = -1; dx <= 1; dx++) {
+        final neighbour = '$territory ${row + dy} ${column + dx}';
+        if (parent.containsKey(neighbour)) parent[find(neighbour)] = find(key);
+      }
+    }
+  }
+  final areas = <String, MismatchArea>{};
+  for (final key in byCell.keys) {
+    for (final feature in byCell[key]!) {
+      final area = areas.putIfAbsent(
+          find(key), () => MismatchArea(territoryOf[feature.id]!, null));
+      area.points++;
+      area.features.add(feature.name);
+      area.minLat = math.min(area.minLat, feature.lat);
+      area.maxLat = math.max(area.maxLat, feature.lat);
+      area.minLon = math.min(area.minLon, feature.lon);
+      area.maxLon = math.max(area.maxLon, feature.lon);
+    }
+  }
+  return areas.values.toList()..sort((a, b) => b.points.compareTo(a.points));
 }

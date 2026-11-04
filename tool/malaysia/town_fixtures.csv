@@ -64,7 +64,7 @@ Genting Sempah,PHG05,2026-06-01,3.35,101.78333,1745114,Mountain pass (T.PASS); P
 Janda Baik,PHG05,2026-06-01,3.31667,101.86667,1735141,Kampung Janda Baik; special area.
 Bukit Tinggi,PHG05,2026-06-01,3.34944,101.82631,1735133,"Kampung Bukit Tinggi, Bentong; special area. The other GeoNames Bukit Tinggi features are hills elsewhere in Pahang."
 Cameron Highlands,PHG06,2026-06-01,4.46361,101.3763,1735262,"Tanah Rata, the district town."
-Genting Highlands,PHG06,2026-06-01,3.42368,101.79335,7799988,"Genting Highlands peak (T.PK), at the resort; special area inside Bentong. The GeoNames town point (1735132) lies 134 m inside the ADM1 Selangor line and resolves to SGR01, although OpenStreetMap puts it in Pahang."
+Genting Highlands,PHG06,2026-06-01,3.42368,101.79335,7799988,"Genting Highlands peak (T.PK), at the resort; special area inside Bentong. The GeoNames town point (1735132) has its own rows below."
 Resorts World Genting,PHG06,2026-06-01,3.42239,101.792,9951110,"Hotel (S.HTL) in Bentong, Pahang, per ADM1 and OpenStreetMap."
 Genting Ria Apartments,SGR01,2026-12-31,3.42007,101.78987,10107704,"Hulu Selangor side of Genting Highlands, per ADM1 and OpenStreetMap; the special area applies only inside Bentong."
 Genting Ria Apartments,SGRHSL,2027-01-01,3.42007,101.78987,10107704,"Hulu Selangor side of Genting Highlands, per ADM1 and OpenStreetMap; the special area applies only inside Bentong."
@@ -293,12 +293,12 @@ Pulau Rawa,JHR02,2026-06-01,2.52082,103.97557,1734889,Mersing island with Calet 
 Pulau Aman,PNG01,2026-06-01,5.26039,100.38661,1735083,Penang island with Kampung Pulau Aman (GeoNames 1765305).
 Pulau Rebak Besar,KDH06,2026-06-01,6.29742,99.69728,1222400,Langkawi island with the Rebak Island resort.
 Pulau Tenggul,TRG04,2026-06-01,4.8048,103.682,1734293,Dungun island (Pulau Tenggol) with dive resorts.
-Kampung Jabur,TRG04,2026-06-01,3.93333,103.3,1735217,"Kemaman, Terengganu, per OpenStreetMap and GeoNames; ADM1 puts it in Pahang (state_exceptions.csv)."
-Kampong Chendar,TRG04,2026-06-01,4.18333,103.41667,1769835,"Kemaman, Terengganu, per OpenStreetMap; ADM1 and GeoNames put it in Pahang (state_exceptions.csv)."
-Kampong Lubok Gokgek,PLS01,2026-06-01,6.3,100.21667,1767316,Perlis per OpenStreetMap and GeoNames; ADM1 puts it in Kedah (state_exceptions.csv).
-Kampung Padang Tok Kuning,PLS01,2026-06-01,6.41667,100.31667,1736089,Perlis per OpenStreetMap and GeoNames; ADM1 puts it in Kedah (state_exceptions.csv).
-Kota Simpang,MLK01,2026-06-01,2.4373,102.0305,7567398,Melaka per OpenStreetMap and GeoNames; ADM1 puts it in Negeri Sembilan (state_exceptions.csv).
-Kampung Tiga Ratus Kaki,KDH05,2026-06-01,5.2322,100.54069,6843755,Kedah per OpenStreetMap and GeoNames; ADM1 puts it in Penang (state_exceptions.csv).
+Kampung Jabur,TRG04,2026-06-01,3.93333,103.3,1735217,"Kemaman, Terengganu, per OpenStreetMap and GeoNames; ADM1 puts it in Pahang; the build follows OpenStreetMap."
+Kampong Chendar,TRG04,2026-06-01,4.18333,103.41667,1769835,"Kemaman, Terengganu, per OpenStreetMap; ADM1 and GeoNames put it in Pahang; the build follows OpenStreetMap."
+Kampong Lubok Gokgek,PLS01,2026-06-01,6.3,100.21667,1767316,Perlis per OpenStreetMap and GeoNames; ADM1 puts it in Kedah; the build follows OpenStreetMap.
+Kampung Padang Tok Kuning,PLS01,2026-06-01,6.41667,100.31667,1736089,Perlis per OpenStreetMap and GeoNames; ADM1 puts it in Kedah; the build follows OpenStreetMap.
+Kota Simpang,MLK01,2026-06-01,2.4373,102.0305,7567398,Melaka per OpenStreetMap and GeoNames; ADM1 puts it in Negeri Sembilan; the build follows OpenStreetMap.
+Kampung Tiga Ratus Kaki,KDH05,2026-06-01,5.2322,100.54069,6843755,Kedah per OpenStreetMap and GeoNames; ADM1 puts it in Penang; the build follows OpenStreetMap.
 Kampung Lembah Baharu,KDH05,2026-06-01,5.22395,100.6832,1767509,"Kedah per ADM1, GeoNames and OpenStreetMap; the geoBoundaries ADM2 Kerian shape reaches it."
 Kampung Chohong,MLK01,2026-06-01,2.2971,102.5036,1769750,"Melaka per ADM1, GeoNames and OpenStreetMap; the geoBoundaries ADM2 Muar shape reaches it."
 Kampong Pengkalan Leban,MLK01,2026-06-01,2.11667,102.48333,1765715,"Melaka per ADM1, GeoNames and OpenStreetMap."
@@ -311,7 +311,7 @@ Kampong Sungai Dua,PHG04,2026-06-01,3.15,102.25,1764057,Pahang per ADM1 and Open
 Taman Melewar,WLY01,2026-06-01,3.22179,101.70018,12648583,Kuala Lumpur per ADM1 and OpenStreetMap; GeoNames lists it in Selangor.
 Kampung Lubok Nibong,SGR01,2026-12-31,3.70289,101.55575,1767273,"Hulu Selangor, Selangor, per ADM1 and OpenStreetMap; the geoBoundaries ADM2 Muallim shape reaches it."
 Kampung Lubok Nibong,SGRHSL,2027-01-01,3.70289,101.55575,1767273,"Hulu Selangor, Selangor, per ADM1 and OpenStreetMap; the geoBoundaries ADM2 Muallim shape reaches it."
-Pulau Seri Buat,PHG07,2026-06-01,2.6852,103.9131,1734887,"Island (T.ISL) of Rompin, Pahang, per OpenStreetMap; ADM1 puts it in Johor (state_exceptions.csv)."
+Pulau Seri Buat,PHG07,2026-06-01,2.6852,103.9131,1734887,"Island (T.ISL) of Rompin, Pahang, per OpenStreetMap; ADM1 puts it in Johor; the build follows OpenStreetMap."
 Genting Highlands town point,PHG06,2026-12-31,3.42453,101.79163,1735132,"e-Solat PHG06 ""Genting Higlands""; GeoNames populated place, 19 m inside OpenStreetMap Pahang (Bentong). An earlier build returned SGR01 here."
 Genting Highlands town point,PHG06,2027-01-01,3.42453,101.79163,1735132,As above; an earlier build returned SGRHSL.
 "Kayangan Apartment, Genting",PHG06,2026-12-31,3.42145,101.79106,,"OpenStreetMap way 176115665 (building=apartments), 20 m inside OpenStreetMap Pahang."
@@ -341,3 +341,11 @@ Ring point 1 km from Merapok,SWK01,2026-12-31,4.96029,115.51418,,227 m inside Op
 "Pulau Tioman south",PHG01,2026-12-31,2.746130,104.174957,,"Inside the OpenStreetMap Pahang ring of Pulau Tioman; a check against the 2017 geoBoundaries ADM1 line, which puts most of Tioman in Johor, reported it as a Johor point."
 "Lojing",KTN02,2026-12-31,4.628898,101.400474,,"1,166 m inside OpenStreetMap Kelantan (Kecil Lojing); a check against the 2017 geoBoundaries ADM1 line reported it as a Pahang point."
 Pulau Aceh,PHG07,2026-12-31,2.6683,103.7695,1734936,"Island (T.ISL) 16 km east of Endau; GeoNames admin1 Pahang; its own OpenStreetMap Pahang ring. An earlier build gave it the nearest district, Mersing, so it returned JHR02."
+Puncak Lodge,PHG06,2026-12-31,3.711337,101.736265,,"e-Solat PHG06 ""Bukit Fraser""; OpenStreetMap way 711959590 (tourism=chalet) on Jalan Genting in Fraser's Hill town, 8 m inside OpenStreetMap Pahang (Raub), inside the Bukit Fraser special area. The Puncak Inn, 70 m away, gives its address as Jalan Genting, 49000 Bukit Fraser, Pahang. An earlier build returned SGR01."
+Puncak Lodge,PHG06,2027-01-01,3.711337,101.736265,,As above; an earlier build returned SGRHSL.
+Bernam Nature Hut campsite,SGR01,2026-12-31,3.6849,101.5387,,"OpenStreetMap ways 1498144619 to 1498144622 (tourism=chalet), 41 to 62 m inside OpenStreetMap Selangor (Hulu Selangor), on the Selangor bank of Sungai Bernam, the Perak and Selangor border, which runs 21 m away. An earlier build returned PRK01."
+Bernam Nature Hut campsite,SGRHSL,2027-01-01,3.6849,101.5387,,As above; an earlier build returned PRK01.
+"Jalan 16/2 No. 4, Petaling Jaya",SGR01,2026-12-31,3.118791,101.644487,,"OpenStreetMap way 358006867, postcode 46350, 39 m inside the OpenStreetMap Kuala Lumpur line, which state_line_exceptions.csv corrects with its source. An earlier build returned WLY01."
+"Jalan 16/2 No. 4, Petaling Jaya",SGRPTG,2027-01-01,3.118791,101.644487,,As above; an earlier build returned WLY01.
+"Lorong 16/2A No. 3, Kuala Lumpur",WLY01,2026-12-31,3.11937,101.64515,,"OpenStreetMap way 1323903802, postcode 59100 (Kuala Lumpur), east of the Jalan 16/2 exception in state_line_exceptions.csv."
+"Layang-Layang (Swallow Reef)",,2026-12-31,7.37222,113.84167,,"Dive resort and airstrip in the Spratly Islands, inside the OpenStreetMap Sabah ring, more than 500 m from every district and island area, so it resolves to no zone (coordinates: Wikipedia, Swallow Reef). The Geofabrik extract that the off-map check reads stops short of the Spratly reefs, so this fixture records the gap; see Known limits in the guide."
