@@ -1,6 +1,8 @@
 shape_id,district,zone,rule,source
 92858781B79427410842699,Kuala Lumpur,WLY01,,"e-Solat WLY01 ""Kuala Lumpur""; geoBoundaries cuts Kuala Lumpur out of the Selangor shapes (no overlap found)."
-15666254B54729125478011,Putrajaya,WLY01,,"e-Solat WLY01 ""Putrajaya"". The shape is the geoBoundaries ADM1 Putrajaya polygon, because the ADM2 layer has no Putrajaya shape and its Sepang shape covers Putrajaya. The build cuts it out of the Sepang shape."
+MY-16@2.9264/101.6964,Putrajaya,WLY01,,"e-Solat WLY01 ""Putrajaya"". The shape is the OpenStreetMap ring of Putrajaya (MY-16) around 2.9264,101.6964, because the geoBoundaries ADM2 layer has no Putrajaya shape and its Sepang shape covers Putrajaya. The build cuts it out of the Sepang shape."
+MY-06@2.6683/103.7695,Pulau Aceh,PHG07,,"e-Solat PHG07 ""Zon Khas Daerah Rompin (Mukim Rompin, Mukim Endau, Mukim Pontian)"". The shape is the OpenStreetMap ring of Pahang (MY-06) around Pulau Aceh (GeoNames 1734936, T.ISL, admin1 Pahang), 16 km east of Endau, which lies inside the sea part of the geoBoundaries Mersing shape. The build cuts it out of the Mersing shape."
+MY-04@2.40707/101.85202,Tanjung Tuan,MLK01,,"e-Solat MLK01 ""Seluruh Negeri Melaka"". The shape is the OpenStreetMap ring of Melaka (MY-04) around the Cape Rachado lighthouse at 2.40707,101.85202: the Tanjung Tuan exclave, which the geoBoundaries layers leave out and whose land the ADM2 Port Dickson shape covers. The build cuts it out of the Port Dickson shape."
 92858781B93759904190294,Labuan,WLY02,,"e-Solat WLY02 ""Labuan""."
 92858781B42177808662163,Johor Bahru,JHR02,,"e-Solat JHR02 ""Johor Bahru""."
 92858781B34033962801246,Kota Tinggi,JHR02,,"e-Solat JHR02 ""Kota Tinggi""."

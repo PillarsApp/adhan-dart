@@ -243,8 +243,8 @@ Dungun,TRG04,2026-06-01,4.775,103.4162,1734308,
 Kemaman,TRG04,2026-06-01,4.25,103.41667,1732945,"Cukai (Chukai), the district town."
 Kuala Lumpur,WLY01,2026-12-31,3.1412,101.68653,1735161,
 Kuala Lumpur,WLY01,2027-01-01,3.1412,101.68653,1735161,
-Putrajaya,WLY01,2026-12-31,2.93527,101.69112,6697380,Inside the geoBoundaries ADM1 Putrajaya polygon.
-Putrajaya,WLY01,2027-01-01,2.93527,101.69112,6697380,Inside the geoBoundaries ADM1 Putrajaya polygon.
+Putrajaya,WLY01,2026-12-31,2.93527,101.69112,6697380,Inside the OpenStreetMap Putrajaya ring.
+Putrajaya,WLY01,2027-01-01,2.93527,101.69112,6697380,Inside the OpenStreetMap Putrajaya ring.
 Labuan,WLY02,2026-06-01,5.28028,115.2475,1733782,
 Kuala Lumpur (verifier),WLY01,2026-12-31,3.1390,101.6869,,Verifier point.
 Kuala Lumpur (verifier),WLY01,2027-01-01,3.1390,101.6869,,Verifier point.
@@ -269,10 +269,10 @@ Kampung Sungai Gading,SGR01,2026-12-31,3.70474,101.56379,1764037,"Hulu Selangor 
 Kampung Sungai Gading,SGRHSL,2027-01-01,3.70474,101.56379,1764037,"Hulu Selangor district, Selangor (GeoNames, geoBoundaries ADM1 and OpenStreetMap agree); the geoBoundaries ADM2 Muallim shape reaches it."
 Kampung Sungai Gapis,SGR01,2026-12-31,3.70762,101.5657,1764032,"Hulu Selangor district, Selangor (GeoNames, geoBoundaries ADM1 and OpenStreetMap agree); the geoBoundaries ADM2 Muallim shape reaches it."
 Kampung Pianggu,PHG07,2026-06-01,2.64874,103.58993,1734898,"Rompin district, Pahang (GeoNames, geoBoundaries ADM1 and OpenStreetMap agree), east of the PHG07 line; the geoBoundaries ADM2 Mersing shape reaches it."
-Kampong Jenderam Hilir,SGR01,2026-12-31,2.88333,101.73333,1768801,Sepang shape 4 km outside the geoBoundaries ADM1 Putrajaya polygon.
-Kampong Jenderam Hilir,SGRSPG,2027-01-01,2.88333,101.73333,1768801,Sepang shape 4 km outside the geoBoundaries ADM1 Putrajaya polygon.
-Ladang Galloway,WLY01,2026-12-31,2.8974,101.6616,7697686,South-west of the geoBoundaries ADM1 Putrajaya polygon.
-Ladang Galloway,WLY01,2027-01-01,2.8974,101.6616,7697686,South-west of the geoBoundaries ADM1 Putrajaya polygon.
+Kampong Jenderam Hilir,SGR01,2026-12-31,2.88333,101.73333,1768801,Sepang shape 4 km outside the OpenStreetMap Putrajaya ring.
+Kampong Jenderam Hilir,SGRSPG,2027-01-01,2.88333,101.73333,1768801,Sepang shape 4 km outside the OpenStreetMap Putrajaya ring.
+Ladang Galloway,WLY01,2026-12-31,2.8974,101.6616,7697686,South-west of the OpenStreetMap Putrajaya ring.
+Ladang Galloway,WLY01,2027-01-01,2.8974,101.6616,7697686,South-west of the OpenStreetMap Putrajaya ring.
 Pulau Tulai Candang,PHG01,2026-06-01,2.9121,104.1071,1734940,"Pulau Tulai, an island of Mukim Tioman 14 km north-west of the PHG01 reference point."
 Yan side of Gunung Jerai (verifier),KDH02,2026-06-01,5.79943,100.40985,,"Verifier point 2.8 km inside the Yan shape, within 3 km of the KDH07 centre."
 Kuala Kangsar side of Bukit Larut (verifier),PRK02,2026-06-01,4.85334,100.8181,,"Verifier point 965 m inside the Kuala Kangsar shape, within 3 km of the PRK07 centre."
@@ -312,3 +312,32 @@ Taman Melewar,WLY01,2026-06-01,3.22179,101.70018,12648583,Kuala Lumpur per ADM1 
 Kampung Lubok Nibong,SGR01,2026-12-31,3.70289,101.55575,1767273,"Hulu Selangor, Selangor, per ADM1 and OpenStreetMap; the geoBoundaries ADM2 Muallim shape reaches it."
 Kampung Lubok Nibong,SGRHSL,2027-01-01,3.70289,101.55575,1767273,"Hulu Selangor, Selangor, per ADM1 and OpenStreetMap; the geoBoundaries ADM2 Muallim shape reaches it."
 Pulau Seri Buat,PHG07,2026-06-01,2.6852,103.9131,1734887,"Island (T.ISL) of Rompin, Pahang, per OpenStreetMap; ADM1 puts it in Johor (state_exceptions.csv)."
+Genting Highlands town point,PHG06,2026-12-31,3.42453,101.79163,1735132,"e-Solat PHG06 ""Genting Higlands""; GeoNames populated place, 19 m inside OpenStreetMap Pahang (Bentong). An earlier build returned SGR01 here."
+Genting Highlands town point,PHG06,2027-01-01,3.42453,101.79163,1735132,As above; an earlier build returned SGRHSL.
+"Kayangan Apartment, Genting",PHG06,2026-12-31,3.42145,101.79106,,"OpenStreetMap way 176115665 (building=apartments), 20 m inside OpenStreetMap Pahang."
+"Tower A, Genting",PHG06,2026-12-31,3.4183,101.78865,,"OpenStreetMap way 1503886270 (building=apartments), 45 m inside OpenStreetMap Pahang."
+"RSC 8, Genting",PHG06,2026-12-31,3.42602,101.79079,,"OpenStreetMap way 656503907 (building=apartments), 117 m inside OpenStreetMap Pahang."
+"RSC 9, Genting",PHG06,2026-12-31,3.42663,101.79079,,"OpenStreetMap way 176115672 (building=apartments), 152 m inside OpenStreetMap Pahang."
+Genting Grand car park,PHG06,2026-12-31,3.42491,101.79214,,"OpenStreetMap, 89 m inside OpenStreetMap Pahang."
+"The Olive, Genting",PHG06,2026-12-31,3.42371,101.79259,,"OpenStreetMap restaurant, 23 m inside OpenStreetMap Pahang."
+"Coffee Terrace, Genting",PHG06,2026-12-31,3.42307,101.79223,,"OpenStreetMap node 6583844661 (amenity=restaurant), 15 m inside OpenStreetMap Pahang."
+Taman Sri Ehsan,SGR01,2026-12-31,3.21186,101.62534,12557753,"Gombak, Selangor, per OpenStreetMap, GeoNames and geoBoundaries ADM2; 361 m inside OpenStreetMap Gombak."
+Taman Sri Ehsan,SGRGBK,2027-01-01,3.21186,101.62534,12557753,As above. An earlier build returned SGRPTG because moving the state border dragged the Gombak and Petaling line.
+"Taman Impian Indah, Bukit Jalil",WLY01,2026-12-31,3.0473,101.65703,,"e-Solat WLY01 ""Kuala Lumpur""; OpenStreetMap residential area 173 m inside OpenStreetMap Kuala Lumpur. An earlier build returned SGR01."
+Mercu Jalil Tower A,WLY01,2026-12-31,3.04794,101.66086,,"OpenStreetMap building, 241 m inside OpenStreetMap Kuala Lumpur."
+Residensi Bintang Bukit Jalil,WLY01,2026-12-31,3.04662,101.66092,,"OpenStreetMap building, 94 m inside OpenStreetMap Kuala Lumpur."
+PPR Pinggiran Bukit Jalil,WLY01,2026-12-31,3.048053,101.654572,,"OpenStreetMap relation 13929151 (landuse=residential), 244 m inside OpenStreetMap Kuala Lumpur."
+Tzu Chi International School,WLY01,2026-12-31,3.04902,101.65904,,Postcode 57000 Kuala Lumpur; 30 m inside OpenStreetMap Kuala Lumpur.
+Tzu Chi International School,WLY01,2027-01-01,3.04902,101.65904,,As above; an earlier build returned SGRPTG.
+Villea Port Dickson hotel,MLK01,2026-12-31,2.41343,101.85563,,"e-Solat MLK01 ""Seluruh Negeri Melaka""; in the Tanjung Tuan exclave, 269 m inside OpenStreetMap Melaka. Every earlier build returned NGS03."
+Rachado Villa,MLK01,2026-12-31,2.41289,101.85671,,"OpenStreetMap way 964089872 (landuse=residential) in the Tanjung Tuan exclave, 280 m inside OpenStreetMap Melaka."
+Cape Rachado lighthouse,MLK01,2026-12-31,2.40707,101.85202,,"Tanjung Tuan lighthouse, 309 m inside OpenStreetMap Melaka. GeoNames lists it in Negeri Sembilan."
+Pos Penangau,KTN02,2026-12-31,4.5957,101.4327,7554991,"e-Solat KTN02 ""Jajahan Kecil Lojing""; 28 m inside OpenStreetMap Kelantan. Earlier builds returned PHG06."
+The Gap,PHG06,2026-12-31,3.6916,101.7496,7794723,"e-Solat PHG06 ""Bukit Fraser""; 78 m inside OpenStreetMap Pahang (Raub), inside the Bukit Fraser special area. An earlier build returned SGR01."
+Broga,NGS03,2026-12-31,2.9369,101.9108,1734801,"e-Solat NGS03 ""Seremban""; GeoNames admin2 Seremban; 24 m inside OpenStreetMap Negeri Sembilan. Earlier builds returned SGR01."
+Pulau Terus,MLK01,2026-12-31,2.11667,102.51667,1739754,"Islet at the Kesang estuary, 151 m inside OpenStreetMap Melaka. GeoNames lists it in Johor."
+Ring point 1 km from Kampung Terikan,SWK01,2026-12-31,4.95931,115.49398,,167 m inside OpenStreetMap Sarawak (Lawas). An earlier build returned SBH09.
+Ring point 1 km from Merapok,SWK01,2026-12-31,4.96029,115.51418,,227 m inside OpenStreetMap Sarawak (Lawas). An earlier build returned SBH09.
+"Pulau Tioman south",PHG01,2026-12-31,2.746130,104.174957,,"Inside the OpenStreetMap Pahang ring of Pulau Tioman; a check against the 2017 geoBoundaries ADM1 line, which puts most of Tioman in Johor, reported it as a Johor point."
+"Lojing",KTN02,2026-12-31,4.628898,101.400474,,"1,166 m inside OpenStreetMap Kelantan (Kecil Lojing); a check against the 2017 geoBoundaries ADM1 line reported it as a Pahang point."
+Pulau Aceh,PHG07,2026-12-31,2.6683,103.7695,1734936,"Island (T.ISL) 16 km east of Endau; GeoNames admin1 Pahang; its own OpenStreetMap Pahang ring. An earlier build gave it the nearest district, Mersing, so it returned JHR02."

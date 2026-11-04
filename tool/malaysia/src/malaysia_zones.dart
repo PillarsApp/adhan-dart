@@ -7,8 +7,12 @@ import 'package:adhan/src/data/malaysia_zone_map.dart';
 import 'package:adhan/src/data/malaysia_zones_data.dart';
 
 import 'csv.dart';
+import 'geometry.dart';
+import 'gzip_input.dart';
 import 'malaysia_manifest.dart';
 import 'malaysia_states.dart';
+import 'osm_snapshot.dart';
+import 'stitch_borders.dart';
 
 const geoBoundariesRelease = '9469f09';
 const geoBoundariesRetrieved = '2026-11-03';
@@ -27,6 +31,24 @@ String _geoBoundariesUrl(String level) =>
 String? lookupZone(double latitude, double longitude, DateComponents date) =>
     MalaysiaZoneMap.parse(malaysiaZonesData).zoneAt(latitude, longitude, date);
 
+List<String> checkZones(Directory root, File zonesFile) {
+  final tool = '${root.path}/tool/malaysia';
+  final snapshot = OsmSnapshot.parse(
+      utf8.decode(readGzipInput(File('$tool/raw/$osmSnapshotFile'))));
+  final areas = findStateMismatches(
+    shipped: ShippedZoneMap.parse(zonesFile.readAsStringSync()),
+    snapshot: snapshot,
+    dates: catalogDates(readCsv(File('$tool/zones.csv'))),
+  );
+  return [
+    for (final area in areas)
+      if (!area.snappedOnly) 'state mismatch ${area.describe()}',
+    for (final area in areas)
+      if (area.snappedOnly) 'snap only ${area.describe()}',
+    '${zonesFile.path}: ${describeStateCheck(snapshot, areas)}',
+  ];
+}
+
 DataBuild buildZones(Directory root) {
   final tool = '${root.path}/tool/malaysia';
   final errors = <String>[];
@@ -35,18 +57,6 @@ DataBuild buildZones(Directory root) {
   final specialAreas = readCsv(File('$tool/special_areas.csv'));
   final islands = readCsv(File('$tool/islands.csv'));
   final fixtures = readCsv(File('$tool/town_fixtures.csv'));
-  List<StateBox> readBoxes(String file) => [
-        for (final row in readCsv(File('$tool/$file')))
-          StateBox(
-              row['state_a']!,
-              row['state_b']!,
-              double.parse(row['min_lat']!),
-              double.parse(row['max_lat']!),
-              double.parse(row['min_lon']!),
-              double.parse(row['max_lon']!))
-      ];
-  final stateBorders = readBoxes('state_borders.csv');
-  final stateExceptions = readBoxes('state_exceptions.csv');
   final zoneCodes = {for (final zone in zones) zone['code']!};
 
   for (final zone in zones) {
@@ -63,30 +73,14 @@ DataBuild buildZones(Directory root) {
     }
   }
 
-  final sources = <ManifestEntry>[];
-  Map<String, _Shape> readLevel(String level) {
-    final file = File('$tool/raw/${_geoBoundariesFile(level)}.gz');
-    final List<int> bytes;
-    try {
-      bytes = GZipCodec().decode(file.readAsBytesSync());
-    } on FormatException catch (error) {
-      errors.add('${file.path} is not gzip (${error.message})');
-      return {};
-    }
-    sources.add(ManifestEntry(
-        'geoboundaries',
-        'MYS $level simplified $geoBoundariesRelease',
-        geoBoundariesRetrieved,
-        _geoBoundariesUrl(level),
-        sha256Hex(bytes),
-        method: 'GET'));
-    return _readShapes(utf8.decode(bytes));
+  final layers = _Layers.read(tool, errors);
+  final adm2 = layers.adm2;
+  final snapshot = layers.snapshot;
+  if (errors.isNotEmpty || snapshot == null) {
+    return DataBuild('', errors, [], 'zones: not built');
   }
-
-  final adm2 = readLevel('ADM2');
-  final adm1 = readLevel('ADM1');
-  if (errors.isNotEmpty) return DataBuild('', errors, [], 'zones: not built');
-  final shapes = <String, _Shape>{...adm2};
+  final shapes = <String, Shape>{...adm2};
+  final osmShapeIds = <String>[];
   final shapeIdsByDistrict = <String, String>{};
   final rowsByShape = <String, List<String>>{};
   for (final row in districts) {
@@ -94,7 +88,11 @@ DataBuild buildZones(Directory root) {
     if (!zoneCodes.contains(row['zone'])) {
       errors.add('$district: unknown zone ${row['zone']}');
     }
-    final shape = adm2[row['shape_id']] ?? adm1[row['shape_id']];
+    var shape = adm2[row['shape_id']];
+    if (shape == null) {
+      shape = osmShape(snapshot, row['shape_id']!, row['district']!, errors);
+      if (shape != null) osmShapeIds.add(shape.id);
+    }
     if (shape == null) {
       errors.add('$district: unknown shape ${row['shape_id']}');
       continue;
@@ -133,15 +131,25 @@ DataBuild buildZones(Directory root) {
   ];
   if (errors.isNotEmpty) return DataBuild('', errors, [], 'zones: not built');
 
-  for (final enclave in adm1.values.where((s) => shapes.containsKey(s.id))) {
-    final hosts = adm2.values.where((host) => enclave.liesInside(host));
-    if (hosts.length != 1) {
-      errors.add('${enclave.name} lies inside ${hosts.length} ADM2 shapes; '
-          'an ADM1 shape must lie inside exactly one');
-      continue;
-    }
-    hosts.single.rings.addAll(enclave.rings);
-  }
+  final zoneStates = {for (final zone in zones) zone['code']!: zone['state']!};
+  final shapeStates = {
+    for (final id in rowsByShape.keys)
+      id: zoneStates[rowsByShape[id]!.first.split(':').first]!
+  };
+  final crossingsBefore = _crossingsOf(shapes, districts, rowsByShape,
+      parentShapeIds.whereType<String>().toSet());
+  cutOsmShapes(
+      shapes: shapes,
+      shapeStates: shapeStates,
+      osmShapeIds: osmShapeIds,
+      errors: errors);
+  if (errors.isNotEmpty) return DataBuild('', errors, [], 'zones: not built');
+  stitchStateBorders(
+      shapes: shapes,
+      shapeStates: shapeStates,
+      snapshot: snapshot,
+      errors: errors);
+  if (errors.isNotEmpty) return DataBuild('', errors, [], 'zones: not built');
   for (var i = 0; i < islands.length; i++) {
     final island = islands[i];
     final ring = _octagon(double.parse(island['lat']!),
@@ -159,7 +167,6 @@ DataBuild buildZones(Directory root) {
   final points = _Points();
   final regions = _mergeRegions(districts, rowsByShape, shapes,
       parentShapeIds.whereType<String>().toSet(), points);
-  final zoneStates = {for (final zone in zones) zone['code']!: zone['state']!};
   final regionStates = [
     for (var r = 0; r < regions.length; r++)
       _singleState({
@@ -169,25 +176,111 @@ DataBuild buildZones(Directory root) {
             zoneStates[specialAreas[i]['zone']]!,
       })
   ];
-  final states = [
-    for (final shape in adm1.values)
-      StatePolygon(_adm1StateNames[shape.name] ?? shape.name, shape.rings)
-  ];
   final rawArcs = _buildArcs(regions, points);
-  final arcs = followStateBorders(
-    arcs: rawArcs.vertices,
-    arcUsers: rawArcs.users,
-    regionStates: regionStates,
-    states: states,
-    followBoxes: stateBorders,
-    errors: errors,
-  ).map(_simplify).toList();
-  final crossingsBefore =
-      _arcCrossings([for (final arc in rawArcs.vertices) _simplify(arc)])
-          .toSet();
-  errors.addAll(_arcCrossings(arcs)
+  errors.addAll(_arcCrossings(rawArcs.vertices)
       .where((crossing) => !crossingsBefore.contains(crossing))
-      .map((crossing) => 'following ADM1 state borders made $crossing'));
+      .map((crossing) => 'stitching the state borders made $crossing'));
+  final anchors = [
+    for (final fixture in fixtures)
+      [
+        MalaysiaZoneMap.quantize(double.parse(fixture['lat']!)),
+        MalaysiaZoneMap.quantize(double.parse(fixture['lon']!)),
+      ]
+  ];
+  final arcs = [for (final arc in rawArcs.vertices) _simplify(arc, anchors)];
+  final output =
+      _encodeZones(zones, specialAreas, regions, parentShapeIds, arcs);
+  final map = MalaysiaZoneMap.parse(output);
+  final resolved = _verifyMap(map, regions, fixtures, shapes, rowsByShape,
+      zoneStates, parentShapeIds.whereType<String>().toList(), errors);
+
+  final mismatches = findStateMismatches(
+    shipped: ShippedZoneMap(map, arcs,
+        [for (final region in regions) region.arcIndices], regionStates),
+    snapshot: snapshot,
+    dates: catalogDates(zones),
+  );
+  errors.addAll(mismatches
+      .where((area) => !area.snappedOnly)
+      .map((area) => 'state mismatch ${area.describe()}'));
+
+  final summary = '${zones.length} zones, ${shapes.length} districts in '
+      '${regions.length} regions, ${specialAreas.length} special areas, '
+      '${islands.length} island areas, ${arcs.length} arcs, '
+      '$resolved fixtures resolved, ${describeStateCheck(snapshot, mismatches)}';
+  return DataBuild(output, errors, layers.sources, summary);
+}
+
+class _Layers {
+  final Map<String, Shape> adm2;
+  final OsmSnapshot? snapshot;
+  final List<ManifestEntry> sources;
+
+  _Layers(this.adm2, this.snapshot, this.sources);
+
+  static _Layers read(String tool, List<String> errors) {
+    final sources = <ManifestEntry>[];
+    List<int>? readRaw(String name) {
+      final file = File('$tool/raw/$name');
+      try {
+        return readGzipInput(file);
+      } on FormatException catch (error) {
+        errors.add('${file.path} is ${error.message}');
+        return null;
+      }
+    }
+
+    var adm2 = <String, Shape>{};
+    final adm2Bytes = readRaw('${_geoBoundariesFile('ADM2')}.gz');
+    if (adm2Bytes != null) {
+      sources.add(ManifestEntry(
+          'geoboundaries',
+          'MYS ADM2 simplified $geoBoundariesRelease',
+          geoBoundariesRetrieved,
+          _geoBoundariesUrl('ADM2'),
+          sha256Hex(adm2Bytes),
+          method: 'GET'));
+      try {
+        adm2 = _readShapes(utf8.decode(adm2Bytes));
+      } on FormatException catch (error) {
+        errors.add('$tool/raw/${_geoBoundariesFile('ADM2')}.gz is not geoJSON '
+            '(${error.message})');
+      } on TypeError catch (error) {
+        errors.add('$tool/raw/${_geoBoundariesFile('ADM2')}.gz is not geoJSON '
+            '($error)');
+      }
+    }
+    OsmSnapshot? snapshot;
+    final osmBytes = readRaw(osmSnapshotFile);
+    if (osmBytes != null) {
+      sources.add(ManifestEntry(
+          'openstreetmap',
+          'MYS admin_level=4 $osmSnapshotDate',
+          osmSnapshotDate.substring(0, 10),
+          overpassEndpoints.first,
+          sha256Hex(osmBytes),
+          method: 'POST',
+          form: 'data=${overpassQuery(osmSnapshotDate)}'));
+      try {
+        snapshot = OsmSnapshot.parse(utf8.decode(osmBytes));
+      } on FormatException catch (error) {
+        errors.add('$tool/raw/$osmSnapshotFile is not an Overpass response '
+            '(${error.message})');
+      } on TypeError catch (error) {
+        errors.add('$tool/raw/$osmSnapshotFile is not an Overpass response '
+            '($error)');
+      }
+    }
+    return _Layers(adm2, snapshot, sources);
+  }
+}
+
+String _encodeZones(
+    List<Map<String, String>> zones,
+    List<Map<String, String>> specialAreas,
+    List<_Region> regions,
+    List<String?> parentShapeIds,
+    List<List<int>> arcs) {
   final output = StringBuffer();
   for (final zone in zones) {
     output.writeln([
@@ -223,7 +316,18 @@ DataBuild buildZones(Directory root) {
         .writeln('R\t${region.arcIndices.join(' ')}\t${region.rows.join(' ')}');
   }
 
-  final map = MalaysiaZoneMap.parse(output.toString());
+  return output.toString();
+}
+
+int _verifyMap(
+    MalaysiaZoneMap map,
+    List<_Region> regions,
+    List<Map<String, String>> fixtures,
+    Map<String, Shape> shapes,
+    Map<String, List<String>> rowsByShape,
+    Map<String, String> zoneStates,
+    List<String> parentShapeIds,
+    List<String> errors) {
   var resolved = 0;
   for (final fixture in fixtures) {
     final date = fixture['date']!.split('-').map(int.parse).toList();
@@ -249,50 +353,51 @@ DataBuild buildZones(Directory root) {
   String stateOfShape(String id) =>
       zoneStates[rowsByShape[id]!.first.split(':').first]!;
   for (var i = 0; i < map.specialAreas.length; i++) {
-    final parentState = stateOfShape(parentShapeIds[i]!);
-    errors.addAll(_specialAreaReach(
-        map,
-        map.specialAreas[i],
-        parentShapeIds[i]!,
+    final parentState = stateOfShape(parentShapeIds[i]);
+    errors.addAll(_specialAreaReach(map, map.specialAreas[i], parentShapeIds[i],
         shapes.values.where((shape) => stateOfShape(shape.id) == parentState)));
   }
 
-  final mismatches = findStateMismatches(
-    map: map,
-    arcs: arcs,
-    regionArcs: [for (final region in regions) region.arcIndices],
-    regionStates: regionStates,
-    states: states,
-    dates: [
+  return resolved;
+}
+
+String describeStateCheck(OsmSnapshot snapshot, List<MismatchArea> areas) {
+  final snapped = areas.where((area) => area.snappedOnly).toList();
+  String km2(Iterable<MismatchArea> some) => some
+      .fold<double>(0, (sum, area) => sum + area.squareKilometres)
+      .toStringAsFixed(2);
+  return 'state check against OpenStreetMap $osmSnapshotDate at '
+      '${stateCheckToleranceMetres.round()} m: '
+      '${areas.length - snapped.length} areas on land (${km2(areas.where((a) => !a.snappedOnly))} km2), '
+      '${snapped.length} areas reached only by the '
+      '${MalaysiaZoneMap.boundaryToleranceMetres} m snap outside every '
+      'district polygon (${km2(snapped)} km2)';
+}
+
+Set<String> _crossingsOf(
+    Map<String, Shape> shapes,
+    List<Map<String, String>> districts,
+    Map<String, List<String>> rowsByShape,
+    Set<String> separateShapeIds) {
+  final copies = {
+    for (final shape in shapes.values)
+      shape.id: Shape(shape.id, shape.name, [
+        for (final ring in shape.rings) [...ring]
+      ])
+  };
+  final points = _Points();
+  final regions =
+      _mergeRegions(districts, rowsByShape, copies, separateShapeIds, points);
+  return _arcCrossings(_buildArcs(regions, points).vertices).toSet();
+}
+
+List<DateComponents> catalogDates(List<Map<String, String>> zones) => [
       for (final iso in {
         for (final zone in zones) ...[zone['valid_from']!, zone['valid_to']!]
       }.where((iso) => iso.isNotEmpty))
         DateComponents(int.parse(iso.substring(0, 4)),
             int.parse(iso.substring(5, 7)), int.parse(iso.substring(8, 10)))
-    ],
-  );
-  final unexplained = [
-    for (final area in mismatches)
-      if (!stateExceptions.any((exception) => exception.explains(area))) area
-  ];
-  errors.addAll(unexplained.map((area) => 'state mismatch ${area.describe()}'));
-
-  final summary = '${zones.length} zones, ${shapes.length} districts in '
-      '${regions.length} regions, ${specialAreas.length} special areas, '
-      '${islands.length} island areas, ${arcs.length} arcs, '
-      '$resolved fixtures resolved, '
-      '${mismatches.length - unexplained.length} state mismatch areas '
-      'explained by state_exceptions.csv';
-  return DataBuild(output.toString(), errors, sources, summary);
-}
-
-const _adm1StateNames = {
-  'Malacca': 'Melaka',
-  'Penang': 'Pulau Pinang',
-  'Kuala Lumpur': 'Wilayah Persekutuan',
-  'Putrajaya': 'Wilayah Persekutuan',
-  'Labuan': 'Wilayah Persekutuan',
-};
+    ];
 
 String? _singleState(Set<String> states) =>
     states.length == 1 ? states.single : null;
@@ -307,143 +412,22 @@ String _normalizeRule(String rule) {
   return compact;
 }
 
-class _Shape {
-  final String id;
-  final String name;
-  final List<List<int>> rings;
-
-  _Shape(this.id, this.name, this.rings);
-
-  bool contains(int lat, int lon) {
-    var inside = false;
-    for (final ring in rings) {
-      if (_ringContains(ring, lat, lon)) inside = !inside;
-    }
-    return inside;
-  }
-
-  bool liesInside(_Shape host) => rings.every((ring) =>
-      host.contains(ring[0], ring[1]) &&
-      !host.rings.any((hostRing) => _ringsCross(ring, hostRing)));
-
-  bool touches(List<int> ring) =>
-      contains(ring[0], ring[1]) ||
-      rings.any((own) =>
-          _ringsCross(own, ring) || _ringContains(ring, own[0], own[1]));
-
-  double depthMetres(int lat, int lon) {
-    var best = double.infinity;
-    for (final ring in rings) {
-      for (var i = 0, j = ring.length - 2; i < ring.length; j = i, i += 2) {
-        best = math.min(
-            best,
-            _pointSegmentMetres(
-                lat, lon, ring[j], ring[j + 1], ring[i], ring[i + 1]));
-      }
-    }
-    return best;
-  }
-
-  List<int> get bounds {
-    final box = [1 << 40, -(1 << 40), 1 << 40, -(1 << 40)];
-    for (final ring in rings) {
-      for (var i = 0; i < ring.length; i += 2) {
-        box[0] = math.min(box[0], ring[i]);
-        box[1] = math.max(box[1], ring[i]);
-        box[2] = math.min(box[2], ring[i + 1]);
-        box[3] = math.max(box[3], ring[i + 1]);
-      }
-    }
-    return box;
-  }
-}
-
-bool _ringContains(List<int> ring, int lat, int lon) {
-  var inside = false;
-  for (var i = 0, j = ring.length - 2; i < ring.length; j = i, i += 2) {
-    final lat1 = ring[j];
-    final lat2 = ring[i];
-    if ((lat1 > lat) == (lat2 > lat)) continue;
-    final lon1 = ring[j + 1];
-    final crossing = lon1 + (lat - lat1) * (ring[i + 1] - lon1) / (lat2 - lat1);
-    if (lon < crossing) inside = !inside;
-  }
-  return inside;
-}
-
-bool _ringsCross(List<int> a, List<int> b) {
-  for (var i = 0, j = a.length - 2; i < a.length; j = i, i += 2) {
-    final aMinLat = math.min(a[i], a[j]);
-    final aMaxLat = math.max(a[i], a[j]);
-    final aMinLon = math.min(a[i + 1], a[j + 1]);
-    final aMaxLon = math.max(a[i + 1], a[j + 1]);
-    for (var k = 0, l = b.length - 2; k < b.length; l = k, k += 2) {
-      if (math.max(b[k], b[l]) < aMinLat ||
-          math.min(b[k], b[l]) > aMaxLat ||
-          math.max(b[k + 1], b[l + 1]) < aMinLon ||
-          math.min(b[k + 1], b[l + 1]) > aMaxLon) {
-        continue;
-      }
-      if (_segmentsIntersect(
-          a[j], a[j + 1], a[i], a[i + 1], b[l], b[l + 1], b[k], b[k + 1])) {
-        return true;
-      }
-    }
-  }
-  return false;
-}
-
-int _turn(int ay, int ax, int by, int bx, int cy, int cx) =>
-    ((bx - ax) * (cy - ay) - (by - ay) * (cx - ax)).sign;
-
-bool _segmentsIntersect(
-    int ay, int ax, int by, int bx, int cy, int cx, int dy, int dx) {
-  final abc = _turn(ay, ax, by, bx, cy, cx);
-  final abd = _turn(ay, ax, by, bx, dy, dx);
-  final cda = _turn(cy, cx, dy, dx, ay, ax);
-  final cdb = _turn(cy, cx, dy, dx, by, bx);
-  if (abc * abd < 0 && cda * cdb < 0) return true;
-  bool onSegment(int py, int px, int qy, int qx, int ry, int rx) =>
-      math.min(py, qy) <= ry &&
-      ry <= math.max(py, qy) &&
-      math.min(px, qx) <= rx &&
-      rx <= math.max(px, qx);
-  return (abc == 0 && onSegment(ay, ax, by, bx, cy, cx)) ||
-      (abd == 0 && onSegment(ay, ax, by, bx, dy, dx)) ||
-      (cda == 0 && onSegment(cy, cx, dy, dx, ay, ax)) ||
-      (cdb == 0 && onSegment(cy, cx, dy, dx, by, bx));
-}
-
-double _pointSegmentMetres(
-    int lat, int lon, int lat1, int lon1, int lat2, int lon2) {
-  final lonScale = 111320 * math.cos(lat / 100000 * math.pi / 180) / 100000;
-  final x1 = (lon1 - lon) * lonScale;
-  final y1 = (lat1 - lat) * _latScale;
-  final dx = (lon2 - lon1) * lonScale;
-  final dy = (lat2 - lat1) * _latScale;
-  final lengthSquared = dx * dx + dy * dy;
-  var t = lengthSquared == 0 ? 0.0 : -(x1 * dx + y1 * dy) / lengthSquared;
-  t = t < 0 ? 0.0 : (t > 1 ? 1.0 : t);
-  final px = x1 + t * dx;
-  final py = y1 + t * dy;
-  return math.sqrt(px * px + py * py);
-}
-
 List<int> _octagon(double latitude, double longitude, double radiusMetres) {
-  final lonMetres = 111320 * math.cos(latitude * math.pi / 180);
+  final lonMetres =
+      metresPerDegreeLongitudeAtEquator * math.cos(latitude * math.pi / 180);
   return [
     for (var k = 0; k < 8; k++) ...[
-      MalaysiaZoneMap.quantize(
-          latitude + radiusMetres * math.cos(k * math.pi / 4) / 110574),
+      MalaysiaZoneMap.quantize(latitude +
+          radiusMetres * math.cos(k * math.pi / 4) / metresPerDegreeLatitude),
       MalaysiaZoneMap.quantize(
           longitude + radiusMetres * math.sin(k * math.pi / 4) / lonMetres),
     ],
   ];
 }
 
-Map<String, _Shape> _readShapes(String geoJson) {
+Map<String, Shape> _readShapes(String geoJson) {
   final features = (json.decode(geoJson) as Map)['features'] as List;
-  final shapes = <String, _Shape>{};
+  final shapes = <String, Shape>{};
   for (final feature in features) {
     final properties = feature['properties'] as Map;
     final geometry = feature['geometry'] as Map;
@@ -475,7 +459,7 @@ Map<String, _Shape> _readShapes(String geoJson) {
       }
     }
     final id = properties['shapeID'] as String;
-    shapes[id] = _Shape(id, properties['shapeName'] as String, rings);
+    shapes[id] = Shape(id, properties['shapeName'] as String, rings);
   }
   return shapes;
 }
@@ -499,8 +483,7 @@ class _Points {
   final List<int> lats = [];
   final List<int> lons = [];
 
-  int id(int lat, int lon) =>
-      _ids.putIfAbsent((lat + 10000000) * (1 << 26) + lon, () {
+  int id(int lat, int lon) => _ids.putIfAbsent(vertexKey(lat, lon), () {
         lats.add(lat);
         lons.add(lon);
         if (lats.length >= _idStride) throw StateError('too many vertices');
@@ -513,7 +496,7 @@ class _Points {
 List<_Region> _mergeRegions(
     List<Map<String, String>> districts,
     Map<String, List<String>> rowsByShape,
-    Map<String, _Shape> shapes,
+    Map<String, Shape> shapes,
     Set<String> separateShapeIds,
     _Points points) {
   final regionsByKey = <String, _Region>{};
@@ -624,7 +607,9 @@ _Arcs _buildArcs(List<_Region> regions, _Points points) {
   return arcs;
 }
 
-List<int> _simplify(List<int> points) {
+const anchorKeepMetres = 150.0;
+
+List<int> _simplify(List<int> points, List<List<int>> anchors) {
   final count = points.length ~/ 2;
   if (count <= 2) return points;
   final closed = points[0] == points[points.length - 2] &&
@@ -639,16 +624,20 @@ List<int> _simplify(List<int> points) {
         farthest = i;
       }
     }
-    final head = _simplify(points.sublist(0, farthest * 2 + 2));
-    final tail = _simplify(points.sublist(farthest * 2));
+    final head = _simplify(points.sublist(0, farthest * 2 + 2), anchors);
+    final tail = _simplify(points.sublist(farthest * 2), anchors);
     return [...head, ...tail.sublist(2)];
   }
-  final keep = List<bool>.filled(count, false);
+  final keep = _anchoredVertices(points, anchors);
   keep[0] = true;
   keep[count - 1] = true;
-  final stack = <List<int>>[
-    [0, count - 1]
-  ];
+  final stack = <List<int>>[];
+  var previous = 0;
+  for (var i = 1; i < count; i++) {
+    if (!keep[i]) continue;
+    stack.add([previous, i]);
+    previous = i;
+  }
   while (stack.isNotEmpty) {
     final range = stack.removeLast();
     var worst = -1;
@@ -673,41 +662,43 @@ List<int> _simplify(List<int> points) {
   ];
 }
 
-double _lonScale(List<int> points, int i) =>
-    111320 * math.cos(points[i * 2] / 100000 * math.pi / 180) / 100000;
-
-const double _latScale = 110574 / 100000;
-
-double _metres(List<int> points, int i, int j) {
-  final dy = (points[j * 2] - points[i * 2]) * _latScale;
-  final dx = (points[j * 2 + 1] - points[i * 2 + 1]) * _lonScale(points, i);
-  return math.sqrt(dx * dx + dy * dy);
-}
-
-double _segmentDistanceMetres(List<int> points, int a, int b, int p) {
-  final lonScale = _lonScale(points, a);
-  final ax = points[a * 2 + 1] * lonScale;
-  final ay = points[a * 2] * _latScale;
-  final bx = points[b * 2 + 1] * lonScale;
-  final by = points[b * 2] * _latScale;
-  final px = points[p * 2 + 1] * lonScale;
-  final py = points[p * 2] * _latScale;
-  final dx = bx - ax;
-  final dy = by - ay;
-  final lengthSquared = dx * dx + dy * dy;
-  if (lengthSquared == 0) {
-    return math.sqrt((px - ax) * (px - ax) + (py - ay) * (py - ay));
+List<bool> _anchoredVertices(List<int> points, List<List<int>> anchors) {
+  final count = points.length ~/ 2;
+  final keep = List<bool>.filled(count, false);
+  final box = ringBounds(points);
+  final margin = MalaysiaZoneMap.quantize(anchorKeepMetres / 100000);
+  final near = [
+    for (final anchor in anchors)
+      if (anchor[0] >= box[0] - margin &&
+          anchor[0] <= box[1] + margin &&
+          anchor[1] >= box[2] - margin &&
+          anchor[1] <= box[3] + margin)
+        anchor
+  ];
+  if (near.isEmpty) return keep;
+  for (var i = 0; i < count; i++) {
+    for (final anchor in near) {
+      if (metresBetween(
+              points[i * 2], points[i * 2 + 1], anchor[0], anchor[1]) <=
+          anchorKeepMetres) {
+        keep[i] = true;
+        break;
+      }
+    }
   }
-  var t = ((px - ax) * dx + (py - ay) * dy) / lengthSquared;
-  t = t < 0 ? 0 : (t > 1 ? 1 : t);
-  final qx = ax + t * dx;
-  final qy = ay + t * dy;
-  return math.sqrt((px - qx) * (px - qx) + (py - qy) * (py - qy));
+  return keep;
 }
+
+double _metres(List<int> points, int i, int j) => metresBetween(
+    points[i * 2], points[i * 2 + 1], points[j * 2], points[j * 2 + 1]);
+
+double _segmentDistanceMetres(List<int> points, int a, int b, int p) =>
+    pointSegmentMetres(points[p * 2], points[p * 2 + 1], points[a * 2],
+        points[a * 2 + 1], points[b * 2], points[b * 2 + 1]);
 
 List<String> _arcCrossings(List<List<int>> arcs) {
   final boxes = [
-    for (final arc in arcs) _Shape('', '', [arc]).bounds,
+    for (final arc in arcs) ringBounds(arc),
   ];
   final found = <String>[];
   for (var a = 0; a < arcs.length; a++) {
@@ -724,10 +715,24 @@ List<String> _arcCrossings(List<List<int>> arcs) {
               (x[i] == y[j - 2] && x[i + 1] == y[j - 1]) ||
               (x[i] == y[j] && x[i + 1] == y[j + 1]);
           if (shared) continue;
-          if (_segmentsIntersect(x[i - 2], x[i - 1], x[i], x[i + 1], y[j - 2],
-              y[j - 1], y[j], y[j + 1])) {
-            found.add('two arcs cross near '
-                '${x[i] / 100000},${x[i + 1] / 100000}');
+          final crossing = segmentIntersection(x[i - 2], x[i - 1], x[i],
+              x[i + 1], y[j - 2], y[j - 1], y[j], y[j + 1]);
+          final nearVertex = crossing != null &&
+              [
+                [x[i - 2], x[i - 1]],
+                [x[i], x[i + 1]],
+                [y[j - 2], y[j - 1]],
+                [y[j], y[j + 1]],
+              ].any((p) =>
+                  (p[0] - crossing[0]).abs() <= 2 &&
+                  (p[1] - crossing[1]).abs() <= 2);
+          if (!nearVertex &&
+              segmentsCross(x[i - 2], x[i - 1], x[i], x[i + 1], y[j - 2],
+                  y[j - 1], y[j], y[j + 1])) {
+            found.add('two arcs cross: ${x[i - 2] / 100000},'
+                '${x[i - 1] / 100000}..${x[i] / 100000},${x[i + 1] / 100000} '
+                'and ${y[j - 2] / 100000},${y[j - 1] / 100000}..'
+                '${y[j] / 100000},${y[j + 1] / 100000}');
           }
         }
       }
@@ -756,13 +761,14 @@ List<String> _gridOverlaps(MalaysiaZoneMap map, List<_Region> regions) {
 }
 
 List<String> _specialAreaReach(MalaysiaZoneMap map, MalaysiaSpecialArea area,
-    String parentShapeId, Iterable<_Shape> shapes) {
+    String parentShapeId, Iterable<Shape> shapes) {
   final day = math.max(map.zone(area.zone)!.validFromDay, 20000101);
   final date = DateComponents(day ~/ 10000, day ~/ 100 % 100, day % 100);
   final steps = (area.radiusMetres / specialAreaGridStepMetres).ceil();
-  final latStep = specialAreaGridStepMetres / 110574;
+  final latStep = specialAreaGridStepMetres / metresPerDegreeLatitude;
   final lonStep = specialAreaGridStepMetres /
-      (111320 * math.cos(area.latitude * math.pi / 180));
+      (metresPerDegreeLongitudeAtEquator *
+          math.cos(area.latitude * math.pi / 180));
   final margin =
       MalaysiaZoneMap.quantize((steps + 1) * math.max(latStep, lonStep));
   final lat0 = MalaysiaZoneMap.quantize(area.latitude);

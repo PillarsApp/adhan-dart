@@ -1,3 +1,6 @@
+@Timeout(Duration(minutes: 3))
+library;
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -154,19 +157,37 @@ void main() {
     });
   }
 
-  test('build fails and names a geoBoundaries file that is not gzip', () async {
-    final root = _copyOfTool();
-    const fileName = 'geoBoundaries-MYS-ADM2_simplified.geojson.gz';
-    final raw = File('${root.path}/tool/malaysia/raw/$fileName');
-    raw.writeAsBytesSync(GZipCodec().decode(raw.readAsBytesSync()));
+  for (final fileName in const [
+    'geoBoundaries-MYS-ADM2_simplified.geojson.gz',
+    'openstreetmap-MYS-ADM4.json.gz',
+  ]) {
+    test('build fails and names $fileName when it is not gzip', () async {
+      final root = _copyOfTool();
+      final raw = File('${root.path}/tool/malaysia/raw/$fileName');
+      raw.writeAsBytesSync(GZipCodec().decode(raw.readAsBytesSync()));
 
-    final result = await _build(root);
+      final result = await _build(root);
 
-    expect(result.exitCode, 1, reason: '${result.stdout}${result.stderr}');
-    expect(LineSplitter.split('${result.stdout}'),
-        contains(allOf(contains(fileName), contains('not gzip'))));
-    expect(Directory('${root.path}/data').existsSync(), isFalse);
-  });
+      expect(result.exitCode, 1, reason: '${result.stdout}${result.stderr}');
+      expect(LineSplitter.split('${result.stdout}'),
+          contains(allOf(contains(fileName), contains('not gzip'))));
+      expect(Directory('${root.path}/data').existsSync(), isFalse);
+    });
+
+    test('build fails and names $fileName when its content is not JSON',
+        () async {
+      final root = _copyOfTool();
+      final raw = File('${root.path}/tool/malaysia/raw/$fileName');
+      raw.writeAsBytesSync(GZipCodec().encode(utf8.encode('not json')));
+
+      final result = await _build(root);
+
+      expect(result.exitCode, 1, reason: '${result.stdout}${result.stderr}');
+      expect(
+          LineSplitter.split('${result.stdout}'), contains(contains(fileName)));
+      expect(Directory('${root.path}/data').existsSync(), isFalse);
+    });
+  }
 
   test('build fails when zones.csv lists a zone-year with rows as unpublished',
       () async {
@@ -196,7 +217,7 @@ void main() {
 
     expect(result.exitCode, 1, reason: '${result.stdout}${result.stderr}');
     expect(result.stdout,
-        contains('state mismatch JHR02 (Johor) inside ADM1 Pahang'));
+        contains('state mismatch JHR02 (Johor) inside OpenStreetMap Pahang'));
     expect(Directory('${root.path}/data').existsSync(), isFalse);
   });
 
