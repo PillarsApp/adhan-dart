@@ -10,7 +10,7 @@ These files are derived from OpenStreetMap data and are offered under the
   snapshot of Malaysia's state boundaries that the map is built from
 - `tool/malaysia/raw/openstreetmap-MYS-border-features.tsv.gz` and
   `tool/malaysia/raw/openstreetmap-MYS-offmap-features.tsv.gz`, OpenStreetMap
-  buildings and places filtered from the Geofabrik extract
+  buildings and places, with their outlines, filtered from the Geofabrik extract
   `malaysia-singapore-brunei-261103.osm.pbf`, which the build checks the map
   against
 - `tool/malaysia/islands.csv`, whose island centres were measured on the
@@ -19,8 +19,8 @@ These files are derived from OpenStreetMap data and are offered under the
   features
 - `tool/malaysia/state_line_exceptions.csv`, whose paths start and end on the
   OpenStreetMap state line
-- `tool/malaysia/no_zone_areas.csv`, whose boxes are drawn around OpenStreetMap
-  features
+- `tool/malaysia/no_zone_areas.csv`, which names OpenStreetMap features by
+  their ids
 
 The zone map also contains district boundaries from geoBoundaries gbOpen MYS
 ADM2 (CC BY 3.0, sources geoBoundaries and citypopulation.de) and centre points
