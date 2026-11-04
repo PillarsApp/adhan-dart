@@ -4,10 +4,12 @@ library;
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:test/test.dart';
 
 import '../tool/malaysia/src/malaysia_timetables.dart';
+import '../tool/malaysia/src/osm_fetch.dart';
 
 void _copyDirectory(Directory from, Directory to) {
   to.createSync(recursive: true);
@@ -91,6 +93,58 @@ Future<bool> _fetch(Directory root, List<int> years, _FakeEsolat fake,
             refresh: refresh, endpoint: fake.endpoint, pause: Duration.zero),
         zoneSpecification: ZoneSpecification(
             print: (self, parent, zone, line) => lines?.add(line)));
+
+const _osmSnapshot = 'tool/malaysia/raw/openstreetmap-MYS-ADM4.json.gz';
+
+List<int> _committedOsmBody() =>
+    GZipCodec().decode(File(_osmSnapshot).readAsBytesSync());
+
+Map<String, dynamic> _osmRelation(Map<String, dynamic> document, String iso) =>
+    (document['elements'] as List)
+        .cast<Map<String, dynamic>>()
+        .singleWhere((element) => (element['tags'] as Map)['ISO3166-2'] == iso);
+
+bool _wayEncloses(Map member, double lat, double lon) {
+  final nodes = (member['geometry'] as List).cast<Map>();
+  final lats = [for (final node in nodes) (node['lat'] as num).toDouble()];
+  final lons = [for (final node in nodes) (node['lon'] as num).toDouble()];
+  return lats.reduce(min) <= lat &&
+      lat <= lats.reduce(max) &&
+      lons.reduce(min) <= lon &&
+      lon <= lons.reduce(max);
+}
+
+class _FakeOverpass {
+  final HttpServer _server;
+  var requests = 0;
+
+  _FakeOverpass(this._server);
+
+  String get endpoint => 'http://127.0.0.1:${_server.port}/api/interpreter';
+
+  static Future<_FakeOverpass> serve(List<int> body) async {
+    final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+    final fake = _FakeOverpass(server);
+    addTearDown(() => server.close(force: true));
+    server.listen((request) async {
+      await request.drain<void>();
+      fake.requests++;
+      request.response
+        ..headers.contentType = ContentType.json
+        ..add(body);
+      await request.response.close();
+    });
+    return fake;
+  }
+}
+
+Future<bool> _fetchOsm(
+        Directory root, _FakeOverpass fake, List<String> lines) =>
+    runZoned(
+        () => fetchOsmSnapshot(root,
+            endpoints: [fake.endpoint], pause: Duration.zero),
+        zoneSpecification: ZoneSpecification(
+            print: (self, parent, zone, line) => lines.add(line)));
 
 Future<ProcessResult> _build(Directory root) =>
     Process.run(Platform.resolvedExecutable, [
@@ -391,5 +445,95 @@ void main() {
         expect(Directory('${root.path}/data').existsSync(), isFalse);
       });
     }
+  });
+
+  group('fetch-osm', () {
+    test('stores an Overpass body that matches the committed snapshot',
+        () async {
+      final root = _copyOfTool();
+      final committed = _committedOsmBody();
+      final fake = await _FakeOverpass.serve(committed);
+
+      final lines = <String>[];
+      final ok = await _fetchOsm(root, fake, lines);
+
+      expect(ok, isTrue, reason: lines.join('\n'));
+      final written = GZipCodec()
+          .decode(File('${root.path}/$_osmSnapshot').readAsBytesSync());
+      expect((jsonDecode(utf8.decode(written)) as Map)['elements'],
+          (jsonDecode(utf8.decode(committed)) as Map)['elements']);
+    });
+
+    final damages = <String, String Function(Map<String, dynamic>)>{
+      'an osm_base older than the pinned date': (document) {
+        (document['osm3s'] as Map)['timestamp_osm_base'] =
+            '2026-07-15T00:00:00Z';
+        return 'osm_base 2026-07-15T00:00:00Z';
+      },
+      'an Overpass remark': (document) {
+        document['remark'] = 'runtime error: Query timed out in "query" '
+            'at line 1 after 901 seconds.';
+        return 'runtime error';
+      },
+      'no Pulau Aman ring in Pulau Pinang': (document) {
+        final members = _osmRelation(document, 'MY-07')['members'] as List;
+        final before = members.length;
+        members.removeWhere((member) =>
+            member['type'] == 'way' &&
+            member['role'] == 'outer' &&
+            _wayEncloses(member as Map, 5.26039, 100.38661));
+        expect(members.length, before - 1);
+        return 'MY-07 outer';
+      },
+      'no MY-16 relation': (document) {
+        (document['elements'] as List).remove(_osmRelation(document, 'MY-16'));
+        return 'lacks MY-16';
+      },
+      'an outer way without geometry': (document) {
+        final members = _osmRelation(document, 'MY-16')['members'] as List;
+        (members.firstWhere((member) => member['role'] == 'outer') as Map)
+            .remove('geometry');
+        return 'no geometry';
+      },
+    };
+
+    for (final damage in damages.entries) {
+      test('keeps the stored snapshot when Overpass returns ${damage.key}',
+          () async {
+        final root = _copyOfTool();
+        final stored = File('${root.path}/$_osmSnapshot');
+        final before = stored.readAsBytesSync();
+        final document = jsonDecode(utf8.decode(_committedOsmBody()))
+            as Map<String, dynamic>;
+        final reason = damage.value(document);
+        final fake =
+            await _FakeOverpass.serve(utf8.encode(jsonEncode(document)));
+
+        final lines = <String>[];
+        final ok = await _fetchOsm(root, fake, lines);
+
+        expect(ok, isFalse);
+        expect(fake.requests, greaterThan(0));
+        expect(
+            lines, contains(allOf(contains(fake.endpoint), contains(reason))));
+        expect(stored.readAsBytesSync(), before);
+      });
+    }
+
+    test('keeps a stored snapshot that is not gzip and fetches nothing',
+        () async {
+      final root = _copyOfTool();
+      final stored = File('${root.path}/$_osmSnapshot')
+        ..writeAsStringSync('not gzip');
+      final fake = await _FakeOverpass.serve(_committedOsmBody());
+
+      final lines = <String>[];
+      final ok = await _fetchOsm(root, fake, lines);
+
+      expect(ok, isFalse);
+      expect(fake.requests, 0);
+      expect(lines, contains(allOf(contains(stored.path), contains('gzip'))));
+      expect(stored.readAsStringSync(), 'not gzip');
+    });
   });
 }

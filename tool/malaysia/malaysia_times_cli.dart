@@ -27,7 +27,13 @@ fetch            Download every e-Solat zone that tool/malaysia/zones.csv has in
 import-selangor  Extract the Selangor district PDFs with pdftotext -layout into
                  tool/malaysia/raw/selangor/ and record each PDF's SHA-256.
 fetch-osm        Download the pinned OpenStreetMap snapshot of Malaysia's state
-                 boundaries from the Overpass API into tool/malaysia/raw/.
+                 boundaries from the Overpass API into tool/malaysia/raw/. Writes
+                 nothing and exits 1 when the stored snapshot cannot be read, or
+                 unless an endpoint returns every state with geometry on every
+                 border way, no Overpass remark, an osm_base no older than the
+                 pinned date, and at least as many rings per state and role as the
+                 stored snapshot. Delete the stored snapshot first when a ring is
+                 meant to go.
 build            Validate every zone-year, apply tool/malaysia/corrections.csv, and write
                  data/malaysia/ and lib/src/data/malaysia_*_data.dart. Exits 1 and writes
                  nothing when any row is rejected, a zone-year that zones.csv has in

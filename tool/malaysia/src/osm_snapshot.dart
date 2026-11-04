@@ -86,6 +86,9 @@ class OsmSnapshot {
 
   static OsmSnapshot parse(String json) {
     final document = jsonDecode(json) as Map;
+    if (document.containsKey('remark')) {
+      throw FormatException('Overpass remark: ${document['remark']}');
+    }
     final timestamp =
         (document['osm3s'] as Map)['timestamp_osm_base'] as String;
     final rings = <OsmRing>[];
@@ -101,10 +104,10 @@ class OsmSnapshot {
       for (final role in const ['outer', 'inner']) {
         final ways = <List<int>>[];
         for (final member in element['members'] as List) {
-          if (member['type'] != 'way' ||
-              member['role'] != role ||
-              member['geometry'] == null) {
-            continue;
+          if (member['type'] != 'way' || member['role'] != role) continue;
+          if (member['geometry'] == null) {
+            throw FormatException('OpenStreetMap $iso $role way '
+                '${member['ref']} has no geometry');
           }
           final way = _quantize(member['geometry'] as List);
           if (way.length >= 4) ways.add(way);
