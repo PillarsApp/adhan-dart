@@ -297,4 +297,78 @@ void main() {
             allOf(contains('JHR03 2026'), contains('JHR03_2026.json.gz'))));
     expect(stored.readAsBytesSync(), plain);
   });
+
+  group('a damaged stored e-Solat file', () {
+    final damages = <String, List<int> Function(List<int>)>{
+      'cut after half its bytes': (bytes) =>
+          bytes.sublist(0, bytes.length ~/ 2),
+      'zero bytes': (bytes) => <int>[],
+    };
+
+    for (final damage in damages.entries) {
+      test('build fails and names the file when it has ${damage.key}',
+          () async {
+        final root = _copyOfTool();
+        final stored = File('${root.path}/$_esolatDir/JHR03_2026.json.gz');
+        stored.writeAsBytesSync(damage.value(stored.readAsBytesSync()));
+
+        final result = await _build(root);
+
+        expect(result.exitCode, 1, reason: '${result.stdout}${result.stderr}');
+        expect(LineSplitter.split('${result.stdout}'),
+            contains(allOf(contains('JHR03 2026'), contains(stored.path))));
+        expect(Directory('${root.path}/data').existsSync(), isFalse);
+      });
+
+      for (final refresh in [false, true]) {
+        test(
+            'fetch${refresh ? ' --refresh' : ''} keeps the file and names it '
+            'when it has ${damage.key}', () async {
+          final root = _copyOfTool();
+          final stored = File('${root.path}/$_esolatDir/JHR03_2026.json.gz');
+          stored.writeAsBytesSync(damage.value(stored.readAsBytesSync()));
+          final damaged = stored.readAsBytesSync();
+          final committed = _committedTimetables();
+          final fake = await _FakeEsolat.serve(
+              (zone, year) => committed['$zone $year'] ?? _noRecord(zone));
+
+          final lines = <String>[];
+          final ok =
+              await _fetch(root, [2026], fake, lines: lines, refresh: refresh);
+
+          expect(ok, isFalse);
+          expect(lines,
+              contains(allOf(contains('JHR03 2026'), contains(stored.path))));
+          expect(stored.readAsBytesSync(), damaged);
+          expect(fake.requests, isNot(contains('JHR03 2026')));
+        });
+      }
+    }
+  });
+
+  group('a damaged stored Selangor file', () {
+    final damages = <String, List<int> Function(List<int>)>{
+      'cut after half its bytes': (bytes) =>
+          bytes.sublist(0, bytes.length ~/ 2),
+      'text that is not UTF-8': (bytes) =>
+          GZipCodec().encode([0x53, 0xff, 0xfe, 0xc3, 0x28]),
+    };
+
+    for (final damage in damages.entries) {
+      test('build fails and names the file when it has ${damage.key}',
+          () async {
+        final root = _copyOfTool();
+        final stored =
+            File('${root.path}/tool/malaysia/raw/selangor/SGRGBK_2027.txt.gz');
+        stored.writeAsBytesSync(damage.value(stored.readAsBytesSync()));
+
+        final result = await _build(root);
+
+        expect(result.exitCode, 1, reason: '${result.stdout}${result.stderr}');
+        expect(LineSplitter.split('${result.stdout}'),
+            contains(allOf(contains('SGRGBK 2027'), contains(stored.path))));
+        expect(Directory('${root.path}/data').existsSync(), isFalse);
+      });
+    }
+  });
 }

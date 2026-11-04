@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:adhan/src/data/malaysia_times_codec.dart';
 
 import 'csv.dart';
+import 'gzip_input.dart';
 import 'malaysia_manifest.dart';
 
 const esolatEndpoint =
@@ -200,9 +201,9 @@ Future<bool> fetchTimetables(Directory root, List<int> years,
         if (file.existsSync()) {
           final List<int> storedBody;
           try {
-            storedBody = GZipCodec().decode(file.readAsBytesSync());
+            storedBody = readGzipInput(file);
           } on FormatException catch (error) {
-            print('$label: ${file.path} is not gzip (${error.message}); '
+            print('$label: ${file.path} is ${error.message}; '
                 'kept it and fetched nothing');
             ok = false;
             continue;
@@ -580,9 +581,9 @@ void _loadEsolat(
   final file = File('${_esolatDir(root)}/$fileName');
   final List<int> body;
   try {
-    body = GZipCodec().decode(file.readAsBytesSync());
+    body = readGzipInput(file);
   } on FormatException catch (error) {
-    errors.add('$zone $year: ${file.path} is not gzip (${error.message})');
+    errors.add('$zone $year: ${file.path} is ${error.message}');
     return;
   }
   final response = _EsolatResponse.parse(body);
@@ -640,17 +641,18 @@ void _loadSelangor(Directory root, List<_ZoneYear> zoneYears,
     }
     final List<int> textBytes;
     try {
-      textBytes = GZipCodec().decode(file.readAsBytesSync());
+      textBytes = readGzipInput(file);
     } on FormatException catch (error) {
-      errors.add('${source.zone} ${source.year}: ${file.path} is not gzip '
-          '(${error.message})');
+      errors.add('${source.zone} ${source.year}: ${file.path} is '
+          '${error.message}');
       continue;
     }
     final List<List<int>> days;
     try {
       days = parseSelangorText(utf8.decode(textBytes), source.year);
     } on FormatException catch (error) {
-      errors.add('${source.zone}: ${error.message}');
+      errors.add('${source.zone} ${source.year}: ${file.path}: '
+          '${error.message}');
       continue;
     }
     zoneYears
