@@ -42,8 +42,17 @@ class ShippedZoneMap {
       for (final rows in regionRows) {for (final row in rows) zoneOfRow(row)}
     ];
     for (final area in map.specialAreas) {
-      if (area.region >= 0 && area.region < regionZones.length) {
-        regionZones[area.region].add(area.zone);
+      if (area.region < 0 || area.region >= regionZones.length) {
+        throw FormatException(
+            'special area ${area.name} names region ${area.region}');
+      }
+      regionZones[area.region].add(area.zone);
+    }
+    for (final zones in regionZones) {
+      for (final zone in zones) {
+        if (map.zone(zone) == null) {
+          throw FormatException('unknown zone $zone');
+        }
       }
     }
     return ShippedZoneMap(map, arcs, regionArcs, regionRows, regionZones);
@@ -103,6 +112,8 @@ class MismatchArea {
   int maxLon = -(1 << 40);
 
   final List<String> features = [];
+  final List<String> featureIds = [];
+  int unlisted = 0;
 
   MismatchArea(this.territory, this.zoneState);
 
@@ -120,7 +131,8 @@ class MismatchArea {
       final named = features.where((name) => name.isNotEmpty).take(3);
       return 'at $points OpenStreetMap features inside OpenStreetMap '
           '$territory${named.isEmpty ? '' : ' (${named.join(', ')})'}, '
-          '$box$known';
+          '$box$known'
+          '${unlisted == 0 ? '' : ', $unlisted not named in $noZoneAreasFile'}';
     }
     return '${noZone ? '' : '${zones.join('/')} ($zoneState) '}'
         'inside OpenStreetMap $territory, '
@@ -133,30 +145,36 @@ class MismatchArea {
 }
 
 List<String> applyNoZoneExceptions(
-    List<MismatchArea> areas, List<Map<String, String>> exceptions) {
-  final unused = <String>[];
-  for (final row in exceptions) {
-    final box = [
-      for (final key in const ['min_lat', 'max_lat', 'min_lon', 'max_lon'])
-        MalaysiaZoneMap.quantize(double.parse(row[key]!))
-    ];
-    var used = false;
-    for (final area in areas) {
-      if (!area.noZone ||
-          area.territory != row['territory'] ||
-          area.minLat < box[0] ||
-          area.maxLat > box[1] ||
-          area.minLon < box[2] ||
-          area.maxLon > box[3]) {
-        continue;
-      }
-      area.exception = row['name'];
-      used = true;
+    List<MismatchArea> areas, List<Map<String, String>> rows) {
+  final rowOf = <String, Map<String, String>>{};
+  for (final row in rows) {
+    for (final id in row['osm_ids']!.split(' ')) {
+      if (id.isNotEmpty) rowOf[id] = row;
     }
-    if (!used) unused.add(row['name']!);
   }
-  return unused;
+  final listed = <String>{};
+  for (final area in areas) {
+    if (!area.noZone || area.featureIds.isEmpty) continue;
+    final names = <String>{};
+    for (final id in area.featureIds) {
+      final row = rowOf[id];
+      if (row != null && row['territory'] == area.territory) {
+        listed.add(id);
+        names.add(row['name']!);
+      }
+    }
+    area.unlisted = area.featureIds.where((id) => !listed.contains(id)).length;
+    if (area.unlisted == 0) area.exception = names.join('; ');
+  }
+  return [
+    for (final id in rowOf.keys)
+      if (!listed.contains(id))
+        '$noZoneAreasFile ${rowOf[id]!['name']} names $id, which is not an '
+            'OpenStreetMap feature off the map with no zone'
+  ];
 }
+
+const noZoneAreasFile = 'no_zone_areas.csv';
 
 List<MismatchArea> findStateMismatches({
   required ShippedZoneMap shipped,
@@ -453,6 +471,7 @@ List<MismatchArea> offMapWithoutZone(
           find(key), () => MismatchArea(territoryOf[feature.id]!, null));
       area.points++;
       area.features.add(feature.name);
+      area.featureIds.add(feature.id);
       area.minLat = math.min(area.minLat, feature.lat);
       area.maxLat = math.max(area.maxLat, feature.lat);
       area.minLon = math.min(area.minLon, feature.lon);

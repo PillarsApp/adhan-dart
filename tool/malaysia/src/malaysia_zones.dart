@@ -44,61 +44,93 @@ ZoneCheck checkZones(Directory root, File zonesFile) {
   final tool = '${root.path}/tool/malaysia';
   final errors = <String>[];
   final layers = _Layers.read(tool, errors);
+  final dates = _readCatalogDates(tool, errors);
   final snapshot = layers.snapshot;
   if (errors.isNotEmpty || snapshot == null) return ZoneCheck(errors, true);
   final ShippedZoneMap shipped;
   try {
     shipped = ShippedZoneMap.parse(zonesFile.readAsStringSync());
+  } on FileSystemException catch (error) {
+    return ZoneCheck([
+      '${zonesFile.path} cannot be read '
+          '(${error.osError?.message ?? error.message})'
+    ], true);
   } on FormatException catch (error) {
     return ZoneCheck(
         ['${zonesFile.path} is not a zones file (${error.message})'], true);
+  } on ArgumentError catch (error) {
+    return ZoneCheck(['${zonesFile.path} is not a zones file ($error)'], true);
   }
   final report = _ZoneReport(shipped, layers, snapshot,
-      catalogDates(readCsv(File('$tool/zones.csv'))));
+      BorderFeatures(layers.border, snapshot, dates), dates);
   return ZoneCheck([
     ...report.lines,
     '${zonesFile.path}: ${report.summary}',
   ], report.failed);
 }
 
+List<DateComponents> _readCatalogDates(String tool, List<String> errors) {
+  final file = '$tool/zones.csv';
+  final List<Map<String, String>> zones;
+  try {
+    zones = readCsv(File(file), columns: const ['valid_from', 'valid_to']);
+  } on FormatException catch (error) {
+    errors.add(error.message);
+    return const [];
+  }
+  try {
+    return catalogDates(zones);
+  } on FormatException catch (error) {
+    errors.add('$file has a malformed date (${error.message})');
+  } on ArgumentError catch (error) {
+    errors.add('$file has a malformed date ($error)');
+  }
+  return const [];
+}
+
 class _ZoneReport {
   late final List<MismatchArea> areas;
   late final List<MismatchArea> offMap;
-  late final List<String> unused;
+  late final List<BorderPoint> borderWrong;
+  late final List<String> stale;
   final OsmSnapshot snapshot;
+  final BorderFeatures border;
 
   _ZoneReport(ShippedZoneMap shipped, _Layers layers, this.snapshot,
-      List<DateComponents> dates) {
+      this.border, List<DateComponents> dates) {
     areas = findStateMismatches(
         shipped: shipped, snapshot: snapshot, land: layers.land, dates: dates);
     offMap = offMapWithoutZone(shipped.map, layers.offMap, snapshot, dates);
-    unused = applyNoZoneExceptions([...areas, ...offMap], layers.noZoneAreas);
+    stale = applyNoZoneExceptions(offMap, layers.noZoneAreas);
+    borderWrong = border.wrongPoints(shipped.map);
   }
 
-  bool get failed => [...areas, ...offMap].any((area) => area.fails);
-
-  List<String> get lines => [
-        for (final area in [...areas, ...offMap])
-          '${_label(area)} ${area.describe()}',
-        for (final name in unused) '$noZoneAreasFile $name matches no area',
-      ];
-
-  List<String> get failures => [
+  List<String> get _failing => [
+        ...border.failures(borderWrong),
         for (final area in [...areas, ...offMap])
           if (area.fails) '${_label(area)} ${area.describe()}',
-        for (final name in unused) '$noZoneAreasFile $name matches no area',
       ];
+
+  bool get failed => _failing.isNotEmpty;
+
+  List<String> get lines => [
+        ...border.failures(borderWrong),
+        for (final area in [...areas, ...offMap])
+          '${_label(area)} ${area.describe()}',
+        ...stale,
+      ];
+
+  List<String> get failures => [..._failing, ...stale];
 
   String get summary {
     final known = offMap.where((area) => area.exception != null);
-    return '${describeStateCheck(snapshot, areas)}, '
+    return '${border.describe(borderWrong)}, '
+        '${describeStateCheck(snapshot, areas)}, '
         '${offMap.fold<int>(0, (sum, area) => sum + area.points)} '
         'OpenStreetMap features off the map in ${offMap.length} areas with no '
         'zone, ${known.length} of them named in $noZoneAreasFile';
   }
 }
-
-const noZoneAreasFile = 'no_zone_areas.csv';
 
 String _label(MismatchArea area) => area.noZone
     ? 'no zone'
@@ -109,11 +141,21 @@ String _label(MismatchArea area) => area.noZone
 DataBuild buildZones(Directory root, List<MalaysiaZoneYear> zoneYears) {
   final tool = '${root.path}/tool/malaysia';
   final errors = <String>[];
-  final zones = readCsv(File('$tool/zones.csv'));
-  final districts = readCsv(File('$tool/districts.csv'));
-  final specialAreas = readCsv(File('$tool/special_areas.csv'));
-  final islands = readCsv(File('$tool/islands.csv'));
-  final fixtures = readCsv(File('$tool/town_fixtures.csv'));
+  List<Map<String, String>> read(String name) {
+    try {
+      return readCsv(File('$tool/$name'));
+    } on FormatException catch (error) {
+      errors.add(error.message);
+      return const [];
+    }
+  }
+
+  final zones = read('zones.csv');
+  final districts = read('districts.csv');
+  final specialAreas = read('special_areas.csv');
+  final islands = read('islands.csv');
+  final fixtures = read('town_fixtures.csv');
+  if (errors.isNotEmpty) return DataBuild('', errors, [], 'zones: not built');
   final zoneCodes = {for (final zone in zones) zone['code']!};
 
   for (final zone in zones) {
@@ -238,45 +280,48 @@ DataBuild buildZones(Directory root, List<MalaysiaZoneYear> zoneYears) {
       ]
   ];
   final border = BorderFeatures(layers.border, snapshot, catalogDates(zones));
-  final anchored = <String>{};
+  final anchors = AnchorIndex(fixtureAnchors);
+  final refiner = ArcRefiner(rawArcs.vertices, [
+    for (var a = 0; a < rawArcs.vertices.length; a++)
+      if (rawArcs.users[a].length == 2 &&
+          shapeStates[regions[rawArcs.users[a][0]].shapeIds.first] !=
+              shapeStates[regions[rawArcs.users[a][1]].shapeIds.first])
+        a
+  ]);
   late List<List<int>> arcs;
   late String output;
   late MalaysiaZoneMap map;
   while (true) {
-    final anchors = AnchorIndex([
-      ...fixtureAnchors,
-      for (final feature in border.features)
-        if (anchored.contains(feature.id)) [feature.lat, feature.lon]
-    ]);
+    final kept = [
+      for (var a = 0; a < rawArcs.vertices.length; a++)
+        keptVertices(
+            rawArcs.vertices[a], tolerances[a], anchors, refiner.forced[a])
+    ];
     arcs = [
       for (var a = 0; a < rawArcs.vertices.length; a++)
-        simplifyArc(rawArcs.vertices[a], tolerances[a], anchors)
+        [
+          for (final i in kept[a]) ...[
+            rawArcs.vertices[a][i * 2],
+            rawArcs.vertices[a][i * 2 + 1]
+          ]
+        ]
     ];
     output = _encodeZones(zones, specialAreas, regions, parentShapeIds, arcs);
     map = MalaysiaZoneMap.parse(output);
-    final fresh = [
-      for (final feature in border.wrongFeatures(map))
-        if (anchored.add(feature.id)) feature
-    ];
-    if (fresh.isEmpty) break;
+    if (!refiner.refine(border.wrongPoints(map), kept)) break;
   }
-  final wrong = border.wrongFeatures(map);
-  errors.addAll([
-    for (final feature in wrong)
-      if (feature.metresToLine <= stateCheckToleranceMetres)
-        'border feature ${feature.describe()}'
-  ]);
   final resolved = _verifyMap(map, regions, fixtures, shapes, rowsByShape,
       zoneStates, parentShapeIds.whereType<String>().toList(), errors);
-  final report = _ZoneReport(
-      ShippedZoneMap.parse(output), layers, snapshot, catalogDates(zones));
+  final report = _ZoneReport(ShippedZoneMap.parse(output), layers, snapshot,
+      border, catalogDates(zones));
   errors.addAll(report.failures);
 
   final summary = '${zones.length} zones, ${shapes.length} districts in '
       '${regions.length} regions, ${specialAreas.length} special areas, '
       '${islands.length} island areas, ${arcs.length} arcs, '
       '$resolved fixtures resolved, '
-      '${border.describe(wrong, anchored.length)}, ${report.summary}';
+      '${refiner.forcedCount} arc vertices kept for border features, '
+      '${report.summary}';
   return DataBuild(output, errors, layers.sources, summary);
 }
 
@@ -298,6 +343,10 @@ class _Layers {
       final file = File('$tool/raw/$name');
       try {
         return readGzipInput(file);
+      } on FileSystemException catch (error) {
+        errors.add('${file.path} cannot be read '
+            '(${error.osError?.message ?? error.message})');
+        return null;
       } on FormatException catch (error) {
         errors.add('${file.path} is ${error.message}');
         return null;
@@ -325,8 +374,14 @@ class _Layers {
       }
     }
     OsmSnapshot? snapshot;
+    List<StateLineException>? exceptions;
+    try {
+      exceptions = readStateLineExceptions(tool);
+    } on FormatException catch (error) {
+      errors.add(error.message);
+    }
     final osmBytes = readRaw(osmSnapshotFile);
-    if (osmBytes != null) {
+    if (osmBytes != null && exceptions != null) {
       sources.add(ManifestEntry(
           'openstreetmap',
           'MYS admin_level=4 $osmSnapshotDate',
@@ -336,8 +391,10 @@ class _Layers {
           method: 'POST',
           form: 'data=${overpassQuery(osmSnapshotDate)}'));
       try {
-        snapshot = OsmSnapshot.parse(utf8.decode(osmBytes),
-            exceptions: readStateLineExceptions(tool));
+        snapshot =
+            OsmSnapshot.parse(utf8.decode(osmBytes), exceptions: exceptions);
+      } on StateLineExceptionError catch (error) {
+        errors.add(error.message);
       } on FormatException catch (error) {
         errors.add('$tool/raw/$osmSnapshotFile is not a usable OpenStreetMap '
             'snapshot (${error.message})');
@@ -350,9 +407,15 @@ class _Layers {
         osmExtractUrl,
         osmExtractSha256,
         method: 'GET'));
-    List<OsmFeature> readFeatures(String file, String name) {
+    List<OsmFeature> readFeatures(String file, String name, String pinned) {
       final bytes = readRaw(file);
       if (bytes == null) return const [];
+      final digest = sha256Hex(bytes);
+      if (digest != pinned) {
+        errors.add('$tool/raw/$file has SHA-256 $digest, not the pinned '
+            '$pinned that import-osm-extract writes from $osmExtractUrl');
+        return const [];
+      }
       sources.add(ManifestEntry('openstreetmap', '$name $osmExtractTimestamp',
           osmExtractTimestamp.substring(0, 10), osmExtractUrl, sha256Hex(bytes),
           method: 'osmium',
@@ -366,17 +429,28 @@ class _Layers {
       }
     }
 
-    final border = readFeatures(osmBorderFeaturesFile,
-        'MYS features within ${osmExtractReachMetres.round()} m of a state line');
-    final offMap = readFeatures(osmOffMapFeaturesFile,
-        'MYS features more than ${osmOffMapMetres.round()} m outside every district');
+    final border = readFeatures(
+        osmBorderFeaturesFile,
+        'MYS features within ${osmExtractReachMetres.round()} m of a state line',
+        osmBorderFeaturesSha256);
+    final offMap = readFeatures(
+        osmOffMapFeaturesFile,
+        'MYS features more than ${osmOffMapMetres.round()} m outside every district',
+        osmOffMapFeaturesSha256);
+    var noZoneAreas = const <Map<String, String>>[];
+    try {
+      noZoneAreas = readCsv(File('$tool/$noZoneAreasFile'),
+          columns: const ['name', 'territory', 'osm_ids', 'reason']);
+    } on FormatException catch (error) {
+      errors.add(error.message);
+    }
     return _Layers(
         adm2,
         PolygonIndex([for (final shape in adm2.values) ...shape.rings]),
         snapshot,
         border,
         offMap,
-        readCsv(File('$tool/$noZoneAreasFile')),
+        noZoneAreas,
         sources);
   }
 }

@@ -66,40 +66,49 @@ Future<void> main(List<String> args) async {
     exitCode = 64;
     return;
   }
-  switch (options.command) {
-    case 'fetch':
-      final fetched = await fetchTimetables(
-          options.root, options.positional.map(int.parse).toList(),
-          refresh: options.refresh);
-      if (!fetched) exitCode = 1;
-      break;
-    case 'import-selangor':
-      importSelangor(options.root, options.positional);
-      break;
-    case 'fetch-osm':
-      if (!await fetchOsmSnapshot(options.root)) exitCode = 1;
-      break;
-    case 'import-osm-extract':
-      if (!await importOsmExtract(options.root, options.positional[0])) {
-        exitCode = 1;
-      }
-      break;
-    case 'build':
-      exitCode = build(options.root);
-      break;
-    case 'check':
-      final check = checkZones(options.root, File(options.positional[0]));
-      check.lines.forEach(print);
-      if (check.failed) exitCode = 1;
-      break;
-    case 'lookup':
-      final date = DateTime.parse(options.positional[2]);
-      print(lookupZone(
-              double.parse(options.positional[0]),
-              double.parse(options.positional[1]),
-              DateComponents(date.year, date.month, date.day)) ??
-          'none');
-      break;
+  try {
+    switch (options.command) {
+      case 'fetch':
+        final fetched = await fetchTimetables(
+            options.root, options.positional.map(int.parse).toList(),
+            refresh: options.refresh);
+        if (!fetched) exitCode = 1;
+        break;
+      case 'import-selangor':
+        importSelangor(options.root, options.positional);
+        break;
+      case 'fetch-osm':
+        if (!await fetchOsmSnapshot(options.root)) exitCode = 1;
+        break;
+      case 'import-osm-extract':
+        if (!await importOsmExtract(options.root, options.positional[0])) {
+          exitCode = 1;
+        }
+        break;
+      case 'build':
+        exitCode = build(options.root);
+        break;
+      case 'check':
+        final check = checkZones(options.root, File(options.positional[0]));
+        check.lines.forEach(print);
+        if (check.failed) exitCode = 1;
+        break;
+      case 'lookup':
+        final date = DateTime.parse(options.positional[2]);
+        print(lookupZone(
+                double.parse(options.positional[0]),
+                double.parse(options.positional[1]),
+                DateComponents(date.year, date.month, date.day)) ??
+            'none');
+        break;
+    }
+  } on FormatException catch (error) {
+    print(error.message);
+    exitCode = 1;
+  } on FileSystemException catch (error) {
+    print('${error.path} cannot be read '
+        '(${error.osError?.message ?? error.message})');
+    exitCode = 1;
   }
 }
 

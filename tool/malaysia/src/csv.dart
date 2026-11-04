@@ -1,8 +1,21 @@
 import 'dart:io';
 
-List<Map<String, String>> readCsv(File file) {
-  final rows = parseCsv(file.readAsStringSync());
+List<Map<String, String>> readCsv(File file,
+    {List<String> columns = const []}) {
+  final String text;
+  try {
+    text = file.readAsStringSync();
+  } on FileSystemException catch (error) {
+    throw FormatException('${file.path} cannot be read '
+        '(${error.osError?.message ?? error.message})');
+  }
+  final rows = parseCsv(text);
+  if (rows.isEmpty) throw FormatException('${file.path} has no header row');
   final header = rows.first;
+  final missing = columns.where((column) => !header.contains(column));
+  if (missing.isNotEmpty) {
+    throw FormatException('${file.path} has no ${missing.join(', ')} column');
+  }
   return [
     for (final row in rows.skip(1))
       if (row.length != header.length)

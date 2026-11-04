@@ -11,26 +11,7 @@ import 'package:test/test.dart';
 import '../tool/malaysia/src/malaysia_timetables.dart';
 import '../tool/malaysia/src/malaysia_zones.dart';
 import '../tool/malaysia/src/osm_fetch.dart';
-
-void _copyDirectory(Directory from, Directory to) {
-  to.createSync(recursive: true);
-  for (final entity in from.listSync()) {
-    final name = entity.uri.pathSegments.where((s) => s.isNotEmpty).last;
-    if (entity is Directory) {
-      _copyDirectory(entity, Directory('${to.path}/$name'));
-    } else if (entity is File) {
-      entity.copySync('${to.path}/$name');
-    }
-  }
-}
-
-Directory _copyOfTool() {
-  final root = Directory.systemTemp.createTempSync('malaysia_cli_test');
-  addTearDown(() => root.deleteSync(recursive: true));
-  _copyDirectory(
-      Directory('tool/malaysia'), Directory('${root.path}/tool/malaysia'));
-  return root;
-}
+import 'malaysia_test_support.dart';
 
 const _esolatDir = 'tool/malaysia/raw/esolat';
 
@@ -156,35 +137,10 @@ Future<ProcessResult> _build(Directory root) =>
       root.path
     ]);
 
-String _plantedZones(String Function(List<String> fields, int region) edit) {
-  var region = -1;
-  final lines = [
-    for (final line in File('data/malaysia/malaysia_zones.txt')
-        .readAsStringSync()
-        .split('\n'))
-      () {
-        final fields = line.split('\t');
-        if (fields[0] == 'R') region++;
-        return edit(fields, region);
-      }()
-  ];
-  final file = File(
-      '${Directory.systemTemp.createTempSync('malaysia_zones').path}/zones.txt')
-    ..writeAsStringSync(lines.join('\n'));
-  addTearDown(() => file.parent.deleteSync(recursive: true));
-  return file.path;
-}
-
-int _regionOf(String rows) => File('data/malaysia/malaysia_zones.txt')
-    .readAsLinesSync()
-    .where((line) => line.startsWith('R\t'))
-    .toList()
-    .indexWhere((line) => line.split('\t')[2] == rows);
-
 void main() {
   test('build rejects a row whose maghrib falls before asr and writes nothing',
       () async {
-    final root = _copyOfTool();
+    final root = copyOfTool();
     final raw = File('${root.path}/$_esolatDir/JHR01_2026.json.gz');
     final json = utf8.decode(GZipCodec().decode(raw.readAsBytesSync()));
     final edited =
@@ -206,7 +162,7 @@ void main() {
     test(
         'build fails and names a zone-year in force whose response is '
         '${replacement.key}', () async {
-      final root = _copyOfTool();
+      final root = copyOfTool();
       File('${root.path}/$_esolatDir/JHR02_2026.json.gz')
           .writeAsBytesSync(GZipCodec().encode(replacement.value));
 
@@ -224,7 +180,7 @@ void main() {
   }.entries) {
     final fileName = stored.key.split('/').last;
     test('build fails and names $fileName when it is not gzip', () async {
-      final root = _copyOfTool();
+      final root = copyOfTool();
       final raw = File('${root.path}/${stored.key}');
       raw.writeAsBytesSync(GZipCodec().decode(raw.readAsBytesSync()));
 
@@ -242,7 +198,7 @@ void main() {
     'openstreetmap-MYS-ADM4.json.gz',
   ]) {
     test('build fails and names $fileName when it is not gzip', () async {
-      final root = _copyOfTool();
+      final root = copyOfTool();
       final raw = File('${root.path}/tool/malaysia/raw/$fileName');
       raw.writeAsBytesSync(GZipCodec().decode(raw.readAsBytesSync()));
 
@@ -256,7 +212,7 @@ void main() {
 
     test('build fails and names $fileName when its content is not JSON',
         () async {
-      final root = _copyOfTool();
+      final root = copyOfTool();
       final raw = File('${root.path}/tool/malaysia/raw/$fileName');
       raw.writeAsBytesSync(GZipCodec().encode(utf8.encode('not json')));
 
@@ -271,7 +227,7 @@ void main() {
 
   test('build fails when zones.csv lists a zone-year with rows as unpublished',
       () async {
-    final root = _copyOfTool();
+    final root = copyOfTool();
     final zones = File('${root.path}/tool/malaysia/zones.csv');
     final text = zones.readAsStringSync();
     final edited = text.replaceFirst(
@@ -288,7 +244,7 @@ void main() {
 
   test('build fails and names an area that resolves to another state\'s zone',
       () async {
-    final root = _copyOfTool();
+    final root = copyOfTool();
     File('${root.path}/tool/malaysia/special_areas.csv').writeAsStringSync(
         'JHR02,Johor zone in Rompin,Rompin,2.78,103.4,3000,test\n',
         mode: FileMode.append);
@@ -303,7 +259,7 @@ void main() {
 
   test('fetch from an empty raw directory requests every zone-year in force',
       () async {
-    final root = _copyOfTool();
+    final root = copyOfTool();
     Directory('${root.path}/$_esolatDir').deleteSync(recursive: true);
     final committed = _committedTimetables();
     final sabahUnpublished2027 = {
@@ -330,7 +286,7 @@ void main() {
   test(
       'fetch --refresh keeps a stored timetable when e-Solat returns '
       'NO_RECORD! or an error', () async {
-    final root = _copyOfTool();
+    final root = copyOfTool();
     final committed = _committedTimetables();
     final fake = await _FakeEsolat.serve((zone, year) {
       if (zone == 'JHR01' && year == 2026) return _noRecord(zone);
@@ -360,7 +316,7 @@ void main() {
 
   test('fetch writes nothing for a [] response and names the zone-year',
       () async {
-    final root = _copyOfTool();
+    final root = copyOfTool();
     final stored = File('${root.path}/$_esolatDir/JHR03_2026.json.gz')
       ..deleteSync();
     final committed = _committedTimetables();
@@ -380,7 +336,7 @@ void main() {
 
   test('fetch keeps a stored file that is not gzip and names the zone-year',
       () async {
-    final root = _copyOfTool();
+    final root = copyOfTool();
     final stored = File('${root.path}/$_esolatDir/JHR03_2026.json.gz');
     final plain = GZipCodec().decode(stored.readAsBytesSync());
     stored.writeAsBytesSync(plain);
@@ -409,7 +365,7 @@ void main() {
     for (final damage in damages.entries) {
       test('build fails and names the file when it has ${damage.key}',
           () async {
-        final root = _copyOfTool();
+        final root = copyOfTool();
         final stored = File('${root.path}/$_esolatDir/JHR03_2026.json.gz');
         stored.writeAsBytesSync(damage.value(stored.readAsBytesSync()));
 
@@ -425,7 +381,7 @@ void main() {
         test(
             'fetch${refresh ? ' --refresh' : ''} keeps the file and names it '
             'when it has ${damage.key}', () async {
-          final root = _copyOfTool();
+          final root = copyOfTool();
           final stored = File('${root.path}/$_esolatDir/JHR03_2026.json.gz');
           stored.writeAsBytesSync(damage.value(stored.readAsBytesSync()));
           final damaged = stored.readAsBytesSync();
@@ -458,7 +414,7 @@ void main() {
     for (final damage in damages.entries) {
       test('build fails and names the file when it has ${damage.key}',
           () async {
-        final root = _copyOfTool();
+        final root = copyOfTool();
         final stored =
             File('${root.path}/tool/malaysia/raw/selangor/SGRGBK_2027.txt.gz');
         stored.writeAsBytesSync(damage.value(stored.readAsBytesSync()));
@@ -491,7 +447,7 @@ void main() {
         test(
             'fetch${refresh ? ' --refresh' : ''} writes nothing for '
             '${damage.key} and names the zone-year', () async {
-          final root = _copyOfTool();
+          final root = copyOfTool();
           final stored = File('${root.path}/$_esolatDir/JHR01_2026.json.gz');
           if (!refresh) stored.deleteSync();
           final before = stored.existsSync() ? stored.readAsBytesSync() : null;
@@ -524,7 +480,7 @@ void main() {
   group('fetch-osm', () {
     test('stores an Overpass body that matches the committed snapshot',
         () async {
-      final root = _copyOfTool();
+      final root = copyOfTool();
       final committed = _committedOsmBody();
       final fake = await _FakeOverpass.serve(committed);
 
@@ -574,7 +530,7 @@ void main() {
     for (final damage in damages.entries) {
       test('keeps the stored snapshot when Overpass returns ${damage.key}',
           () async {
-        final root = _copyOfTool();
+        final root = copyOfTool();
         final stored = File('${root.path}/$_osmSnapshot');
         final before = stored.readAsBytesSync();
         final document = jsonDecode(utf8.decode(_committedOsmBody()))
@@ -596,7 +552,7 @@ void main() {
 
     test('keeps a stored snapshot that is not gzip and fetches nothing',
         () async {
-      final root = _copyOfTool();
+      final root = copyOfTool();
       final stored = File('${root.path}/$_osmSnapshot')
         ..writeAsStringSync('not gzip');
       final fake = await _FakeOverpass.serve(_committedOsmBody());
@@ -621,8 +577,8 @@ void main() {
     });
 
     test('fails when a special area moves onto another state\'s land', () {
-      final selangor = _regionOf('SGR01 SGRHSL');
-      final zones = _plantedZones((fields, region) =>
+      final selangor = regionOf('SGR01 SGRHSL');
+      final zones = plantedZones((fields, region) =>
           fields[0] == 'S' && fields[2] == 'Genting Highlands'
               ? [...fields.sublist(0, 6), '$selangor'].join('\t')
               : fields.join('\t'));
@@ -637,8 +593,8 @@ void main() {
     });
 
     test('fails when land resolves to no zone', () {
-      final perlis = _regionOf('PLS01');
-      final zones = _plantedZones((fields, region) =>
+      final perlis = regionOf('PLS01');
+      final zones = plantedZones((fields, region) =>
           fields[0] == 'R' && region == perlis
               ? [fields[0], fields[1], 'PLS01:lat>90'].join('\t')
               : fields.join('\t'));
@@ -651,8 +607,8 @@ void main() {
     });
 
     test('fails when the Labuan zone covers Kuala Lumpur', () {
-      final federal = _regionOf('WLY01');
-      final zones = _plantedZones((fields, region) =>
+      final federal = regionOf('WLY01');
+      final zones = plantedZones((fields, region) =>
           fields[0] == 'R' && region == federal
               ? [fields[0], fields[1], 'WLY02'].join('\t')
               : fields.join('\t'));
@@ -667,7 +623,7 @@ void main() {
     });
 
     test('names the snapshot when it is not an Overpass response', () {
-      final root = _copyOfTool();
+      final root = copyOfTool();
       File('${root.path}/$_osmSnapshot')
           .writeAsBytesSync(GZipCodec().encode(utf8.encode('{}')));
 
@@ -678,7 +634,7 @@ void main() {
     });
 
     test('names a state line exception whose path is off the line', () {
-      final root = _copyOfTool();
+      final root = copyOfTool();
       final exceptions =
           File('${root.path}/tool/malaysia/state_line_exceptions.csv');
       exceptions.writeAsStringSync(exceptions

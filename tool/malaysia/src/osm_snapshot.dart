@@ -313,36 +313,47 @@ class OsmSnapshot {
 const stateLineExceptionsFile = 'state_line_exceptions.csv';
 const stateLinePathEndMetres = 2.0;
 
-List<StateLineException> readStateLineExceptions(String tool) => [
-      for (final row in readCsv(File('$tool/$stateLineExceptionsFile')))
-        StateLineException.parse(row)
-    ];
+List<StateLineException> readStateLineExceptions(String tool) {
+  final file = '$tool/$stateLineExceptionsFile';
+  return [
+    for (final row in readCsv(File(file),
+        columns: const ['name', 'from', 'to', 'path', 'source']))
+      StateLineException.parse(row, file)
+  ];
+}
+
+class StateLineExceptionError extends FormatException {
+  const StateLineExceptionError(super.message);
+}
 
 class StateLineException {
+  final String file;
   final String name;
   final String from;
   final String to;
   final List<int> path;
 
-  StateLineException(this.name, this.from, this.to, this.path);
+  StateLineException(this.file, this.name, this.from, this.to, this.path);
 
-  static StateLineException parse(Map<String, String> row) {
+  static StateLineException parse(Map<String, String> row, String file) {
     final path = <int>[];
     for (final point in row['path']!.split(';')) {
       final parts = point.trim().split(' ');
-      if (parts.length != 2) {
-        throw FormatException(
-            'state_line_exceptions.csv ${row['name']}: bad point $point');
+      final lat = parts.length == 2 ? double.tryParse(parts[0]) : null;
+      final lon = parts.length == 2 ? double.tryParse(parts[1]) : null;
+      if (lat == null || lon == null) {
+        throw StateLineExceptionError('$file ${row['name']}: bad point $point');
       }
       path
-        ..add(MalaysiaZoneMap.quantize(double.parse(parts[0])))
-        ..add(MalaysiaZoneMap.quantize(double.parse(parts[1])));
+        ..add(MalaysiaZoneMap.quantize(lat))
+        ..add(MalaysiaZoneMap.quantize(lon));
     }
     if (path.length < 6) {
-      throw FormatException('state_line_exceptions.csv ${row['name']}: '
+      throw StateLineExceptionError('$file ${row['name']}: '
           'the path needs two ends and a point between');
     }
-    return StateLineException(row['name']!, row['from']!, row['to']!, path);
+    return StateLineException(
+        file, row['name']!, row['from']!, row['to']!, path);
   }
 
   void applyTo(List<OsmRing> rings) {
@@ -361,7 +372,7 @@ class StateLineException {
         _replaceRun(points, start, end, run);
       }
       if (matches.length != 1) {
-        throw FormatException('state_line_exceptions.csv $name: '
+        throw StateLineExceptionError('$file $name: '
             '${matches.length} $territory rings hold both ends of the path');
       }
     }
@@ -374,7 +385,7 @@ class StateLineException {
         vertexKey(runs[1][i], runs[1][i + 1])
     };
     if (fromRun.length != toRun.length || !fromRun.containsAll(toRun)) {
-      throw FormatException('state_line_exceptions.csv $name: the path does '
+      throw StateLineExceptionError('$file $name: the path does '
           'not replace a stretch of the line between $from and $to');
     }
   }
