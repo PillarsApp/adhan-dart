@@ -447,6 +447,54 @@ void main() {
     }
   });
 
+  group('a fetched e-Solat body that is not every day of the year', () {
+    final damages = <String, String Function(String)>{
+      'the 2025 dates': (json) => json.replaceAllMapped(
+          RegExp(r'("date":"\d{2}-[A-Za-z]+-)2026"'),
+          (match) => '${match[1]}2025"'),
+      'only the first 200 rows': (json) {
+        final document = jsonDecode(json) as Map<String, dynamic>;
+        document['prayerTime'] =
+            (document['prayerTime'] as List).sublist(0, 200);
+        return jsonEncode(document);
+      },
+    };
+
+    for (final damage in damages.entries) {
+      for (final refresh in [false, true]) {
+        test(
+            'fetch${refresh ? ' --refresh' : ''} writes nothing for '
+            '${damage.key} and names the zone-year', () async {
+          final root = _copyOfTool();
+          final stored = File('${root.path}/$_esolatDir/JHR01_2026.json.gz');
+          if (!refresh) stored.deleteSync();
+          final before = stored.existsSync() ? stored.readAsBytesSync() : null;
+          final committed = _committedTimetables();
+          final json = utf8.decode(committed['JHR01 2026']!);
+          final damaged = damage.value(json);
+          expect(damaged, isNot(json));
+          final fake = await _FakeEsolat.serve((zone, year) =>
+              zone == 'JHR01' && year == 2026
+                  ? utf8.encode(damaged)
+                  : committed['$zone $year'] ?? _noRecord(zone));
+
+          final lines = <String>[];
+          final ok =
+              await _fetch(root, [2026], fake, lines: lines, refresh: refresh);
+
+          expect(ok, isFalse);
+          expect(fake.requests, contains('JHR01 2026'));
+          expect(
+              lines,
+              contains(allOf(
+                  contains('JHR01 2026'), contains('not the days of 2026'))));
+          expect(stored.existsSync() ? stored.readAsBytesSync() : null, before);
+          if (refresh) expect(lines, contains('JHR02 2026 365 rows'));
+        });
+      }
+    }
+  });
+
   group('fetch-osm', () {
     test('stores an Overpass body that matches the committed snapshot',
         () async {

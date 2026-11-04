@@ -20,10 +20,12 @@ Usage:
   dart run tool/malaysia/malaysia_times_cli.dart lookup <latitude> <longitude> <yyyy-mm-dd>
 
 fetch            Download every e-Solat zone that tool/malaysia/zones.csv has in force in
-                 each year into tool/malaysia/raw/esolat/. Keeps zone-years that already
-                 hold rows unless --refresh is given, stores only responses with rows,
-                 and exits 1 when a response is unusable, would replace stored rows,
-                 or a stored file is not gzip.
+                 each year into tool/malaysia/raw/esolat/. Skips a zone-year whose stored
+                 file has rows unless --refresh is given. Writes a response only when its
+                 rows are the days of the year, each once and in order, and otherwise
+                 leaves the stored file as it was. Exits 1 when a download fails, a
+                 response is not written (NO_RECORD! for a zone-year with no stored rows
+                 excepted), or a stored file cannot be read as gzip.
 import-selangor  Extract the Selangor district PDFs with pdftotext -layout into
                  tool/malaysia/raw/selangor/ and record each PDF's SHA-256.
 fetch-osm        Download the pinned OpenStreetMap snapshot of Malaysia's state

@@ -225,17 +225,20 @@ Future<bool> fetchTimetables(Directory root, List<int> years,
           continue;
         }
         final response = _EsolatResponse.parse(body);
-        if (response.rows != null) {
+        final rows = response.rows;
+        final problem = rows == null
+            ? 'e-Solat returned ${response.problem}'
+            : _yearProblem(rows, year);
+        if (rows != null && problem == null) {
           file.writeAsBytesSync(_gzip(body));
-          print('$label ${response.rows!.length} rows');
+          print('$label ${rows.length} rows');
         } else if (stored != null) {
-          print('$label: e-Solat returned ${response.problem}; '
-              'kept the stored ${stored.length} rows');
+          print('$label: $problem; kept the stored ${stored.length} rows');
           ok = false;
         } else if (response.isNoRecord) {
           print('$label NO_RECORD!');
         } else {
-          print('$label: e-Solat returned ${response.problem}; wrote nothing');
+          print('$label: $problem; wrote nothing');
           ok = false;
         }
       }
@@ -244,6 +247,27 @@ Future<bool> fetchTimetables(Directory root, List<int> years,
     client.close();
   }
   return ok;
+}
+
+String? _esolatIsoDate(Object? text) {
+  final match = RegExp(r'^(\d{2})-([A-Za-z]+)-(\d{4})$').firstMatch('$text');
+  final month = match == null ? -1 : _esolatMonths.indexOf(match.group(2)!);
+  if (match == null || month < 0) return null;
+  return _isoDate(
+      int.parse(match.group(3)!), month + 1, int.parse(match.group(1)!));
+}
+
+String? _yearProblem(List<Map<String, dynamic>> rows, int year) {
+  final dates = <String>[];
+  for (final row in rows) {
+    final date = _esolatIsoDate(row['date']);
+    if (date == null) return 'e-Solat returned unreadable date ${row['date']}';
+    dates.add(date);
+  }
+  final problem = _calendarProblem(dates, _calendar(year));
+  return problem == null
+      ? null
+      : 'e-Solat returned rows that are not the days of $year: $problem';
 }
 
 Future<List<int>> _fetchZoneYear(HttpClient client, String endpoint,
@@ -596,16 +620,11 @@ void _loadEsolat(
   final dates = <String>[];
   final days = <List<int>>[];
   for (final fields in rows) {
-    final dateMatch = RegExp(r'^(\d{2})-([A-Za-z]+)-(\d{4})$')
-        .firstMatch('${fields['date']}');
-    final month =
-        dateMatch == null ? -1 : _esolatMonths.indexOf(dateMatch.group(2)!);
-    if (dateMatch == null || month < 0) {
+    final date = _esolatIsoDate(fields['date']);
+    if (date == null) {
       errors.add('$zone $year: unreadable date ${fields['date']}');
       return;
     }
-    final date = _isoDate(int.parse(dateMatch.group(3)!), month + 1,
-        int.parse(dateMatch.group(1)!));
     final day = <int>[];
     for (final field in timeFields) {
       final minutes = _parseClock('${fields[field]}');
