@@ -1,0 +1,370 @@
+place,zone,date,lat,lon,geonames_id,note
+Pulau Aur,JHR01,2026-06-01,2.44969,104.52109,1732794,Island feature (T.ISL); JHR01 is a special area inside the Mersing shape.
+Pulau Pemanggil,JHR01,2026-06-01,2.58333,104.33333,1734958,Island feature (T.ISL); the other GeoNames Pulau Pemanggil (1751238) lies off Singapore.
+Johor Bahru,JHR02,2026-06-01,1.4655,103.7578,1732752,
+Kota Tinggi,JHR02,2026-06-01,1.7381,103.8999,1732738,
+Mersing,JHR02,2026-06-01,2.4312,103.8405,1732826,
+Kulai,JHR02,2026-06-01,1.6561,103.6032,1732742,
+Kluang,JHR03,2026-06-01,2.03046,103.31689,1732811,
+Pontian,JHR03,2026-06-01,1.4866,103.3896,1732711,"Pontian Kechil, the district town."
+Batu Pahat,JHR04,2026-06-01,1.8548,102.9325,1732687,
+Muar,JHR04,2026-06-01,2.0442,102.5689,1732869,
+Segamat,JHR04,2026-06-01,2.5148,102.8158,1732846,
+Gemas Johor,JHR04,2026-06-01,2.5849,102.626,8535653,"Gemas Baharu, the Johor side of Gemas; Gemas town (1734885) is in Negeri Sembilan."
+Tangkak,JHR04,2026-06-01,2.2673,102.5453,1732857,
+Kota Setar,KDH01,2026-06-01,6.12104,100.36014,1736309,"Alor Setar, the district town."
+Kubang Pasu,KDH01,2026-06-01,6.26812,100.42167,1736302,"Jitra, the district town."
+Pokok Sena,KDH01,2026-06-01,6.17055,100.51885,1736338,
+Kuala Muda,KDH02,2026-06-01,5.647,100.48772,1735498,"Sungai Petani, the district town."
+Yan,KDH02,2026-06-01,5.7989,100.37264,1735489,Yan Besar.
+Pendang,KDH02,2026-06-01,5.99516,100.47885,1765769,
+Padang Terap,KDH03,2026-06-01,6.25844,100.61264,1736331,"Kuala Nerang, the district town."
+Sik,KDH03,2026-06-01,5.83333,100.75,6805124,
+Baling,KDH04,2026-06-01,5.67806,100.9177,1734448,
+Bandar Baharu,KDH05,2026-06-01,5.13428,100.49549,1734407,
+Kulim,KDH05,2026-06-01,5.36499,100.56177,1734393,
+Langkawi,KDH06,2026-06-01,6.32649,99.8432,1222396,"Kuah, the district town."
+Puncak Gunung Jerai,KDH07,2026-06-01,5.78756,100.43394,1735480,Summit (T.MT); KDH07 is a special area inside the Kuala Muda shape (KDH02).
+Bachok,KTN01,2026-06-01,6.06667,102.4,1736380,
+Kota Bharu,KTN01,2026-06-01,6.12361,102.24333,1736376,
+Machang,KTN01,2026-06-01,5.76407,102.21414,1735558,
+Pasir Mas,KTN01,2026-06-01,6.04934,102.13987,1736372,
+Pasir Puteh,KTN01,2026-06-01,5.83333,102.4,1735545,
+Tanah Merah,KTN01,2026-06-01,5.8,102.15,1735553,
+Tumpat,KTN01,2026-06-01,6.19775,102.17098,1736356,
+Kuala Krai,KTN01,2026-06-01,5.5313,102.19925,1735572,
+Mukim Chiku,KTN01,2026-06-01,4.9689,102.2008,7469863,"Region: Felda Chiku 3, the main settlement of the mukim, inside the Gua Musang shape east of the lon 102.1 split."
+Mukim Chiku (west edge),KTN01,2026-06-01,5.0888,102.1408,7469821,"Felda Chiku 8, the westernmost Chiku settlement, 4.5 km east of the lon 102.1 split."
+Gua Musang,KTN02,2026-06-01,4.88441,101.96857,1734651,"Gua Musang town, in Mukim Galas."
+Bertam,KTN02,2026-06-01,5.1454,102.0475,1735053,"Bertam Bharu, in Mukim Bertam, 5.8 km west of the lon 102.1 split."
+Jeli,KTN02,2026-06-01,5.7,101.83333,1734464,Kampung Jeli.
+Jajahan Kecil Lojing,KTN02,2026-06-01,4.719,101.5521,12808701,"Region: Hendrop, the populated place GeoNames puts inside the Kecil Lojing shape; GeoNames has no feature named Lojing."
+SELURUH NEGERI MELAKA,MLK01,2026-06-01,2.196,102.2405,1734759,Region (whole state): Malacca city.
+Tampin,NGS01,2026-06-01,2.4701,102.2302,1734738,
+Jempol,NGS01,2026-06-01,2.8079,102.4049,1734839,"Bahau, the district town."
+Jelebu,NGS02,2026-06-01,2.9395,102.0704,1734800,"Kuala Klawang, the district town."
+Kuala Pilah,NGS02,2026-06-01,2.7389,102.2487,1734841,
+Rembau,NGS02,2026-06-01,2.5897,102.0913,1734854,
+Port Dickson,NGS03,2026-06-01,2.52462,101.79651,1734815,
+Seremban,NGS03,2026-06-01,2.7297,101.9381,1734810,
+Pulau Tioman,PHG01,2026-06-01,2.7972,104.166,1734910,Island feature (T.ISL) inside the Rompin shape; PHG01 is a special area.
+Kuantan,PHG02,2026-06-01,3.8077,103.326,1735227,
+Pekan,PHG02,2026-06-01,3.4836,103.3996,1734971,
+Muadzam Shah,PHG02,2026-06-01,3.0627,103.0892,7697167,geoBoundaries places it in the Pekan shape.
+Jerantut,PHG03,2026-06-01,3.936,102.3626,1732602,
+Temerloh,PHG03,2026-06-01,3.4506,102.4176,1735022,Temerluh spelling in GeoNames.
+Maran,PHG03,2026-06-01,3.586,102.773,1732637,
+Bera,PHG03,2026-06-01,3.2462,102.4155,1735030,"Teriang (Triang), the Bera district town."
+Chenor,PHG03,2026-06-01,3.48,102.5923,1734989,Cenur spelling in GeoNames.
+Jengka,PHG03,2026-06-01,3.8309,102.5472,7794041,"Felda Jengka 10, beside Bandar Pusat Jengka, which GeoNames lacks."
+Bentong,PHG04,2026-06-01,3.5316,101.9038,1732667,
+Lipis,PHG04,2026-06-01,4.1842,102.0468,1733023,"Kuala Lipis, the district town."
+Raub,PHG04,2026-06-01,3.7899,101.857,1732663,
+Genting Sempah,PHG05,2026-06-01,3.35,101.78333,1745114,Mountain pass (T.PASS); PHG05 is a special area inside the Bentong shape (PHG04).
+Janda Baik,PHG05,2026-06-01,3.31667,101.86667,1735141,Kampung Janda Baik; special area.
+Bukit Tinggi,PHG05,2026-06-01,3.34944,101.82631,1735133,"Kampung Bukit Tinggi, Bentong; special area. The other GeoNames Bukit Tinggi features are hills elsewhere in Pahang."
+Cameron Highlands,PHG06,2026-06-01,4.46361,101.3763,1735262,"Tanah Rata, the district town."
+Genting Highlands,PHG06,2026-06-01,3.42368,101.79335,7799988,"Genting Highlands peak (T.PK), at the resort; special area inside Bentong. The GeoNames town point (1735132) has its own rows below."
+Resorts World Genting,PHG06,2026-06-01,3.42239,101.792,9951110,"Hotel (S.HTL) in Bentong, Pahang, per ADM1 and OpenStreetMap."
+Genting Ria Apartments,SGR01,2026-12-31,3.42007,101.78987,10107704,"Hulu Selangor side of Genting Highlands, per ADM1 and OpenStreetMap; the special area applies only inside Bentong."
+Genting Ria Apartments,SGRHSL,2027-01-01,3.42007,101.78987,10107704,"Hulu Selangor side of Genting Highlands, per ADM1 and OpenStreetMap; the special area applies only inside Bentong."
+Bukit Fraser,PHG06,2026-06-01,3.7126,101.7412,1732671,Special area inside the Raub shape (PHG04).
+Mukim Rompin,PHG07,2026-06-01,2.81667,103.48333,1734914,"Kuala Rompin, the mukim town, inside the Rompin shape east of the lon 103.2 split."
+Mukim Endau,PHG07,2026-06-01,2.67177,103.62056,1763424,"Kampung Tanjong Gemuk, on the Pahang side of the Endau estuary; GeoNames Endau town (1734897) is in Johor."
+Mukim Pontian,PHG07,2026-06-01,2.76667,103.53333,1734927,"Kuala Pontian, 153 m seaward of the simplified coastline; resolves through the 500 m boundary tolerance."
+Tapah,PRK01,2026-06-01,4.18333,101.26667,1735283,
+Slim River,PRK01,2026-06-01,3.83333,101.4,1732931,
+Tanjung Malim,PRK01,2026-06-01,3.681,101.5198,1732672,"Muallim district, Perak. The geoBoundaries ADM2 Ulu Selangor shape reaches this point; the ADM1 Perak-Selangor line, GeoNames and OpenStreetMap put it in Perak."
+Kuala Kangsar,PRK02,2026-06-01,4.76667,100.93333,1734599,
+Sg. Siput,PRK02,2026-06-01,4.8151,101.0786,1734625,"Sungai Siput Utara, in Kuala Kangsar district; GeoNames 1735265 ""Sungai Siput"" is the Kampar village."
+Ipoh,PRK02,2026-06-01,4.5841,101.0829,1734634,
+Batu Gajah,PRK02,2026-06-01,4.46916,101.04107,1735268,
+Kampar,PRK02,2026-06-01,4.3,101.15,1735274,
+Lenggong,PRK03,2026-06-01,5.10633,100.96792,1767492,
+Pengkalan Hulu,PRK03,2026-06-01,5.71667,101,1735518,"Keruh (Kroh), renamed Pengkalan Hulu."
+Grik,PRK03,2026-06-01,5.41667,101.13333,1734372,"Gerik, 13 km west of the lon 101.25 split."
+Temengor,PRK04,2026-06-01,5.33333,101.36667,1734377,"Kampung Temengor on Tasik Temenggor, 13 km east of the lon 101.25 split."
+Belum,PRK04,2026-06-01,5.54273,101.34072,10111706,"Belum Rainforest Resort on Pulau Banding, the gateway to Royal Belum; GeoNames has no populated place named Belum in the park (Kampung Belum Baharu, 1770675, is a resettlement west of Gerik)."
+Kg Gajah,PRK05,2026-06-01,4.1864,100.9396,1735455,
+Teluk Intan,PRK05,2026-06-01,4.02219,101.02083,1735459,
+Bagan Datuk,PRK05,2026-06-01,3.9899,100.7819,1735179,
+Seri Iskandar,PRK05,2026-06-01,4.35993,100.98491,11184859,
+Beruas,PRK05,2026-06-01,4.5,100.78333,1734607,
+Parit,PRK05,2026-06-01,4.48333,100.91667,1735433,
+Lumut,PRK05,2026-06-01,4.2323,100.6298,1735450,
+Sitiawan,PRK05,2026-06-01,4.2168,100.6996,1735453,
+Pulau Pangkor,PRK05,2026-06-01,4.22795,100.56026,1735444,Island feature (T.ISL) inside the Manjung shape.
+Selama,PRK06,2026-06-01,5.2236,100.69262,1734399,
+Taiping,PRK06,2026-06-01,4.85,100.73333,1734586,
+Bagan Serai,PRK06,2026-06-01,5.0108,100.54101,1734409,
+Parit Buntar,PRK06,2026-06-01,5.12671,100.49316,1735089,
+Bukit Larut,PRK07,2026-06-01,4.86247,100.79265,9172440,Maxwell Hill resort (P.PPLL); PRK07 is a special area inside the Larut dan Matang shape (PRK06).
+SELURUH NEGERI PERLIS,PLS01,2026-06-01,6.4414,100.19862,1736278,Region (whole state): Kangar.
+SELURUH NEGERI PULAU PINANG,PNG01,2026-06-01,5.41123,100.33543,1735106,Region (whole state): George Town.
+Bahagian Sandakan (Timur),SBH01,2026-06-01,5.8402,118.1179,1734052,Region: Sandakan town.
+Bukit Garam,SBH01,2026-06-01,5.4935,117.8335,1734009,Bukit Geram spelling; Kinabatangan shape east of the lon 117.65 split.
+Semawang,SBH01,2026-06-01,5.9193,117.7619,1734015,"Kampung Samawang, 344 m seaward of the simplified Sandakan coastline; resolves through the 500 m boundary tolerance."
+Temanggong,SBH01,2026-06-01,5.4018,118.6634,1733959,Tomanggong spelling; Kinabatangan shape.
+Tambisan,SBH01,2026-06-01,5.45231,119.14496,1733988,"Kampong Tambisan on Pulau Tambisan, 10 m outside the Lahad Datu shape (boundary tolerance); the Lahad Datu row lat>=5.38 & lon>=119.0 carries the Tambisan coast to SBH01."
+Bandar Sandakan,SBH01,2026-06-01,5.8402,118.1179,1734052,
+Sukau,SBH01,2026-06-01,5.5302,118.2933,1734062,Kinabatangan shape.
+Beluran,SBH02,2026-06-01,5.8956,117.5557,1734020,
+Telupid,SBH02,2026-06-01,5.65,117.11667,1733560,
+Pinangah,SBH02,2026-06-01,5.2104,116.8345,1733839,Tongod shape.
+Terusan,SBH02,2026-06-01,6.41792,117.69812,1736578,"Kampong Terusan, Beluran shape."
+Kuamut,SBH02,2026-06-01,5.2244,117.494,1733903,Kinabatangan shape west of the lon 117.65 split.
+Bahagian Sandakan (Barat),SBH02,2026-06-01,5.65,117.11667,1733560,Region: Telupid town.
+Lahad Datu,SBH03,2026-06-01,5.02298,118.32897,1733953,
+Silabukan,SBH03,2026-06-01,5.0012,118.5401,1733969,
+Kunak,SBH03,2026-06-01,4.68577,118.24908,1733635,Kampung Kunak.
+Sahabat,SBH03,2026-06-01,5.08778,119.094,7731525,"Sahabat 16 airstrip (S.AIRP), the only GeoNames feature for the Felda Sahabat scheme; 32 km south of the Tambisan box."
+Semporna,SBH03,2026-06-01,4.48178,118.61119,1733697,
+Tungku,SBH03,2026-06-01,5.0186,118.8869,1733984,
+Bahagian Tawau (Timur),SBH03,2026-06-01,5.02298,118.32897,1733953,Region: Lahad Datu town.
+Bandar Tawau,SBH04,2026-06-01,4.24482,117.89115,1734199,
+Balong,SBH04,2026-06-01,4.38333,118.13333,1733731,Balung spelling.
+Merotai,SBH04,2026-06-01,4.4222,117.7725,1734207,
+Kalabakan,SBH04,2026-06-01,4.41667,117.48333,1734224,
+Bahagian Tawau (Barat),SBH04,2026-06-01,4.24482,117.89115,1734199,Region: Tawau town.
+Kudat,SBH05,2026-06-01,6.88732,116.82364,1736458,144 m seaward of the simplified coastline; resolves through the 500 m boundary tolerance.
+Kota Marudu,SBH05,2026-06-01,6.5205,116.7534,1736509,"Bandau, the old name GeoNames keeps for Kota Marudu town."
+Pitas,SBH05,2026-06-01,6.72779,117.05779,1736543,
+Pulau Banggi,SBH05,2026-06-01,7.26712,117.17056,1736428,Island feature (T.ISL) inside the Kudat shape.
+Bahagian Kudat,SBH05,2026-06-01,6.5205,116.7534,1736509,Region: Kota Marudu.
+Gunung Kinabalu,SBH06,2026-06-01,6.07458,116.5582,1736632,Mount Kinabalu summit (T.MT); SBH06 is a special area inside the Ranau shape (SBH07).
+Kota Kinabalu,SBH07,2026-06-01,5.9749,116.0724,1733432,
+Ranau,SBH07,2026-06-01,5.9538,116.6641,1733502,
+Kota Belud,SBH07,2026-06-01,6.351,116.4305,1736660,
+Tuaran,SBH07,2026-06-01,6.1774,116.2314,1736696,
+Penampang,SBH07,2026-06-01,5.9084,116.1098,1751189,
+Papar,SBH07,2026-06-01,5.73333,115.93333,1733353,
+Putatan,SBH07,2026-06-01,5.9258,116.06094,1733440,geoBoundaries places it in the Kota Kinabalu shape.
+Bahagian Pantai Barat,SBH07,2026-06-01,5.9749,116.0724,1733432,Region: Kota Kinabalu.
+Pensiangan,SBH08,2026-06-01,4.55,116.31667,1734174,
+Keningau,SBH08,2026-06-01,5.3378,116.1602,1734098,
+Tambunan,SBH08,2026-06-01,5.71667,116.4,1733468,
+Nabawan,SBH08,2026-06-01,5.0393,116.4274,1734114,Bandar Nabawan.
+Bahagian Pendalaman (Atas),SBH08,2026-06-01,5.3378,116.1602,1734098,Region: Keningau.
+Beaufort,SBH09,2026-06-01,5.3473,115.7455,1733874,
+Kuala Penyu,SBH09,2026-06-01,5.5714,115.5984,1733376,
+Sipitang,SBH09,2026-06-01,5.07903,115.54964,1733868,
+Tenom,SBH09,2026-06-01,5.11922,115.93719,1733885,
+Long Pasia,SBH09,2026-06-01,4.40623,115.73058,1733756,
+Membakut,SBH09,2026-06-01,5.4748,115.803,1733876,
+Weston,SBH09,2026-06-01,5.21661,115.60068,1733861,
+Bahagian Pendalaman (Bawah),SBH09,2026-06-01,5.3473,115.7455,1733874,Region: Beaufort.
+Limbang,SWK01,2026-06-01,4.75477,115.01011,1737714,
+Lawas,SWK01,2026-06-01,4.8604,115.409,1737589,
+Sundar,SWK01,2026-06-01,4.88953,115.20752,1737628,
+Trusan,SWK01,2026-06-01,4.78486,115.27463,1737585,
+Miri,SWK02,2026-06-01,4.39928,113.99163,1738050,
+Niah,SWK02,2026-06-01,3.86203,113.71521,1737247,Subis shape east of the lon 113.68 split.
+Bekenu,SWK02,2026-06-01,4.05392,113.84407,1738030,Subis shape.
+Sibuti,SWK02,2026-06-01,4.04137,113.81186,1738037,"Kampong Sibuti, Subis shape."
+Marudi,SWK02,2026-06-01,4.18333,114.31667,1737919,
+Pandan,SWK03,2026-06-01,3.15,113.36667,1737478,Sebauh shape.
+Belaga,SWK03,2026-06-01,2.7,113.78333,1737314,
+Suai,SWK03,2026-06-01,3.8,113.63333,1737248,Subis shape west of the lon 113.68 split.
+Tatau,SWK03,2026-06-01,2.88333,112.85,1735404,
+Sebauh,SWK03,2026-06-01,3.11667,113.26667,1737489,
+Bintulu,SWK03,2026-06-01,3.16667,113.03333,1737486,
+Sibu,SWK04,2026-06-01,2.3,111.81667,1735902,
+Mukah,SWK04,2026-06-01,2.89435,112.09145,1735339,
+Dalat,SWK04,2026-06-01,2.66667,112.08333,1736929,
+Song,SWK04,2026-06-01,2.01667,112.55,1737184,
+Igan,SWK04,2026-06-01,2.82281,111.70794,1736831,Matu shape east of the lon 111.62 split.
+Oya,SWK04,2026-06-01,2.86667,111.88333,1736827,Dalat shape.
+Balingian,SWK04,2026-06-01,2.93057,112.54135,1735406,Mukah shape.
+Kanowit,SWK04,2026-06-01,2.1,112.15,1736973,
+Kapit,SWK04,2026-06-01,1.99546,112.93254,1737185,
+Sarikei,SWK05,2026-06-01,2.11667,111.51667,1735837,
+Matu,SWK05,2026-06-01,2.68333,111.53333,1736834,Matu shape west of the lon 111.62 split.
+Julau,SWK05,2026-06-01,2.01667,111.91667,1735889,
+Rajang,SWK05,2026-06-01,2.15,111.25,1735842,"Kampung Rajang, 293 m seaward of the simplified Tanjung Manis coastline; resolves through the 500 m boundary tolerance."
+Daro,SWK05,2026-06-01,2.51688,111.43002,1736781,
+Bintangor,SWK05,2026-06-01,2.16667,111.63333,1735881,Binatang spelling; Maradong shape.
+Belawai,SWK05,2026-06-01,2.23333,111.21667,1735828,Tanjung Manis shape.
+Lubok Antu,SWK06,2026-06-01,1.04186,111.83398,1736868,
+Sri Aman,SWK06,2026-06-01,1.24722,111.45278,1735799,
+Roban,SWK06,2026-06-01,1.91667,111.33333,1736718,Kabong shape.
+Debak,SWK06,2026-06-01,1.56667,111.41667,1736734,Betong shape.
+Kabong,SWK06,2026-06-01,1.83333,111.16667,1736719,
+Lingga,SWK06,2026-06-01,1.35,111.16667,1735756,Sri Aman shape.
+Engkelili,SWK06,2026-06-01,1.13864,111.66665,1736870,Engkilili spelling; Lubok Antu shape.
+Betong,SWK06,2026-06-01,1.4,111.51667,1736902,
+Spaoh,SWK06,2026-06-01,1.5,111.5,1736716,Betong shape.
+Pusa,SWK06,2026-06-01,1.58333,111.25,1736722,Pusa shape east of the lon 111.15 split.
+Saratok,SWK06,2026-06-01,1.73333,111.33333,1736760,
+Serian,SWK07,2026-06-01,1.16667,110.56667,1744288,
+Simunjan,SWK07,2026-06-01,1.38333,110.75,1735681,
+Samarahan,SWK07,2026-06-01,1.46031,110.48821,13118054,Kota Samarahan.
+Sebuyau,SWK07,2026-06-01,1.51667,110.93333,1734559,Simunjan shape.
+Meludam,SWK07,2026-06-01,1.65,111.03333,1736754,Maludam spelling; Pusa shape west of the lon 111.15 split.
+Kuching,SWK08,2026-06-01,1.55,110.33333,1735634,
+Bau,SWK08,2026-06-01,1.41667,110.15,1734539,
+Lundu,SWK08,2026-06-01,1.67439,109.85171,1737012,
+Sematan,SWK08,2026-06-01,1.8,109.76667,1737015,Lundu shape.
+Merapok,SWK01,2026-06-01,4.9539,115.5078,1737579,"Lawas district, Sarawak, on the Sabah border (OpenStreetMap). No source locates Kampung Patarikan, so automatic resolution never returns SWK09."
+Gombak,SGR01,2026-12-31,3.3213,101.5767,1735150,"Rawang, in Gombak district; GeoNames has no populated place named Gombak."
+Gombak,SGRGBK,2027-01-01,3.3213,101.5767,1735150,"Rawang, in Gombak district; GeoNames has no populated place named Gombak."
+Petaling,SGR01,2026-12-31,3.10726,101.60671,1735158,Petaling Jaya.
+Petaling,SGRPTG,2027-01-01,3.10726,101.60671,1735158,Petaling Jaya.
+Sepang,SGR01,2026-12-31,2.6931,101.7498,1734821,
+Sepang,SGRSPG,2027-01-01,2.6931,101.7498,1734821,
+Hulu Langat,SGR01,2026-12-31,3.1137,101.8142,1735172,
+Hulu Langat,SGRHLG,2027-01-01,3.1137,101.8142,1735172,
+Hulu Selangor,SGR01,2026-12-31,3.5638,101.6581,1732676,"Kuala Kubu Baharu, the district town."
+Hulu Selangor,SGRHSL,2027-01-01,3.5638,101.6581,1732676,"Kuala Kubu Baharu, the district town."
+Shah Alam,SGR01,2026-12-31,3.08507,101.53281,1732903,Petaling district.
+Shah Alam,SGRPTG,2027-01-01,3.08507,101.53281,1732903,Petaling district.
+Kuala Selangor,SGR02,2026-12-31,3.35,101.25,1732891,
+Kuala Selangor,SGRKSL,2027-01-01,3.35,101.25,1732891,
+Sabak Bernam,SGR02,2026-12-31,3.7698,100.9879,1735195,
+Sabak Bernam,SGRSBN,2027-01-01,3.7698,100.9879,1735195,
+Klang,SGR03,2026-12-31,3.03667,101.44333,1732905,
+Klang,SGRKLG,2027-01-01,3.03667,101.44333,1732905,
+Kuala Langat,SGR03,2026-12-31,2.8136,101.50185,1734781,"Banting, the district town."
+Kuala Langat,SGRKLT,2027-01-01,2.8136,101.50185,1734781,"Banting, the district town."
+Cyberjaya,SGR01,2026-12-31,2.92281,101.65718,6930887,Sepang shape west of Putrajaya.
+Cyberjaya,SGRSPG,2027-01-01,2.92281,101.65718,6930887,Sepang shape west of Putrajaya.
+Dengkil,SGR01,2026-12-31,2.86,101.6806,7697699,Sepang shape south of Putrajaya.
+Dengkil,SGRSPG,2027-01-01,2.86,101.6806,7697699,Sepang shape south of Putrajaya.
+Bangi,SGR01,2026-12-31,2.9,101.78333,1734797,Ulu Langat shape east of Putrajaya.
+Bangi,SGRHLG,2027-01-01,2.9,101.78333,1734797,Ulu Langat shape east of Putrajaya.
+Kajang,SGR01,2026-12-31,2.99424,101.78875,10941913,
+Kajang,SGRHLG,2027-01-01,2.99424,101.78875,10941913,
+Kuala Terengganu,TRG01,2026-06-01,5.3302,103.1408,1734705,
+Marang,TRG01,2026-06-01,5.2056,103.2059,1734715,
+Kuala Nerus,TRG01,2026-06-01,5.37293,103.02053,12534340,
+Besut,TRG02,2026-06-01,5.7336,102.4897,1736405,"Jertih, the district town."
+Setiu,TRG02,2026-06-01,5.52241,102.74854,6862363,"Bandar Permaisuri, the district town."
+Hulu Terengganu,TRG03,2026-06-01,5.0734,103.0114,1734720,"Kuala Berang, the district town."
+Dungun,TRG04,2026-06-01,4.775,103.4162,1734308,
+Kemaman,TRG04,2026-06-01,4.25,103.41667,1732945,"Cukai (Chukai), the district town."
+Kuala Lumpur,WLY01,2026-12-31,3.1412,101.68653,1735161,
+Kuala Lumpur,WLY01,2027-01-01,3.1412,101.68653,1735161,
+Putrajaya,WLY01,2026-12-31,2.93527,101.69112,6697380,Inside the OpenStreetMap Putrajaya ring.
+Putrajaya,WLY01,2027-01-01,2.93527,101.69112,6697380,Inside the OpenStreetMap Putrajaya ring.
+Labuan,WLY02,2026-06-01,5.28028,115.2475,1733782,
+Kuala Lumpur (verifier),WLY01,2026-12-31,3.1390,101.6869,,Verifier point.
+Kuala Lumpur (verifier),WLY01,2027-01-01,3.1390,101.6869,,Verifier point.
+Putrajaya (verifier),WLY01,2026-12-31,2.9264,101.6964,,Verifier point.
+Putrajaya (verifier),WLY01,2027-01-01,2.9264,101.6964,,Verifier point.
+Shah Alam (verifier),SGR01,2026-12-31,3.0733,101.5185,,Verifier point.
+Shah Alam (verifier),SGRPTG,2027-01-01,3.0733,101.5185,,Verifier point.
+Klang (verifier),SGR03,2026-12-31,3.0449,101.4455,,Verifier point.
+Klang (verifier),SGRKLG,2027-01-01,3.0449,101.4455,,Verifier point.
+Singapore,,2026-06-01,1.3521,103.8198,,Outside Malaysia: no zone.
+Bandar Seri Begawan,,2026-06-01,4.9031,114.9398,,Outside Malaysia: no zone.
+Pontianak,,2026-06-01,-0.0263,109.3425,,Outside Malaysia: no zone.
+Sindumin,SBH09,2026-06-01,4.9642,115.5075,1734128,"Sipitang district, Sabah (GeoNames, geoBoundaries ADM1 and OpenStreetMap agree); the geoBoundaries ADM2 Lawas shape reaches it."
+Luagan,SBH09,2026-06-01,4.96667,115.5,1756921,"Sipitang district, Sabah (GeoNames, geoBoundaries ADM1 and OpenStreetMap agree); the geoBoundaries ADM2 Lawas shape reaches it."
+Kampung Paya B,SBH09,2026-06-01,4.965,115.4961,7767642,"Sipitang district, Sabah (GeoNames, geoBoundaries ADM1 and OpenStreetMap agree); the geoBoundaries ADM2 Lawas shape reaches it."
+Kampung Ladang Lalang,SWK01,2026-06-01,4.9491,115.5304,7767893,"Lawas district, Sarawak."
+Kampung Terikan,SBH09,2026-06-01,4.9657,115.4876,1762741,"Sipitang district, Sabah (GeoNames, geoBoundaries ADM1 and OpenStreetMap agree); the geoBoundaries ADM2 Lawas shape reaches it."
+Malaman,SBH09,2026-06-01,4.9853,115.6223,1734131,"Sipitang district, Sabah (GeoNames, geoBoundaries ADM1 and OpenStreetMap agree), 1.9 km inside Sabah; the geoBoundaries ADM2 Lawas shape reaches it."
+Kampung Butul,SBH09,2026-06-01,4.9747,115.4771,1769991,"Sipitang district, Sabah (GeoNames, geoBoundaries ADM1 and OpenStreetMap agree); the geoBoundaries ADM2 Lawas shape reaches it."
+Kampung Kawan,SBH09,2026-06-01,4.9812,115.5431,1761704,"Sipitang district, Sabah (GeoNames, geoBoundaries ADM1 and OpenStreetMap agree); the geoBoundaries ADM2 Lawas shape reaches it."
+Kampung Sungai Gading,SGR01,2026-12-31,3.70474,101.56379,1764037,"Hulu Selangor district, Selangor (GeoNames, geoBoundaries ADM1 and OpenStreetMap agree); the geoBoundaries ADM2 Muallim shape reaches it."
+Kampung Sungai Gading,SGRHSL,2027-01-01,3.70474,101.56379,1764037,"Hulu Selangor district, Selangor (GeoNames, geoBoundaries ADM1 and OpenStreetMap agree); the geoBoundaries ADM2 Muallim shape reaches it."
+Kampung Sungai Gapis,SGR01,2026-12-31,3.70762,101.5657,1764032,"Hulu Selangor district, Selangor (GeoNames, geoBoundaries ADM1 and OpenStreetMap agree); the geoBoundaries ADM2 Muallim shape reaches it."
+Kampung Pianggu,PHG07,2026-06-01,2.64874,103.58993,1734898,"Rompin district, Pahang (GeoNames, geoBoundaries ADM1 and OpenStreetMap agree), east of the PHG07 line; the geoBoundaries ADM2 Mersing shape reaches it."
+Kampong Jenderam Hilir,SGR01,2026-12-31,2.88333,101.73333,1768801,Sepang shape 4 km outside the OpenStreetMap Putrajaya ring.
+Kampong Jenderam Hilir,SGRSPG,2027-01-01,2.88333,101.73333,1768801,Sepang shape 4 km outside the OpenStreetMap Putrajaya ring.
+Ladang Galloway,WLY01,2026-12-31,2.8974,101.6616,7697686,South-west of the OpenStreetMap Putrajaya ring.
+Ladang Galloway,WLY01,2027-01-01,2.8974,101.6616,7697686,South-west of the OpenStreetMap Putrajaya ring.
+Pulau Tulai Candang,PHG01,2026-06-01,2.9121,104.1071,1734940,"Pulau Tulai, an island of Mukim Tioman 14 km north-west of the PHG01 reference point."
+Yan side of Gunung Jerai (verifier),KDH02,2026-06-01,5.79943,100.40985,,"Verifier point 2.8 km inside the Yan shape, within 3 km of the KDH07 centre."
+Kuala Kangsar side of Bukit Larut (verifier),PRK02,2026-06-01,4.85334,100.8181,,"Verifier point 965 m inside the Kuala Kangsar shape, within 3 km of the PRK07 centre."
+Kota Belud side of Gunung Kinabalu (verifier),SBH07,2026-06-01,6.09232,116.507,,"Verifier point 4.2 km inside the Kota Belud shape, within 6 km of the SBH06 centre."
+Pulau Mabul,SBH03,2026-06-01,4.24621,118.63059,1733710,"Semporna island with the village Mabul (GeoNames 7536133), 14 km off the geoBoundaries coast."
+Pulau Selakan,SBH03,2026-06-01,4.5765,118.6974,1733672,Semporna island with Kampung Selakan (GeoNames 7064105).
+Pulau Sipanggau,SBH03,2026-06-01,4.37059,118.60079,1733696,Semporna island with Kampung Sipanggau (GeoNames 1764280).
+Pulau Menampilik,SBH03,2026-06-01,4.34229,118.56899,1733706,Semporna island with Kampung Menampilik (GeoNames 1766917).
+Pulau Larapan,SBH03,2026-06-01,4.5593,118.6063,1733668,Semporna island with Kampung Larapan Hujung (GeoNames 7064108).
+Pulau Sabangkat,SBH03,2026-06-01,4.5599,118.6637,1733673,Semporna island with New Sabangkat (GeoNames 7064106).
+Pulau Adal,SBH03,2026-06-01,4.7454,118.5167,1733657,Semporna island with Adal (GeoNames 7064102).
+Pulau Mantanani Besar,SBH07,2026-06-01,6.7119,116.35244,1736450,"Kota Belud island with Kampong Mantanani (GeoNames 1767083), 24 km off the geoBoundaries coast."
+Pulau Tiga (Kudat),SBH05,2026-06-01,7.3411,117.04782,1736310,Kudat island with Simanguak (GeoNames 1755998).
+Pulau Sinamgil,SBH05,2026-06-01,6.80733,117.25839,7786863,Pitas island with Sinamgil (GeoNames 1736533).
+Pulau Kaniogan,SBH02,2026-06-01,6.2209,117.6476,1736586,Beluran island with Kampong Kaniogan (GeoNames 1768604).
+Pulau Besar (Melaka),MLK01,2026-06-01,2.11154,102.32768,12041365,Melaka island with Palau Besar (GeoNames 10057026) and a resort.
+Pulau Rawa,JHR02,2026-06-01,2.52082,103.97557,1734889,Mersing island with Calet Rawa (GeoNames 7797654).
+Pulau Aman,PNG01,2026-06-01,5.26039,100.38661,1735083,Penang island with Kampung Pulau Aman (GeoNames 1765305).
+Pulau Rebak Besar,KDH06,2026-06-01,6.29742,99.69728,1222400,Langkawi island with the Rebak Island resort.
+Pulau Tenggul,TRG04,2026-06-01,4.8048,103.682,1734293,Dungun island (Pulau Tenggol) with dive resorts.
+Kampung Jabur,TRG04,2026-06-01,3.93333,103.3,1735217,"Kemaman, Terengganu, per OpenStreetMap and GeoNames; ADM1 puts it in Pahang; the build follows OpenStreetMap."
+Kampong Chendar,TRG04,2026-06-01,4.18333,103.41667,1769835,"Kemaman, Terengganu, per OpenStreetMap; ADM1 and GeoNames put it in Pahang; the build follows OpenStreetMap."
+Kampong Lubok Gokgek,PLS01,2026-06-01,6.3,100.21667,1767316,Perlis per OpenStreetMap and GeoNames; ADM1 puts it in Kedah; the build follows OpenStreetMap.
+Kampung Padang Tok Kuning,PLS01,2026-06-01,6.41667,100.31667,1736089,Perlis per OpenStreetMap and GeoNames; ADM1 puts it in Kedah; the build follows OpenStreetMap.
+Kota Simpang,MLK01,2026-06-01,2.4373,102.0305,7567398,Melaka per OpenStreetMap and GeoNames; ADM1 puts it in Negeri Sembilan; the build follows OpenStreetMap.
+Kampung Tiga Ratus Kaki,KDH05,2026-06-01,5.2322,100.54069,6843755,Kedah per OpenStreetMap and GeoNames; ADM1 puts it in Penang; the build follows OpenStreetMap.
+Kampung Lembah Baharu,KDH05,2026-06-01,5.22395,100.6832,1767509,"Kedah per ADM1, GeoNames and OpenStreetMap; the geoBoundaries ADM2 Kerian shape reaches it."
+Kampung Chohong,MLK01,2026-06-01,2.2971,102.5036,1769750,"Melaka per ADM1, GeoNames and OpenStreetMap; the geoBoundaries ADM2 Muar shape reaches it."
+Kampong Pengkalan Leban,MLK01,2026-06-01,2.11667,102.48333,1765715,"Melaka per ADM1, GeoNames and OpenStreetMap."
+Kampung Anak Ayer Lampam,NGS01,2026-06-01,2.65,102.63333,1771609,Negeri Sembilan per ADM1 and OpenStreetMap; GeoNames lists it in Johor.
+Sepang New Village,SGR01,2026-12-31,2.68333,101.75,1744664,"Sepang, Selangor, per ADM1, GeoNames and OpenStreetMap; the geoBoundaries ADM2 Seremban shape reaches it."
+Sepang New Village,SGRSPG,2027-01-01,2.68333,101.75,1744664,"Sepang, Selangor, per ADM1, GeoNames and OpenStreetMap; the geoBoundaries ADM2 Seremban shape reaches it."
+Taman Murni,SGR01,2026-12-31,2.6831,101.75,7697998,"Sepang, Selangor, per ADM1, GeoNames and OpenStreetMap; the geoBoundaries ADM2 Seremban shape reaches it."
+Taman Murni,SGRSPG,2027-01-01,2.6831,101.75,7697998,"Sepang, Selangor, per ADM1, GeoNames and OpenStreetMap; the geoBoundaries ADM2 Seremban shape reaches it."
+Kampong Sungai Dua,PHG04,2026-06-01,3.15,102.25,1764057,Pahang per ADM1 and OpenStreetMap; GeoNames lists it in Negeri Sembilan.
+Taman Melewar,WLY01,2026-06-01,3.22179,101.70018,12648583,Kuala Lumpur per ADM1 and OpenStreetMap; GeoNames lists it in Selangor.
+Kampung Lubok Nibong,SGR01,2026-12-31,3.70289,101.55575,1767273,"Hulu Selangor, Selangor, per ADM1 and OpenStreetMap; the geoBoundaries ADM2 Muallim shape reaches it."
+Kampung Lubok Nibong,SGRHSL,2027-01-01,3.70289,101.55575,1767273,"Hulu Selangor, Selangor, per ADM1 and OpenStreetMap; the geoBoundaries ADM2 Muallim shape reaches it."
+Pulau Seri Buat,PHG07,2026-06-01,2.6852,103.9131,1734887,"Island (T.ISL) of Rompin, Pahang, per OpenStreetMap; ADM1 puts it in Johor; the build follows OpenStreetMap."
+Genting Highlands town point,PHG06,2026-12-31,3.42453,101.79163,1735132,"e-Solat PHG06 ""Genting Higlands""; GeoNames populated place, 19 m inside OpenStreetMap Pahang (Bentong). An earlier build returned SGR01 here."
+Genting Highlands town point,PHG06,2027-01-01,3.42453,101.79163,1735132,As above; an earlier build returned SGRHSL.
+"Kayangan Apartment, Genting",PHG06,2026-12-31,3.42145,101.79106,,"OpenStreetMap way 176115665 (building=apartments), 20 m inside OpenStreetMap Pahang."
+"Tower A, Genting",PHG06,2026-12-31,3.4183,101.78865,,"OpenStreetMap way 1503886270 (building=apartments), 45 m inside OpenStreetMap Pahang."
+"RSC 8, Genting",PHG06,2026-12-31,3.42602,101.79079,,"OpenStreetMap way 656503907 (building=apartments), 117 m inside OpenStreetMap Pahang."
+"RSC 9, Genting",PHG06,2026-12-31,3.42663,101.79079,,"OpenStreetMap way 176115672 (building=apartments), 152 m inside OpenStreetMap Pahang."
+Genting Grand car park,PHG06,2026-12-31,3.42491,101.79214,,"OpenStreetMap, 89 m inside OpenStreetMap Pahang."
+"The Olive, Genting",PHG06,2026-12-31,3.42371,101.79259,,"OpenStreetMap restaurant, 23 m inside OpenStreetMap Pahang."
+"Coffee Terrace, Genting",PHG06,2026-12-31,3.42307,101.79223,,"OpenStreetMap node 6583844661 (amenity=restaurant), 15 m inside OpenStreetMap Pahang."
+Taman Sri Ehsan,SGR01,2026-12-31,3.21186,101.62534,12557753,"Gombak, Selangor, per OpenStreetMap, GeoNames and geoBoundaries ADM2; 361 m inside OpenStreetMap Gombak."
+Taman Sri Ehsan,SGRGBK,2027-01-01,3.21186,101.62534,12557753,As above. An earlier build returned SGRPTG because moving the state border dragged the Gombak and Petaling line.
+"Taman Impian Indah, Bukit Jalil",WLY01,2026-12-31,3.0473,101.65703,,"e-Solat WLY01 ""Kuala Lumpur""; OpenStreetMap residential area 173 m inside OpenStreetMap Kuala Lumpur. An earlier build returned SGR01."
+Mercu Jalil Tower A,WLY01,2026-12-31,3.04794,101.66086,,"OpenStreetMap building, 241 m inside OpenStreetMap Kuala Lumpur."
+Residensi Bintang Bukit Jalil,WLY01,2026-12-31,3.04662,101.66092,,"OpenStreetMap building, 94 m inside OpenStreetMap Kuala Lumpur."
+PPR Pinggiran Bukit Jalil,WLY01,2026-12-31,3.048053,101.654572,,"OpenStreetMap relation 13929151 (landuse=residential), 244 m inside OpenStreetMap Kuala Lumpur."
+Tzu Chi International School,WLY01,2026-12-31,3.04902,101.65904,,Postcode 57000 Kuala Lumpur; 30 m inside OpenStreetMap Kuala Lumpur.
+Tzu Chi International School,WLY01,2027-01-01,3.04902,101.65904,,As above; an earlier build returned SGRPTG.
+Villea Port Dickson hotel,MLK01,2026-12-31,2.41343,101.85563,,"e-Solat MLK01 ""Seluruh Negeri Melaka""; in the Tanjung Tuan exclave, 269 m inside OpenStreetMap Melaka. Every earlier build returned NGS03."
+Rachado Villa,MLK01,2026-12-31,2.41289,101.85671,,"OpenStreetMap way 964089872 (landuse=residential) in the Tanjung Tuan exclave, 280 m inside OpenStreetMap Melaka."
+Cape Rachado lighthouse,MLK01,2026-12-31,2.40707,101.85202,,"Tanjung Tuan lighthouse, 309 m inside OpenStreetMap Melaka. GeoNames lists it in Negeri Sembilan."
+Pos Penangau,KTN02,2026-12-31,4.5957,101.4327,7554991,"e-Solat KTN02 ""Jajahan Kecil Lojing""; 28 m inside OpenStreetMap Kelantan. Earlier builds returned PHG06."
+The Gap,PHG06,2026-12-31,3.6916,101.7496,7794723,"e-Solat PHG06 ""Bukit Fraser""; 78 m inside OpenStreetMap Pahang (Raub), inside the Bukit Fraser special area. An earlier build returned SGR01."
+Broga,NGS03,2026-12-31,2.9369,101.9108,1734801,"e-Solat NGS03 ""Seremban""; GeoNames admin2 Seremban; 24 m inside OpenStreetMap Negeri Sembilan. Earlier builds returned SGR01."
+Pulau Terus,MLK01,2026-12-31,2.11667,102.51667,1739754,"Islet at the Kesang estuary, 151 m inside OpenStreetMap Melaka. GeoNames lists it in Johor."
+Ring point 1 km from Kampung Terikan,SWK01,2026-12-31,4.95931,115.49398,,167 m inside OpenStreetMap Sarawak (Lawas). An earlier build returned SBH09.
+Ring point 1 km from Merapok,SWK01,2026-12-31,4.96029,115.51418,,227 m inside OpenStreetMap Sarawak (Lawas). An earlier build returned SBH09.
+"Pulau Tioman south",PHG01,2026-12-31,2.746130,104.174957,,"Inside the OpenStreetMap Pahang ring of Pulau Tioman; a check against the 2017 geoBoundaries ADM1 line, which puts most of Tioman in Johor, reported it as a Johor point."
+"Lojing",KTN02,2026-12-31,4.628898,101.400474,,"1,166 m inside OpenStreetMap Kelantan (Kecil Lojing); a check against the 2017 geoBoundaries ADM1 line reported it as a Pahang point."
+Pulau Aceh,PHG07,2026-12-31,2.6683,103.7695,1734936,"Island (T.ISL) 16 km east of Endau; GeoNames admin1 Pahang; its own OpenStreetMap Pahang ring. An earlier build gave it the nearest district, Mersing, so it returned JHR02."
+Puncak Lodge,PHG06,2026-12-31,3.711337,101.736265,,"e-Solat PHG06 ""Bukit Fraser""; OpenStreetMap way 711959590 (tourism=chalet) on Jalan Genting in Fraser's Hill town, 8 m inside OpenStreetMap Pahang (Raub), inside the Bukit Fraser special area. The Puncak Inn, 70 m away, gives its address as Jalan Genting, 49000 Bukit Fraser, Pahang. An earlier build returned SGR01."
+Puncak Lodge,PHG06,2027-01-01,3.711337,101.736265,,As above; an earlier build returned SGRHSL.
+Bernam Nature Hut campsite,SGR01,2026-12-31,3.6849,101.5387,,"OpenStreetMap ways 1498144619 to 1498144622 (tourism=chalet), 41 to 62 m inside OpenStreetMap Selangor (Hulu Selangor), on the Selangor bank of Sungai Bernam, the Perak and Selangor border, which runs 21 m away. An earlier build returned PRK01."
+Bernam Nature Hut campsite,SGRHSL,2027-01-01,3.6849,101.5387,,As above; an earlier build returned PRK01.
+"Jalan 16/2 No. 4, Petaling Jaya",SGR01,2026-12-31,3.118791,101.644487,,"OpenStreetMap way 358006867, postcode 46350, 39 m inside the OpenStreetMap Kuala Lumpur line, which state_line_exceptions.csv corrects with its source. An earlier build returned WLY01."
+"Jalan 16/2 No. 4, Petaling Jaya",SGRPTG,2027-01-01,3.118791,101.644487,,As above; an earlier build returned WLY01.
+"Lorong 16/2A No. 3, Kuala Lumpur",WLY01,2026-12-31,3.11937,101.64515,,"OpenStreetMap way 1323903802, postcode 59100 (Kuala Lumpur), east of the Jalan 16/2 exception in state_line_exceptions.csv."
+"Pelangi Heights terrace, way 793023210, Mantin",NGS03,2026-12-31,2.866634,101.866589,,"e-Solat NGS03 ""Port Dickson, Seremban""; the east end of OpenStreetMap way 793023210 (building=terrace) in the Pelangi Heights estate (landuse=residential way 603550612, Taman Kayangan), 12 to 17 m inside OpenStreetMap Negeri Sembilan and about 167 m inside the geoBoundaries ADM2 Seremban shape. Property listings (starproperty.my, durianproperty.com.my) give the estate as 71700 Mantin, Negeri Sembilan. An earlier build returned SGR01."
+"Pelangi Heights terrace, way 793023210, Mantin",NGS03,2027-01-01,2.866634,101.866589,,As above; an earlier build returned SGRHLG.
+"Pelangi Heights terrace, way 793023211, Mantin",NGS03,2026-12-31,2.866668,101.865495,,"e-Solat NGS03 ""Port Dickson, Seremban""; the east end of OpenStreetMap way 793023211 (building=terrace) in the Pelangi Heights estate (landuse=residential way 603550612, Taman Kayangan), 12 to 17 m inside OpenStreetMap Negeri Sembilan and about 167 m inside the geoBoundaries ADM2 Seremban shape. Property listings (starproperty.my, durianproperty.com.my) give the estate as 71700 Mantin, Negeri Sembilan. An earlier build returned SGR01."
+"Pelangi Heights terrace, way 793023211, Mantin",NGS03,2027-01-01,2.866668,101.865495,,As above; an earlier build returned SGRHLG.
+"Pelangi Heights terrace, way 793023212, Mantin",NGS03,2026-12-31,2.866695,101.864763,,"e-Solat NGS03 ""Port Dickson, Seremban""; the east end of OpenStreetMap way 793023212 (building=terrace) in the Pelangi Heights estate (landuse=residential way 603550612, Taman Kayangan), 12 to 17 m inside OpenStreetMap Negeri Sembilan and about 167 m inside the geoBoundaries ADM2 Seremban shape. Property listings (starproperty.my, durianproperty.com.my) give the estate as 71700 Mantin, Negeri Sembilan. An earlier build returned SGR01."
+"Pelangi Heights terrace, way 793023212, Mantin",NGS03,2027-01-01,2.866695,101.864763,,As above; an earlier build returned SGRHLG.
+"Lorong 16/2A No. 1, Kuala Lumpur",WLY01,2026-12-31,3.119418,101.644839,,"OpenStreetMap way 359486787, postcode 59100 (Kuala Lumpur), north of the Jalan 16/2 path in state_line_exceptions.csv. An earlier build returned SGR01."
+"Lorong 16/2A No. 1, Kuala Lumpur",WLY01,2027-01-01,3.119418,101.644839,,As above; an earlier build returned SGRPTG.
+"Lorong 16/2A No. 2, Kuala Lumpur",WLY01,2026-12-31,3.119377,101.644463,,"OpenStreetMap way 358006865, postcode 59100 (Kuala Lumpur), north of the Jalan 16/2 path in state_line_exceptions.csv. An earlier build returned SGR01."
+"Lorong 16/2A No. 2, Kuala Lumpur",WLY01,2027-01-01,3.119377,101.644463,,As above; an earlier build returned SGRPTG.
+"Lorong 16/2A No. 6, Kuala Lumpur",WLY01,2026-12-31,3.119853,101.644709,,"OpenStreetMap way 358006864, postcode 59100 (Kuala Lumpur), north of the Jalan 16/2 path in state_line_exceptions.csv. An earlier build returned SGR01."
+"Lorong 16/2A No. 6, Kuala Lumpur",WLY01,2027-01-01,3.119853,101.644709,,As above; an earlier build returned SGRPTG.
+"Lorong 16/2A No. 8, Kuala Lumpur",WLY01,2026-12-31,3.11987,101.644948,,"OpenStreetMap way 359488971, postcode 59100 (Kuala Lumpur), north of the Jalan 16/2 path in state_line_exceptions.csv. An earlier build returned SGR01."
+"Lorong 16/2A No. 8, Kuala Lumpur",WLY01,2027-01-01,3.11987,101.644948,,As above; an earlier build returned SGRPTG.
+"Lorong 16/2A, house without a number, Kuala Lumpur",WLY01,2026-12-31,3.119595,101.644565,,"OpenStreetMap way 1323903804, postcode 59100 (Kuala Lumpur), north of the Jalan 16/2 path in state_line_exceptions.csv. An earlier build returned SGR01."
+"Lorong 16/2A, house without a number, Kuala Lumpur",WLY01,2027-01-01,3.119595,101.644565,,As above; an earlier build returned SGRPTG.
+"Lorong 16/2A No. 3, Kuala Lumpur",WLY01,2027-01-01,3.11937,101.64515,,As above.
+"Jalan 16/2 No. 1, Petaling Jaya",SGR01,2026-12-31,3.119187,101.64507,,"OpenStreetMap way 1323903805, postcode 46350, south of the Jalan 16/2 path in state_line_exceptions.csv. An earlier build split it between SGR01 and WLY01."
+"Jalan 16/2 No. 1, Petaling Jaya",SGRPTG,2027-01-01,3.119187,101.64507,,As above; an earlier build split it between SGRPTG and WLY01.
+"Layang-Layang (Swallow Reef)",,2026-12-31,7.37222,113.84167,,"Dive resort and airstrip in the Spratly Islands, inside the OpenStreetMap Sabah ring, more than 500 m from every district and island area, so it resolves to no zone (coordinates: Wikipedia, Swallow Reef). The Geofabrik extract that the off-map check reads stops short of the Spratly reefs, so this fixture records the gap; see Known limits in the guide."
