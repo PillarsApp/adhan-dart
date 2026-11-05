@@ -111,7 +111,7 @@ params.adjustments.fajr = 2;
 | `method`    | CalculationMethod name |
 | `fajrAngle` | Angle of the sun used to calculate Fajr |
 | `maghribAngle` | The angle of the sun used to calculate Maghrib |
-| `ishaAngle` | Angle of the sun used to calculate Isha |
+| `ishaAngle` | Angle of the sun used to calculate Isha. With neither `ishaAngle` nor `ishaInterval` set, Isha falls at the safe bound that would otherwise cap it, the middle of the night by default |
 | `ishaInterval` | Minutes after Maghrib (if set, the time for Isha will be Maghrib plus ishaInterval) |
 | `madhab` | Value from the Madhab object, used to calculate Asr |
 | `highLatitudeRule` | Value from the HighLatitudeRule object, used to set a minimum time for Fajr and a max time for Isha |
@@ -179,10 +179,25 @@ Inside the polar circles the sun may not rise or set, or may not reach the angle
 
 | Value | Description |
 | ----- | ----------- |
-| `iterative` | Repeats the hour angle correction until it converges or ten passes have run, rejects an Asr angle the sun does not reach that day, treats a day whose times come out of order, or less than five minutes apart, as one whose times cannot be computed, and picks the solar transit nearest the longitude's mean noon, so consecutive days never jump by a day. This is the default |
-| `singlePass` | Applies the hour angle correction once and keeps every time it produces, the correction versions before 2.4.0 used. Isha can differ from `iterative` by a few minutes above about 48 degrees latitude |
+| `iterative` | Repeats the hour angle correction until it converges or ten passes have run, rejects an Asr angle the sun does not reach that day, treats a day whose times come out of order, or less than five minutes apart, as one whose times cannot be computed, and at longitudes near 180 degrees picks the solar transit nearest the longitude's mean noon, so consecutive days never jump by a day. This is the default |
+| `singlePass` | Applies the hour angle correction once and keeps every time it produces, as versions before 2.4.0 did |
 
-To keep the single-pass correction, the unanchored transit near longitude 180 and the throwing polar days of versions before 2.4.0, set `hourAngleCorrection` to `singlePass` and `polarCircleResolution` to `unresolved`. The UTC rounding and the sub-second night fractions apply under both values.
+#### Keeping the times of version 2.3.0
+
+The default, `iterative`, moves times most where the sun's altitude changes slowly. Measured for 2026 with the default `highLatitudeRule`, `middle_of_the_night`: Isha at London under `muslim_world_league` moves 4 minutes on 16 July, Isha at Reykjavik under `north_america` 41 minutes on 25 August, and Isha at Edmonton with 18 degree Fajr and Isha angles 43 minutes on 13 May. With `seventh_of_the_night`, which `HighLatitudeRule.recommended` picks above 48 degrees, those three places do not move on any day of 2026. At Tromso, Asr under `muslim_world_league` moves 50 minutes on 21 January and Fajr under `moon_sighting_committee` 116 minutes on 17 May, under either rule.
+
+Near longitude 180 the day can move. At Suva, version 2.3.0 returned the next local day's times from 20 September to 12 December 2026, and `iterative` returns the requested day. At the Chatham Islands, `iterative` returns the next local day's times on every day of 2026, because mean noon at that longitude on the requested date, counted in UTC, already falls on the next local day there. Version 2.3.0 did the same except from 4 to 19 February 2026, where it returned the requested day, so `iterative` moves those 16 days one day later.
+
+Inside the polar circles, days that threw now resolve through `polarCircleResolution`. To keep the times version 2.3.0 computed, set `hourAngleCorrection` to `singlePass` and `polarCircleResolution` to `unresolved`. With `singlePass` alone, the default `aqrabBalad` search keeps the first latitude whose times compute without checking their order. At Tromso, on 162 of the 2,190 day and method pairs of the 2026 parity grid in `tool/parity/`, where version 2.3.0 threw, it returns Asr before Dhuhr or Maghrib before Asr.
+
+With both set, these changes since version 2.3.0 still apply:
+
+- Rounding runs in UTC, so a clock change in the host's time zone no longer moves a time by an hour.
+- The night fractions behind the safe Fajr and Isha bounds keep sub-second precision, as adhan-swift does. On the 12 city, 365 day, 6 method grid in `tool/parity/`, 39 Fajr times move one minute earlier.
+- A latitude outside -90 to 90 throws an `ArgumentError`. Version 2.3.0 returned meaningless times for some of them, such as 180.
+- A Maghrib angle the sun does not reach, as with the `tehran` method in a polar summer, leaves Maghrib at sunset instead of throwing.
+- With neither `ishaAngle` nor `ishaInterval` set, Isha falls at the safe bound that would otherwise cap it, the middle of the night by default, instead of throwing. Under `twilight_angle`, a null `ishaAngle` throws a `FormatException`, as before.
+- `SunnahTimes` honours `rounding`. At the default, `nearest`, rounding alone changes none of its times. A middle or last third of the night that ends at one of those 39 Fajr times can move with it, one minute earlier, which is 38 values on the same grid.
 
 
 ### Prayer Times
@@ -266,8 +281,10 @@ When no zone covers the coordinates, or the data has no row for the zone and dat
 Data sources and credits:
 
 - Prayer timetables: JAKIM e-Solat ([www.e-solat.gov.my](https://www.e-solat.gov.my)) and, for the Selangor districts from 2027, the Selangor State Mufti Department ([www.muftiselangor.gov.my](https://www.muftiselangor.gov.my/takwim-solat/)).
-- District boundaries: [geoBoundaries](https://www.geoboundaries.org) gbOpen MYS ADM2, with the Putrajaya polygon from ADM1 and island positions from ADM0 (sources: geoBoundaries, citypopulation.de), licensed under [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/). Runfola, D. et al. (2020) geoBoundaries: A global database of political administrative boundaries. PLoS ONE 15(4): e0231866. The polygons are simplified to 100 metres and quantized to 1e-5 degrees.
-- Place coordinates for the zone test fixtures and zone reference points: [GeoNames](https://www.geonames.org), licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+- State boundaries: [OpenStreetMap](https://www.openstreetmap.org/copyright), © OpenStreetMap contributors, from a pinned snapshot of the `admin_level=4` relations as they stood at 2026-11-04T00:00:00Z (`tool/malaysia/raw/openstreetmap-MYS-ADM4.json.gz`). Every border between states, the Putrajaya ring, the Melaka exclave at Tanjung Tuan and the Pahang island Pulau Aceh come from it. The build checks the map against the outlines of OpenStreetMap buildings and places near the state lines, filtered from the Geofabrik extract of 2026-11-03 (`tool/malaysia/raw/openstreetmap-MYS-*-features.tsv.gz`). The snapshot, those extracts, the zone map `data/malaysia/malaysia_zones.txt`, its Dart string `lib/src/data/malaysia_zones_data.dart`, and `islands.csv`, `town_fixtures.csv`, `state_line_exceptions.csv` and `no_zone_areas.csv` under `tool/malaysia/` hold OpenStreetMap-derived data and are offered under the [Open Database License 1.0](https://opendatacommons.org/licenses/odbl/1-0/); see [data/malaysia/LICENSE-ODbL.md](data/malaysia/LICENSE-ODbL.md). Anyone who copies the zone map must keep that file and this credit with it.
+- District boundaries inside each state: [geoBoundaries](https://www.geoboundaries.org) gbOpen MYS ADM2 (sources: geoBoundaries, citypopulation.de), licensed under [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/). Runfola, D. et al. (2020) geoBoundaries: A global database of political administrative boundaries. PLoS ONE 15(4): e0231866, https://doi.org/10.1371/journal.pone.0231866. The island centres in `tool/malaysia/islands.csv` were measured on the geoBoundaries ADM0 layer, which geoBoundaries records as a 2017 OpenStreetMap export under ODbL. The polygons are simplified to 100 metres, or 80 metres on state borders between zones whose times differ by 2 minutes or more, keep the raw state line wherever the simplification would move any part of an OpenStreetMap building or place near it across the line, and are quantized to 1e-5 degrees.
+- Place coordinates for most zone test fixtures, the zone reference points, and the centres of the special areas and of the islands that have no ADM0 ring: [GeoNames](https://www.geonames.org), licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Other fixtures use OpenStreetMap coordinates, points that verifiers chose on each side of a boundary or outside Malaysia, and, for Layang-Layang, Wikipedia.
+- The library code is under the MIT licence in `LICENSE`. The data files above carry their own licences.
 
 ## Features and bugs
 

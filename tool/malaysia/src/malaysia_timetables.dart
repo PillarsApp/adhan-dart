@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:adhan/src/data/malaysia_times_codec.dart';
 
 import 'csv.dart';
+import 'gzip_input.dart';
 import 'malaysia_manifest.dart';
 
 const esolatEndpoint =
@@ -196,10 +197,19 @@ Future<bool> fetchTimetables(Directory root, List<int> years,
         if (zone.source != _esolatSource || !zone.inForceDuring(year)) continue;
         final label = '${zone.code} $year';
         final file = File('${dir.path}/${zone.code}_$year.json.gz');
-        final stored = file.existsSync()
-            ? _EsolatResponse.parse(GZipCodec().decode(file.readAsBytesSync()))
-                .rows
-            : null;
+        List<Map<String, dynamic>>? stored;
+        if (file.existsSync()) {
+          final List<int> storedBody;
+          try {
+            storedBody = readGzipInput(file);
+          } on FormatException catch (error) {
+            print('$label: ${file.path} is ${error.message}; '
+                'kept it and fetched nothing');
+            ok = false;
+            continue;
+          }
+          stored = _EsolatResponse.parse(storedBody).rows;
+        }
         if (!refresh && stored != null) {
           print('$label kept ${stored.length} rows');
           continue;
@@ -215,17 +225,20 @@ Future<bool> fetchTimetables(Directory root, List<int> years,
           continue;
         }
         final response = _EsolatResponse.parse(body);
-        if (response.rows != null) {
+        final rows = response.rows;
+        final problem = rows == null
+            ? 'e-Solat returned ${response.problem}'
+            : _yearProblem(rows, year);
+        if (rows != null && problem == null) {
           file.writeAsBytesSync(_gzip(body));
-          print('$label ${response.rows!.length} rows');
+          print('$label ${rows.length} rows');
         } else if (stored != null) {
-          print('$label: e-Solat returned ${response.problem}; '
-              'kept the stored ${stored.length} rows');
+          print('$label: $problem; kept the stored ${stored.length} rows');
           ok = false;
         } else if (response.isNoRecord) {
           print('$label NO_RECORD!');
         } else {
-          print('$label: e-Solat returned ${response.problem}; wrote nothing');
+          print('$label: $problem; wrote nothing');
           ok = false;
         }
       }
@@ -234,6 +247,27 @@ Future<bool> fetchTimetables(Directory root, List<int> years,
     client.close();
   }
   return ok;
+}
+
+String? _esolatIsoDate(Object? text) {
+  final match = RegExp(r'^(\d{2})-([A-Za-z]+)-(\d{4})$').firstMatch('$text');
+  final month = match == null ? -1 : _esolatMonths.indexOf(match.group(2)!);
+  if (match == null || month < 0) return null;
+  return _isoDate(
+      int.parse(match.group(3)!), month + 1, int.parse(match.group(1)!));
+}
+
+String? _yearProblem(List<Map<String, dynamic>> rows, int year) {
+  final dates = <String>[];
+  for (final row in rows) {
+    final date = _esolatIsoDate(row['date']);
+    if (date == null) return 'e-Solat returned unreadable date ${row['date']}';
+    dates.add(date);
+  }
+  final problem = _calendarProblem(dates, _calendar(year));
+  return problem == null
+      ? null
+      : 'e-Solat returned rows that are not the days of $year: $problem';
 }
 
 Future<List<int>> _fetchZoneYear(HttpClient client, String endpoint,
@@ -568,8 +602,14 @@ void _loadEsolat(
     List<_ZoneYear> zoneYears,
     List<ManifestEntry> sources,
     List<String> errors) {
-  final body = GZipCodec()
-      .decode(File('${_esolatDir(root)}/$fileName').readAsBytesSync());
+  final file = File('${_esolatDir(root)}/$fileName');
+  final List<int> body;
+  try {
+    body = readGzipInput(file);
+  } on FormatException catch (error) {
+    errors.add('$zone $year: ${file.path} is ${error.message}');
+    return;
+  }
   final response = _EsolatResponse.parse(body);
   final rows = response.rows;
   if (rows == null) {
@@ -580,16 +620,11 @@ void _loadEsolat(
   final dates = <String>[];
   final days = <List<int>>[];
   for (final fields in rows) {
-    final dateMatch = RegExp(r'^(\d{2})-([A-Za-z]+)-(\d{4})$')
-        .firstMatch('${fields['date']}');
-    final month =
-        dateMatch == null ? -1 : _esolatMonths.indexOf(dateMatch.group(2)!);
-    if (dateMatch == null || month < 0) {
+    final date = _esolatIsoDate(fields['date']);
+    if (date == null) {
       errors.add('$zone $year: unreadable date ${fields['date']}');
       return;
     }
-    final date = _isoDate(int.parse(dateMatch.group(3)!), month + 1,
-        int.parse(dateMatch.group(1)!));
     final day = <int>[];
     for (final field in timeFields) {
       final minutes = _parseClock('${fields[field]}');
@@ -623,12 +658,20 @@ void _loadSelangor(Directory root, List<_ZoneYear> zoneYears,
       errors.add('missing ${file.path}');
       continue;
     }
-    final textBytes = GZipCodec().decode(file.readAsBytesSync());
+    final List<int> textBytes;
+    try {
+      textBytes = readGzipInput(file);
+    } on FormatException catch (error) {
+      errors.add('${source.zone} ${source.year}: ${file.path} is '
+          '${error.message}');
+      continue;
+    }
     final List<List<int>> days;
     try {
       days = parseSelangorText(utf8.decode(textBytes), source.year);
     } on FormatException catch (error) {
-      errors.add('${source.zone}: ${error.message}');
+      errors.add('${source.zone} ${source.year}: ${file.path}: '
+          '${error.message}');
       continue;
     }
     zoneYears

@@ -27,12 +27,17 @@ void main(List<String> arguments) {
       final suffix =
           polar == PolarCircleResolution.aqrabBalad ? '' : '-${polar.name}';
       final referenceName = 'swift-${correction.name}$suffix.csv.gz';
-      final reference = _loadReference('$referenceDir/$referenceName');
-      final dart = _loadRows(gridRows(GridOptions(
-          hourAngleCorrection: correction,
-          polarCircleResolution: polar,
-          singaporeRounding: Rounding.up)));
-      final differing = _compare(reference, dart);
+      List<String> differing;
+      try {
+        differing = differingCells(
+            _loadReference('$referenceDir/$referenceName'),
+            parseGrid(gridRows(GridOptions(
+                hourAngleCorrection: correction,
+                polarCircleResolution: polar,
+                singaporeRounding: Rounding.up))));
+      } on FormatException catch (e) {
+        differing = ['malformed grid, ${e.message}: ${e.source}'];
+      }
       defects += differing.length;
       stdout.writeln(
           '${correction.name} ${polar.name}: ${differing.length} differing cells against $referenceName');
@@ -51,19 +56,30 @@ Map<String, List<String>> _loadReference(String path) {
     exit(2);
   }
   final text = String.fromCharCodes(gzip.decode(file.readAsBytesSync()));
-  return _loadRows(text.split('\n').where((line) => line.isNotEmpty));
+  return parseGrid(text.split('\n').where((line) => line.isNotEmpty));
 }
 
-Map<String, List<String>> _loadRows(Iterable<String> rows) {
+Map<String, List<String>> parseGrid(Iterable<String> rows) {
+  const keyColumns = 3;
   final result = <String, List<String>>{};
   for (final row in rows) {
     final fields = row.split(',');
-    result[fields.sublist(0, 3).join(',')] = fields.sublist(3);
+    if (fields.length != keyColumns + prayerNames.length) {
+      throw FormatException(
+          '${fields.length} columns where ${keyColumns + prayerNames.length} '
+          'are expected',
+          row);
+    }
+    final key = fields.sublist(0, keyColumns).join(',');
+    if (result.containsKey(key)) {
+      throw FormatException('a second row for $key', row);
+    }
+    result[key] = fields.sublist(keyColumns);
   }
   return result;
 }
 
-List<String> _compare(
+List<String> differingCells(
     Map<String, List<String>> swift, Map<String, List<String>> dart) {
   if (swift.keys.length != dart.keys.length ||
       !swift.keys.every(dart.containsKey)) {

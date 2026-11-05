@@ -22,6 +22,12 @@ class CalculationParameters {
   double? maghribAngle;
 
   /// The angle of the sun used to calculate isha
+  ///
+  /// With neither [ishaAngle] nor [ishaInterval] set, Isha falls at the safe
+  /// bound that would otherwise cap it. That is the middle of the night under
+  /// the default [highLatitudeRule], or the season-adjusted twilight under
+  /// `moon_sighting_committee`. Under `twilight_angle`, a null [ishaAngle]
+  /// throws a [FormatException].
   double? ishaAngle;
 
   /// Minutes after Maghrib (if set, the time for Isha will be Maghrib plus IshaInterval)
