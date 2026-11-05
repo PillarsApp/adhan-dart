@@ -85,7 +85,7 @@ class MalaysiaTimetable {
   /// the SHA-256 of the times file, a hyphen, and the same for the zones file.
   /// Update it with every data release; the revision test fails when it is
   /// stale.
-  static const String revision = 'badfebbb-d6bb4355';
+  static const String revision = 'badfebbb-714bce11';
 
   static final Map<String, _ZoneYearLine> _lines = _index();
 
