@@ -1,3 +1,12 @@
+## 2.5.0
+
+- Add `CalculationMethod.malaysia_official`, which reads the official Malaysian prayer timetable for the zone and date from embedded data, with instants built at UTC+8. Where no row covers them, it calculates with Fajr 18, Isha 18 and the offsets Fajr +1, Sunrise −1, Dhuhr +3, Asr +1, Maghrib +2, Isha +1.
+- Add `CalculationParameters.malaysiaZone` to pick a zone by code instead of resolving it from the coordinates.
+- Add `PrayerTimes.source`, `malaysiaZone` and `malaysiaDay`. `source` is `official` for a published row (Malaysia and London), `calculated` for every other method, and `calculatedNoZone` or `calculatedNoRow` when the Malaysian method had to calculate.
+- Add `MalaysiaZones` (`resolve`, `on`, `zone`), `MalaysiaZone` with validity dates and successors, and `MalaysiaTimetable.day` with Imsak and Dhuha.
+- Add `tool/parity/bench_malaysia.dart`.
+- Breaking for Dart 3 consumers: the new `CalculationMethod.malaysia_official` value makes an exhaustive `switch` over `CalculationMethod` a compile error until it handles the value. Existing indices do not move.
+
 ## 2.4.0
 
 - Add `polarCircleResolution` with `aqrabBalad` (default), `aqrabYaum` and `unresolved`, so days inside the polar circles resolve to usable times instead of throwing.

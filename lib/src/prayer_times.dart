@@ -6,8 +6,12 @@ import 'coordinates.dart';
 import 'data/date_components.dart';
 import 'data/london_times_lookup.dart';
 import 'internal/day_times.dart';
+import 'internal/present.dart';
+import 'malaysia/malaysia_timetable.dart';
+import 'malaysia/malaysia_zones.dart';
 import 'polar_circle_resolution.dart';
 import 'prayer.dart';
+import 'prayer_times_source.dart';
 
 class PrayerTimes {
   late DateTime _fajr;
@@ -27,6 +31,25 @@ class PrayerTimes {
 
   late DateTime _isha;
   DateTime get isha => _isha;
+
+  late PrayerTimesSource _source;
+
+  PrayerTimesSource get source => _source;
+
+  MalaysiaZone? _malaysiaZone;
+
+  /// The official Malaysian zone the times were read for, or would have been:
+  /// the manual zone when [CalculationParameters.malaysiaZone] is set, else the
+  /// zone resolved from the coordinates. Null for every other method, for a
+  /// manual code the data does not know and outside every zone.
+  MalaysiaZone? get malaysiaZone => _malaysiaZone;
+
+  MalaysiaDay? _malaysiaDay;
+
+  /// The published row behind the times, before adjustments and the Hanafi
+  /// shift, presented like the six times. Null unless [source] is official
+  /// and the method is [CalculationMethod.malaysia_official].
+  MalaysiaDay? get malaysiaDay => _malaysiaDay;
 
   // If you give a UTC Offset then Prayer Times will convert local(with device timezone) time
   // to UTC and then add the offset.
@@ -113,8 +136,23 @@ class PrayerTimes {
     // Special handling for London lookup times
     if (calculationParameters.method ==
         CalculationMethod.unified_london_times) {
+      _source = PrayerTimesSource.official;
       _initializeFromLondonLookup(date);
       return;
+    }
+
+    _source = PrayerTimesSource.calculated;
+    if (calculationParameters.method == CalculationMethod.malaysia_official) {
+      final official = MalaysiaOfficialTimes.lookup(
+          coordinates, date, calculationParameters, utcOffset);
+      _source = official.source;
+      _malaysiaZone = official.zone;
+      _malaysiaDay = official.day;
+      final times = official.times;
+      if (times != null) {
+        _assign(times);
+        return;
+      }
     }
 
     if (!(coordinates.latitude.abs() <= 90)) {
@@ -129,7 +167,10 @@ class PrayerTimes {
           '${coordinates.latitude}, longitude ${coordinates.longitude} '
           'on $_dateComponents');
     }
+    _assign(times);
+  }
 
+  void _assign(DayTimes times) {
     _fajr = _present(times.fajr);
     _sunrise = _present(times.sunrise);
     _dhuhr = _present(times.dhuhr);
@@ -138,10 +179,7 @@ class PrayerTimes {
     _isha = _present(times.isha);
   }
 
-  DateTime _present(DateTime utc) {
-    final offset = utcOffset;
-    return offset == null ? utc.toLocal() : utc.add(offset);
-  }
+  DateTime _present(DateTime utc) => present(utc, utcOffset);
 
   Prayer currentPrayer() {
     return currentPrayerByDateTime(DateTime.now());

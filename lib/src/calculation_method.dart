@@ -58,7 +58,18 @@ enum CalculationMethod {
 
   /// The default value for [CalculationParameters.method] when initializing a
   /// [CalculationParameters] object. Sets a Fajr angle of 0 and an Isha angle of 0.
-  other
+  other,
+
+  /// The official Malaysian timetable.
+  /// Reads the published times for the zone in force at the coordinates, or
+  /// for [CalculationParameters.malaysiaZone] when set. A manual zone wins over
+  /// the coordinates, which are then not validated on a day the zone has a
+  /// published row. Where no zone covers the coordinates or no row covers the
+  /// zone and date, it calculates at the coordinates and validates them like
+  /// every other method, with the angles and method adjustments in the
+  /// parameters, which are a Fajr angle of 18, an Isha angle of 18 and
+  /// adjustments that approximate the table unless changed.
+  malaysia_official
 }
 
 extension CalculationMethodExtensions on CalculationMethod {
@@ -155,6 +166,13 @@ extension CalculationMethodExtensions on CalculationMethod {
         {
           return CalculationParameters(
               fajrAngle: 0.0, ishaAngle: 0.0, method: this);
+        }
+      case CalculationMethod.malaysia_official:
+        {
+          return CalculationParameters(
+                  fajrAngle: 18.0, ishaAngle: 18.0, method: this)
+              .withMethodAdjustments(PrayerAdjustments(
+                  fajr: 1, sunrise: -1, dhuhr: 3, asr: 1, maghrib: 2, isha: 1));
         }
       default:
         {

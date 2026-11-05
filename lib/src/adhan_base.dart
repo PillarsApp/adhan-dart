@@ -1,4 +1,5 @@
 export 'prayer_times.dart';
+export 'prayer_times_source.dart';
 export 'prayer.dart';
 export 'coordinates.dart';
 export 'madhab.dart' show Madhab;
@@ -13,3 +14,5 @@ export 'qibla.dart';
 export 'sunnah_times.dart';
 export 'data/date_components.dart';
 export 'data/london_times_lookup.dart';
+export 'malaysia/malaysia_zones.dart';
+export 'malaysia/malaysia_timetable.dart' show MalaysiaTimetable, MalaysiaDay;
