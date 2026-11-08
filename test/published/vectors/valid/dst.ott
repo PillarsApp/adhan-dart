@@ -1,0 +1,4 @@
+OTT 1
+{"authority":"eg-test","revision":3,"part":"all","coverage":["2026-01-01","2026-12-31"],"columns":["imsak","fajr","sunrise","dhuhr","asr","asrHanafi","maghrib","isha"],"asrShadow":1,"zones":[{"id":"Africa/Cairo","offsets":[["2026-01-01",120],["2026-04-24",180],["2026-10-30",120]]}],"localities":[{"id":"cairo","group":"cairo","zone":0,"names":{"ar":"القاهرة","en":"Cairo"},"ref":[30044400,31235700],"point":{"radiusM":30000}}]}
+cairo 2026-04-22 03500400053011551530163018201940eeeeeeee~0451~0501~0631~1256~1631~1731~1921~2041eeeeeeeeeeeeeeee
+cairo 2026-10-28 04000410055011401500160017301850cccccccc~0259~0309~0449~1039~1359~1459~1629~1749cccccccccccccccc

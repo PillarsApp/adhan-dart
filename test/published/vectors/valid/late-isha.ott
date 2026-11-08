@@ -1,0 +1,3 @@
+OTT 1
+{"authority":"xx-north","revision":7,"part":"all","coverage":["2026-01-01","2026-12-31"],"columns":["fajr","sunrise","dhuhr","asr","maghrib","isha"],"asrShadow":2,"zones":[{"id":"Europe/Oslo","offsets":[["2026-01-01",60]]}],"localities":[{"id":"north","group":"north","zone":0,"names":{"en":"North"},"ref":[59900000,10750000],"point":{"radiusM":30000}}]}
+north 2026-06-20 023004001300180022502410dddddeddddee

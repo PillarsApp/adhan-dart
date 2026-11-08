@@ -1,0 +1,242 @@
+[
+  {
+    "file": "bad-magic.ott",
+    "stage": "decode",
+    "reason": "line 1 is not OTT"
+  },
+  {
+    "file": "major-2.ott",
+    "stage": "decode",
+    "reason": "major version 2 is unknown"
+  },
+  {
+    "file": "empty.ott",
+    "stage": "decode",
+    "reason": "the file is empty"
+  },
+  {
+    "file": "header-not-json.ott",
+    "stage": "decode",
+    "reason": "line 2 is not JSON"
+  },
+  {
+    "file": "header-not-object.ott",
+    "stage": "decode",
+    "reason": "line 2 is not a JSON object"
+  },
+  {
+    "file": "missing-revision.ott",
+    "stage": "decode",
+    "reason": "revision is absent"
+  },
+  {
+    "file": "revision-too-large.ott",
+    "stage": "decode",
+    "reason": "revision is above 2147483647"
+  },
+  {
+    "file": "revision-negative.ott",
+    "stage": "decode",
+    "reason": "revision is negative"
+  },
+  {
+    "file": "coverage-reversed.ott",
+    "stage": "decode",
+    "reason": "coverage ends before it starts"
+  },
+  {
+    "file": "missing-core-column.ott",
+    "stage": "decode",
+    "reason": "columns lacks isha"
+  },
+  {
+    "file": "unknown-column.ott",
+    "stage": "decode",
+    "reason": "sunset is not a column name"
+  },
+  {
+    "file": "duplicate-column.ott",
+    "stage": "decode",
+    "reason": "fajr appears twice"
+  },
+  {
+    "file": "asr-shadow-3.ott",
+    "stage": "decode",
+    "reason": "asrShadow is not 1 or 2"
+  },
+  {
+    "file": "no-zones.ott",
+    "stage": "decode",
+    "reason": "zones is empty"
+  },
+  {
+    "file": "offsets-unsorted.ott",
+    "stage": "decode",
+    "reason": "offset dates are not ascending"
+  },
+  {
+    "file": "offsets-start-after-coverage.ott",
+    "stage": "decode",
+    "reason": "the first offset date is after coverage starts"
+  },
+  {
+    "file": "offset-too-large.ott",
+    "stage": "decode",
+    "reason": "an offset is above 1440 minutes"
+  },
+  {
+    "file": "no-localities.ott",
+    "stage": "decode",
+    "reason": "localities is empty"
+  },
+  {
+    "file": "locality-bad-id.ott",
+    "stage": "decode",
+    "reason": "a locality id has a space"
+  },
+  {
+    "file": "locality-long-id.ott",
+    "stage": "decode",
+    "reason": "a locality id has 33 characters"
+  },
+  {
+    "file": "locality-duplicate-id.ott",
+    "stage": "decode",
+    "reason": "two localities share an id"
+  },
+  {
+    "file": "locality-unknown-zone.ott",
+    "stage": "decode",
+    "reason": "a locality names zone index 1 of 1 zone"
+  },
+  {
+    "file": "locality-no-geometry.ott",
+    "stage": "decode",
+    "reason": "a locality has neither point nor area"
+  },
+  {
+    "file": "locality-both-geometries.ott",
+    "stage": "decode",
+    "reason": "a locality has both point and area"
+  },
+  {
+    "file": "locality-ref-out-of-range.ott",
+    "stage": "decode",
+    "reason": "a reference latitude is above 90 degrees"
+  },
+  {
+    "file": "locality-ref-fraction.ott",
+    "stage": "decode",
+    "reason": "a reference coordinate is not an integer"
+  },
+  {
+    "file": "locality-radius-zero.ott",
+    "stage": "decode",
+    "reason": "a point radius is 0"
+  },
+  {
+    "file": "locality-validity-reversed.ott",
+    "stage": "decode",
+    "reason": "validTo is before validFrom"
+  },
+  {
+    "file": "locality-unknown-successor.ott",
+    "stage": "decode",
+    "reason": "a successor id is not in the header"
+  },
+  {
+    "file": "area-two-vertices.ott",
+    "stage": "decode",
+    "reason": "a ring has two vertices"
+  },
+  {
+    "file": "row-unknown-locality.ott",
+    "stage": "decode",
+    "reason": "a row names a locality not in the header"
+  },
+  {
+    "file": "row-bad-date.ott",
+    "stage": "decode",
+    "reason": "a row date is not a calendar day"
+  },
+  {
+    "file": "row-before-coverage.ott",
+    "stage": "decode",
+    "reason": "a row starts before coverage"
+  },
+  {
+    "file": "row-after-coverage.ott",
+    "stage": "decode",
+    "reason": "a row starts after coverage"
+  },
+  {
+    "file": "row-two-fields.ott",
+    "stage": "decode",
+    "reason": "a row has two fields"
+  },
+  {
+    "file": "row-short-first-day.ott",
+    "stage": "decode",
+    "reason": "the first day has fewer than 24 digits"
+  },
+  {
+    "file": "row-nondigit-first-day.ott",
+    "stage": "decode",
+    "reason": "the first day has a letter"
+  },
+  {
+    "file": "crlf.ott",
+    "stage": "decode",
+    "reason": "lines end with CR LF"
+  },
+  {
+    "file": "no-final-newline.ott",
+    "stage": "decode",
+    "reason": "the last line has no LF"
+  },
+  {
+    "file": "cell-minute-60.ott",
+    "stage": "validate",
+    "reason": "a reset cell has minute 60"
+  },
+  {
+    "file": "cell-hour-48.ott",
+    "stage": "validate",
+    "reason": "a reset cell has hour 48"
+  },
+  {
+    "file": "cell-unknown-letter.ott",
+    "stage": "validate",
+    "reason": "h is not a delta letter"
+  },
+  {
+    "file": "cell-truncated-day.ott",
+    "stage": "validate",
+    "reason": "the second day has five cells"
+  },
+  {
+    "file": "cell-delta-below-zero.ott",
+    "stage": "validate",
+    "reason": "a delta takes a column below 0"
+  },
+  {
+    "file": "first-day-minute-60.ott",
+    "stage": "validate",
+    "reason": "the first day has minute 60"
+  },
+  {
+    "file": "core-order.ott",
+    "stage": "validate",
+    "reason": "asr is before dhuhr"
+  },
+  {
+    "file": "row-crosses-year.ott",
+    "stage": "validate",
+    "reason": "a line starting 2026-12-30 has three days"
+  },
+  {
+    "file": "rows-overlap.ott",
+    "stage": "validate",
+    "reason": "two lines of one locality share 2026-01-02"
+  }
+]
