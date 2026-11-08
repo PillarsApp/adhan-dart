@@ -162,7 +162,7 @@ The input is the header fields plus `rows`, a map from locality id to a map from
 
 1. Write `OTT 1` and LF.
 2. Write the header as JSON with no whitespace between tokens. Keys in this order: `authority`, `revision`, `part`, `coverage`, `columns`, `asrShadow`, `zones`, `localities`. Inside a zone: `id`, `offsets`. Inside a locality: `id`, `group`, `zone`, `names`, `ref`, then `point` or `area`, then `validFrom`, `validTo`, `successors`, each only when present. Inside `point`: `radiusM`. Inside `area`: `polygons`, `toleranceM`.
-3. Sort `zones` by `id` and each zone's `offsets` by date. Sort `localities` by `id`, the keys of `names` by code point, and `successors` by code point. Keep `columns` and `polygons` in input order. The `zone` index of a locality refers to the sorted `zones`.
+3. Sort `zones` by `id` and each zone's `offsets` by date. Sort `localities` by `id`, the keys of `names` by code point, and `successors` by code point. Keep `columns` and `polygons` in input order. A locality's `zone` in the input is an index into the input's `zones`. The encoder rewrites it to the index of the same zone in the sorted `zones`, so the written index always refers to the sorted array.
 4. Escape strings as JSON.stringify and Dart's `jsonEncode` do: `"` as `\"`, `\` as `\\`, and the control characters U+0000 to U+001F as `\b`, `\f`, `\n`, `\r`, `\t` or `\u00XX`. Every other character is literal UTF-8. Write integers with no exponent, sign or fraction.
 5. Write the row lines for the localities in header order. For each locality, split its dates into maximal runs of consecutive days that stay inside one calendar year, in date order, and write one line per run. Use a letter whenever the change is -3 to +3 and `~HHMM` otherwise.
 6. End every line with LF.

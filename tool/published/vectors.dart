@@ -28,7 +28,13 @@ void main() {
 Map<String, String> generateVectors() {
   final files = <String, String>{};
   final cases = <Map<String, dynamic>>[];
-  for (final vector in [_kacstLike(), _shapes(), _dst(), _lateIsha()]) {
+  for (final vector in [
+    _kacstLike(),
+    _shapes(),
+    _dst(),
+    _lateIsha(),
+    _twoZones()
+  ]) {
     files['valid/${vector.name}.ott'] = encodeOtt(vector.input);
     files['valid/${vector.name}.input.json'] = _pretty(vector.input);
     cases.addAll(vector.cases);
@@ -527,6 +533,50 @@ _Vector _lateIsha() {
   return vector;
 }
 
+_Vector _twoZones() {
+  const istanbul = [360, 450, 790, 970, 1120, 1210];
+  const dubai = [340, 420, 740, 920, 1060, 1150];
+  final vector = _Vector('two-zones', {
+    'authority': 'xx-zones',
+    'revision': 2,
+    'part': 'all',
+    'coverage': ['2026-01-01', '2026-12-31'],
+    'columns': _core,
+    'asrShadow': 1,
+    'zones': [
+      _zone('Europe/Istanbul', [
+        ['2026-01-01', 180]
+      ]),
+      _zone('Asia/Dubai', [
+        ['2026-01-01', 240]
+      ]),
+    ],
+    'localities': [
+      {
+        ..._point('ist', 'tr', [41015100, 28979500], 30000,
+            names: {'en': 'Istanbul'}),
+        'zone': 0
+      },
+      {
+        ..._point('dxb', 'ae', [25204800, 55270800], 30000,
+            names: {'en': 'Dubai'}),
+        'zone': 1
+      },
+    ],
+    'rows': {
+      'ist': _days('2026-02-01', [istanbul, istanbul, istanbul]),
+      'dxb': _days('2026-02-01', [dubai, dubai, dubai]),
+    },
+  });
+  vector.row(
+      'istanbul-keeps-its-zone-after-sorting', [41.0082, 28.9784], '2026-02-02',
+      locality: 'ist');
+  vector.row(
+      'dubai-keeps-its-zone-after-sorting', [25.2048, 55.2708], '2026-02-02',
+      locality: 'dxb');
+  return vector;
+}
+
 class _Malformed {
   final String file;
   final String stage;
@@ -787,7 +837,7 @@ dart run tool/published/vectors.dart
 
 ## Cases
 
-`kacst-like` carries ten real days of three Saudi capitals in 2026 and 2027, with automatic and manual lookups, a date inside coverage with no row, a date after coverage and an unknown manual id. `shapes` covers resolution: a tie between two points, nearest point, a point exactly on its radius and one metre beyond, a point inside an area, area tolerance, a hole, overlapping areas and a retired locality with a successor. `dst` is an Egypt-like zone whose offset changes twice in the year and carries `imsak` and `asrHanafi`. `late-isha` has Isha after midnight and a published Hanafi Asr.
+`kacst-like` carries ten real days of three Saudi capitals in 2026 and 2027, with automatic and manual lookups, a date inside coverage with no row, a date after coverage and an unknown manual id. `shapes` covers resolution: a tie between two points, nearest point, a point exactly on its radius and one metre beyond, a point inside an area, area tolerance, a hole, overlapping areas and a retired locality with a successor. `dst` is an Egypt-like zone whose offset changes twice in the year and carries `imsak` and `asrHanafi`. `late-isha` has Isha after midnight and a published Hanafi Asr. `two-zones` lists its zones out of sorted order in the input, so an encoder that does not rewrite each locality's zone index to the sorted order gives Istanbul Dubai's offset and fails the lookup cases.
 
 The assembled `asr` in `expected.json` is `PrayerTimes.official` with the default `hourAngleCorrection` and no adjustments. The Hanafi shift uses the locality's reference point.
 ''';

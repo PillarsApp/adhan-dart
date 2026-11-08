@@ -1,0 +1,4 @@
+OTT 1
+{"authority":"xx-zones","revision":2,"part":"all","coverage":["2026-01-01","2026-12-31"],"columns":["fajr","sunrise","dhuhr","asr","maghrib","isha"],"asrShadow":1,"zones":[{"id":"Asia/Dubai","offsets":[["2026-01-01",240]]},{"id":"Europe/Istanbul","offsets":[["2026-01-01",180]]}],"localities":[{"id":"dxb","group":"ae","zone":0,"names":{"en":"Dubai"},"ref":[25204800,55270800],"point":{"radiusM":30000}},{"id":"ist","group":"tr","zone":1,"names":{"en":"Istanbul"},"ref":[41015100,28979500],"point":{"radiusM":30000}}]}
+dxb 2026-02-01 054007001220152017401910dddddddddddd
+ist 2026-02-01 060007301310161018402010dddddddddddd

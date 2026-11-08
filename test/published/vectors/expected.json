@@ -613,6 +613,54 @@
         "shafi": "2026-06-21T15:41:00Z",
         "hanafi": "2026-06-21T17:00:00Z"
       }
+    },
+    {
+      "name": "istanbul-keeps-its-zone-after-sorting",
+      "vector": "valid/two-zones.ott",
+      "coordinates": [
+        41.0082,
+        28.9784
+      ],
+      "localityId": null,
+      "date": "2026-02-02",
+      "result": "row",
+      "locality": "ist",
+      "published": {
+        "fajr": "2026-02-02T03:00:00Z",
+        "sunrise": "2026-02-02T04:30:00Z",
+        "dhuhr": "2026-02-02T10:10:00Z",
+        "asr": "2026-02-02T13:10:00Z",
+        "maghrib": "2026-02-02T15:40:00Z",
+        "isha": "2026-02-02T17:10:00Z"
+      },
+      "asr": {
+        "shafi": "2026-02-02T13:10:00Z",
+        "hanafi": "2026-02-02T13:51:00Z"
+      }
+    },
+    {
+      "name": "dubai-keeps-its-zone-after-sorting",
+      "vector": "valid/two-zones.ott",
+      "coordinates": [
+        25.2048,
+        55.2708
+      ],
+      "localityId": null,
+      "date": "2026-02-02",
+      "result": "row",
+      "locality": "dxb",
+      "published": {
+        "fajr": "2026-02-02T01:40:00Z",
+        "sunrise": "2026-02-02T03:00:00Z",
+        "dhuhr": "2026-02-02T08:20:00Z",
+        "asr": "2026-02-02T11:20:00Z",
+        "maghrib": "2026-02-02T13:40:00Z",
+        "isha": "2026-02-02T15:10:00Z"
+      },
+      "asr": {
+        "shafi": "2026-02-02T11:20:00Z",
+        "hanafi": "2026-02-02T12:06:00Z"
+      }
     }
   ]
 }
