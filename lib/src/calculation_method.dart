@@ -174,10 +174,6 @@ extension CalculationMethodExtensions on CalculationMethod {
               .withMethodAdjustments(PrayerAdjustments(
                   fajr: 1, sunrise: -1, dhuhr: 3, asr: 1, maghrib: 2, isha: 1));
         }
-      default:
-        {
-          throw FormatException('Invalid CalculationMethod');
-        }
     }
   }
 }

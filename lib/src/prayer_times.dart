@@ -242,7 +242,6 @@ class PrayerTimes {
       case Prayer.isha:
         return isha;
       case Prayer.none:
-      default:
         return null;
     }
   }
