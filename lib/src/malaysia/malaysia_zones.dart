@@ -41,6 +41,9 @@ class MalaysiaZones {
     return code == null ? null : _byCode[code];
   }
 
+  /// Every zone in the catalog, in catalog order, in force or not.
+  static List<MalaysiaZone> get all => List.unmodifiable(_all);
+
   /// Every zone in force on [date], in catalog order, manual-only zones
   /// included.
   static List<MalaysiaZone> on(DateComponents date) => [

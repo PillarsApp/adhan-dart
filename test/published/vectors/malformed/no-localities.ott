@@ -1,0 +1,2 @@
+OTT 1
+{"authority":"xx-base","revision":1,"part":"all","coverage":["2026-01-01","2027-12-31"],"columns":["fajr","sunrise","dhuhr","asr","maghrib","isha"],"asrShadow":1,"zones":[{"id":"Etc/UTC","offsets":[["2026-01-01",0]]}],"localities":[]}

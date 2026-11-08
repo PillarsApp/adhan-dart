@@ -16,3 +16,14 @@ export 'data/date_components.dart';
 export 'data/london_times_lookup.dart';
 export 'malaysia/malaysia_zones.dart';
 export 'malaysia/malaysia_timetable.dart' show MalaysiaTimetable, MalaysiaDay;
+export 'published/published_timetable.dart'
+    show
+        LocalityId,
+        PublishedColumn,
+        Locality,
+        OfficialLookup,
+        OfficialRow,
+        NoLocality,
+        NoRow,
+        OfficialTimetableSource,
+        PublishedTimetable;

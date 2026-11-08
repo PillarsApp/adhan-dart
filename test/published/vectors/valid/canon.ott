@@ -1,0 +1,5 @@
+OTT 1
+{"authority":"xx-canon","revision":5,"part":"all","coverage":["2026-01-01","2027-12-31"],"columns":["fajr","sunrise","dhuhr","asr","maghrib","isha"],"asrShadow":1,"zones":[{"id":"Etc/UTC","offsets":[["2026-01-01",0]]}],"localities":[{"id":"rings","group":"g","zone":0,"names":{},"ref":[50500000,50500000],"area":{"polygons":["_wq{_B_wq{_B_glW??_glW~flW?","_gwj~A_gwj~A_gayB??_gayB~fayB?"],"toleranceM":0}},{"id":"split","group":"g","zone":0,"names":{"ctl":"\b\f","del":"","en":"Split","𝕏":"Astral","ｘ":"Fullwidth"},"ref":[20000000,30000000],"point":{"radiusM":10000},"validFrom":"2026-01-01","validTo":"2027-12-31"}]}
+rings 2026-12-29 050006301220164018201950abcdef
+split 2026-12-29 050006301220164018201950abcdefg~0632~1215ddd
+split 2027-01-01 050106331216164118221953abcdga~0502~0637~1211gdd

@@ -1,0 +1,8 @@
+OTT 1
+{"authority":"sa-umm-al-qura","revision":12,"part":"all","coverage":["2026-01-01","2027-12-31"],"columns":["fajr","sunrise","dhuhr","asr","maghrib","isha"],"asrShadow":1,"zones":[{"id":"Asia/Riyadh","offsets":[["2026-01-01",180]]}],"localities":[{"id":"1001","group":"1001","zone":0,"names":{"ar":"الرياض","en":"Riyadh","ur":"ریاض"},"ref":[24670000,46690000],"point":{"radiusM":25000}},{"id":"1002","group":"1002","zone":0,"names":{"ar":"مكة المكرمة","en":"Mecca","ur":"مکہ مکرمہ"},"ref":[21426666,39831666],"point":{"radiusM":25000}},{"id":"1003","group":"1003","zone":0,"names":{"ar":"المدينة المنورة","en":"Medina","ur":"مدینہ منورہ"},"ref":[24540000,39630000],"point":{"radiusM":25000}}]}
+1001 2026-01-01 051406381157145617161846dddeeeedeeddddddeedeeeeeeddeddddddeeddeeeedddeeeededdd
+1001 2027-01-01 051406371157145617161846dedeeeededdddddeeededeeeededdddddeeeddeeeeddddddddeeee
+1002 2026-01-01 053706591224152917501920ddeeeeedddddddeeeededeeeedddddddeeeeddddeeedeedddedeee
+1002 2027-01-01 053706581224152917501920deeeddedddeedddeeedeedddeddeeeddeeeeddddddddeeeeeedeee
+1003 2026-01-01 054207061225152517451915edddddddeeeedddeeedeedddeddeeeddeeeeddddddddeeeeeddeee
+1003 2027-01-01 054207051225152517441914deddeeedeeeedddedddeedeeeddeeeddeeddddddeedddeeeedeeee

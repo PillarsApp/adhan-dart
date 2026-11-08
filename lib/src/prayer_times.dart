@@ -11,7 +11,10 @@ import 'malaysia/malaysia_timetable.dart';
 import 'malaysia/malaysia_zones.dart';
 import 'polar_circle_resolution.dart';
 import 'prayer.dart';
+import 'prayer_adjustments.dart';
 import 'prayer_times_source.dart';
+import 'published/official_row.dart';
+import 'published/published_timetable.dart';
 
 class PrayerTimes {
   late DateTime _fajr;
@@ -32,24 +35,55 @@ class PrayerTimes {
   late DateTime _isha;
   DateTime get isha => _isha;
 
-  late PrayerTimesSource _source;
+  final _Origin _origin;
 
-  PrayerTimesSource get source => _source;
-
-  MalaysiaZone? _malaysiaZone;
+  PrayerTimesSource get source => switch (_origin) {
+        _Calculated() => PrayerTimesSource.calculated,
+        _LondonLookup() ||
+        _FromRow() ||
+        _MalaysiaOfficial() =>
+          PrayerTimesSource.official,
+        _MalaysiaNoRow() => PrayerTimesSource.calculatedNoRow,
+        _MalaysiaNoZone() => PrayerTimesSource.calculatedNoZone,
+      };
 
   /// The official Malaysian zone the times were read for, or would have been:
   /// the manual zone when [CalculationParameters.malaysiaZone] is set, else the
   /// zone resolved from the coordinates. Null for every other method, for a
   /// manual code the data does not know and outside every zone.
-  MalaysiaZone? get malaysiaZone => _malaysiaZone;
-
-  MalaysiaDay? _malaysiaDay;
+  MalaysiaZone? get malaysiaZone => switch (_origin) {
+        _MalaysiaOfficial(:final day) => day.zone,
+        _MalaysiaNoRow(:final zone) => zone,
+        _Calculated() ||
+        _LondonLookup() ||
+        _FromRow() ||
+        _MalaysiaNoZone() =>
+          null,
+      };
 
   /// The published row behind the times, before adjustments and the Hanafi
   /// shift, presented like the six times. Null unless [source] is official
   /// and the method is [CalculationMethod.malaysia_official].
-  MalaysiaDay? get malaysiaDay => _malaysiaDay;
+  MalaysiaDay? get malaysiaDay => switch (_origin) {
+        _MalaysiaOfficial(:final day) => day,
+        _Calculated() ||
+        _LondonLookup() ||
+        _FromRow() ||
+        _MalaysiaNoRow() ||
+        _MalaysiaNoZone() =>
+          null,
+      };
+
+  /// The published row behind official times, before adjustments and the
+  /// Hanafi shift. Null for calculated times and for the London lookup.
+  OfficialRow? get officialRow => switch (_origin) {
+        _FromRow(:final row) || _MalaysiaOfficial(:final row) => row,
+        _Calculated() ||
+        _LondonLookup() ||
+        _MalaysiaNoRow() ||
+        _MalaysiaNoZone() =>
+          null,
+      };
 
   // If you give a UTC Offset then Prayer Times will convert local(with device timezone) time
   // to UTC and then add the offset.
@@ -57,7 +91,7 @@ class PrayerTimes {
 
   final Coordinates coordinates;
 
-  late DateComponents _dateComponents;
+  final DateComponents _dateComponents;
 
   DateComponents get dateComponents => _dateComponents;
 
@@ -128,58 +162,139 @@ class PrayerTimes {
         utcOffset: utcOffset);
   }
 
-  PrayerTimes._(this.coordinates, DateTime _date, this.calculationParameters,
+  /// Times assembled from a published [row], presented like every other
+  /// constructor: host local by default, else UTC plus [utcOffset].
+  ///
+  /// The madhab comes from [parameters]. When its shadow factor equals
+  /// [OfficialRow.asrShadow], Asr is the published Asr. For a Hanafi madhab
+  /// with a published `asrHanafi` column, Asr is that column. Otherwise Asr
+  /// is the published Asr shifted by the solar difference between the two
+  /// shadow factors at the locality's reference point. [adjustments], which
+  /// default to the adjustments in [parameters], are added after that. The
+  /// method adjustments in [parameters] are ignored.
+  ///
+  /// Throws [StateError] when that shift is undefined because the sun does
+  /// not reach one of the two shadow lengths at the reference point on that
+  /// day and the row publishes no Asr for the requested factor.
+  ///
+  /// [coordinates] is the locality's reference point. Use the caller's own
+  /// position for Qibla and display.
+  factory PrayerTimes.official(OfficialRow row,
+          {required CalculationParameters parameters,
+          PrayerAdjustments? adjustments,
+          Duration? utcOffset}) =>
+      PrayerTimes._from(
+          row.locality.referencePoint,
+          row.date,
+          parameters,
+          _FromRow(row),
+          assembleOfficialDay(
+              row, parameters, adjustments ?? parameters.adjustments),
+          utcOffset: utcOffset);
+
+  factory PrayerTimes._(Coordinates coordinates, DateTime date,
+      CalculationParameters calculationParameters,
+      {Duration? utcOffset}) {
+    final utc = date.toUtc();
+    final dateComponents = DateComponents.from(utc);
+    final (origin, times) = _resolve(
+        coordinates, utc, dateComponents, calculationParameters, utcOffset);
+    return PrayerTimes._from(
+        coordinates, dateComponents, calculationParameters, origin, times,
+        utcOffset: utcOffset);
+  }
+
+  PrayerTimes._from(this.coordinates, this._dateComponents,
+      this.calculationParameters, this._origin, DayTimes times,
       {this.utcOffset}) {
-    final date = _date.toUtc();
-    _dateComponents = DateComponents.from(date);
+    _fajr = present(times.fajr, utcOffset);
+    _sunrise = present(times.sunrise, utcOffset);
+    _dhuhr = present(times.dhuhr, utcOffset);
+    _asr = present(times.asr, utcOffset);
+    _maghrib = present(times.maghrib, utcOffset);
+    _isha = present(times.isha, utcOffset);
+  }
 
-    // Special handling for London lookup times
-    if (calculationParameters.method ==
-        CalculationMethod.unified_london_times) {
-      _source = PrayerTimesSource.official;
-      _initializeFromLondonLookup(date);
-      return;
+  static (_Origin, DayTimes) _resolve(
+      Coordinates coordinates,
+      DateTime date,
+      DateComponents dateComponents,
+      CalculationParameters parameters,
+      Duration? utcOffset) {
+    if (parameters.method == CalculationMethod.unified_london_times) {
+      return (const _LondonLookup(), _londonDay(dateComponents, parameters));
     }
-
-    _source = PrayerTimesSource.calculated;
-    if (calculationParameters.method == CalculationMethod.malaysia_official) {
-      final official = MalaysiaOfficialTimes.lookup(
-          coordinates, date, calculationParameters, utcOffset);
-      _source = official.source;
-      _malaysiaZone = official.zone;
-      _malaysiaDay = official.day;
-      final times = official.times;
-      if (times != null) {
-        _assign(times);
-        return;
+    if (parameters.method == CalculationMethod.malaysia_official) {
+      final code = parameters.malaysiaZone;
+      switch (MalaysiaTimetable.source.lookup(coordinates, dateComponents,
+          localityId: code == null ? null : LocalityId(code))) {
+        case OfficialRow row:
+          return (
+            _MalaysiaOfficial(
+                row, malaysiaDayFromRow(row, utcOffset: utcOffset)),
+            assembleOfficialDay(row, parameters, parameters.adjustments)
+          );
+        case NoRow(:final locality):
+          return (
+            _MalaysiaNoRow(MalaysiaZones.zone(locality.id.value)!),
+            _compute(coordinates, date, parameters)
+          );
+        case NoLocality():
+          return (
+            const _MalaysiaNoZone(),
+            _compute(coordinates, date, parameters)
+          );
       }
     }
+    return (const _Calculated(), _compute(coordinates, date, parameters));
+  }
 
+  static DayTimes _compute(Coordinates coordinates, DateTime date,
+      CalculationParameters parameters) {
     if (!(coordinates.latitude.abs() <= 90)) {
       throw ArgumentError.value(coordinates.latitude, 'latitude',
           'must be a number between -90 and 90');
     }
-    final times = DayTimes.compute(coordinates, date, calculationParameters) ??
-        calculationParameters.polarCircleResolution
-            .resolve(coordinates, date, calculationParameters);
+    final times = DayTimes.compute(coordinates, date, parameters) ??
+        parameters.polarCircleResolution.resolve(coordinates, date, parameters);
     if (times == null) {
       throw ArgumentError('Prayer times cannot be computed at latitude '
           '${coordinates.latitude}, longitude ${coordinates.longitude} '
-          'on $_dateComponents');
+          'on ${DateComponents.from(date)}');
     }
-    _assign(times);
+    return times;
   }
 
-  void _assign(DayTimes times) {
-    _fajr = _present(times.fajr);
-    _sunrise = _present(times.sunrise);
-    _dhuhr = _present(times.dhuhr);
-    _asr = _present(times.asr);
-    _maghrib = _present(times.maghrib);
-    _isha = _present(times.isha);
-  }
+  static DayTimes _londonDay(
+      DateComponents date, CalculationParameters parameters) {
+    final londonTimes = LondonTimesLookup.getTimesForDate(date);
+    if (londonTimes == null) {
+      throw ArgumentError(
+          'No London prayer times available for date ${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}');
+    }
 
-  DateTime _present(DateTime utc) => present(utc, utcOffset);
+    DateTime finish(String time, int adjustment, int methodAdjustment) {
+      final utc = londonTimes.parseTime(time, date).toUtc();
+      return CalendarUtil.roundedMinute(
+          utc.add(Duration(minutes: adjustment + methodAdjustment)),
+          parameters.rounding);
+    }
+
+    final adjustments = parameters.adjustments;
+    final methodAdjustments = parameters.methodAdjustments;
+    return DayTimes(
+        fajr:
+            finish(londonTimes.fajr, adjustments.fajr, methodAdjustments.fajr),
+        sunrise: finish(londonTimes.sunrise, adjustments.sunrise,
+            methodAdjustments.sunrise),
+        dhuhr: finish(
+            londonTimes.dhuhr, adjustments.dhuhr, methodAdjustments.dhuhr),
+        asr: finish(londonTimes.asr, adjustments.asr, methodAdjustments.asr),
+        maghrib: finish(londonTimes.maghrib, adjustments.maghrib,
+            methodAdjustments.maghrib),
+        isha:
+            finish(londonTimes.isha, adjustments.isha, methodAdjustments.isha));
+  }
 
   Prayer currentPrayer() {
     return currentPrayerByDateTime(DateTime.now());
@@ -242,7 +357,6 @@ class PrayerTimes {
       case Prayer.isha:
         return isha;
       case Prayer.none:
-      default:
         return null;
     }
   }
@@ -250,34 +364,39 @@ class PrayerTimes {
   static int daysSinceSolstice(int dayOfYear, int year, double latitude) {
     return DayTimes.daysSinceSolstice(dayOfYear, year, latitude);
   }
+}
 
-  /// Initialize prayer times from London lookup table
-  void _initializeFromLondonLookup(DateTime date) {
-    final dateComponents = DateComponents.from(date);
-    final londonTimes = LondonTimesLookup.getTimesForDate(dateComponents);
+sealed class _Origin {
+  const _Origin();
+}
 
-    if (londonTimes == null) {
-      throw ArgumentError(
-          'No London prayer times available for date ${dateComponents.year}-${dateComponents.month.toString().padLeft(2, '0')}-${dateComponents.day.toString().padLeft(2, '0')}');
-    }
+final class _Calculated extends _Origin {
+  const _Calculated();
+}
 
-    DateTime finish(String time, int adjustment, int methodAdjustment) {
-      final utc = londonTimes.parseTime(time, dateComponents).toUtc();
-      return _present(CalendarUtil.roundedMinute(
-          utc.add(Duration(minutes: adjustment + methodAdjustment)),
-          calculationParameters.rounding));
-    }
+final class _LondonLookup extends _Origin {
+  const _LondonLookup();
+}
 
-    final adjustments = calculationParameters.adjustments;
-    final methodAdjustments = calculationParameters.methodAdjustments;
-    _fajr = finish(londonTimes.fajr, adjustments.fajr, methodAdjustments.fajr);
-    _sunrise = finish(
-        londonTimes.sunrise, adjustments.sunrise, methodAdjustments.sunrise);
-    _dhuhr =
-        finish(londonTimes.dhuhr, adjustments.dhuhr, methodAdjustments.dhuhr);
-    _asr = finish(londonTimes.asr, adjustments.asr, methodAdjustments.asr);
-    _maghrib = finish(
-        londonTimes.maghrib, adjustments.maghrib, methodAdjustments.maghrib);
-    _isha = finish(londonTimes.isha, adjustments.isha, methodAdjustments.isha);
-  }
+final class _FromRow extends _Origin {
+  final OfficialRow row;
+
+  const _FromRow(this.row);
+}
+
+final class _MalaysiaOfficial extends _Origin {
+  final OfficialRow row;
+  final MalaysiaDay day;
+
+  const _MalaysiaOfficial(this.row, this.day);
+}
+
+final class _MalaysiaNoRow extends _Origin {
+  final MalaysiaZone zone;
+
+  const _MalaysiaNoRow(this.zone);
+}
+
+final class _MalaysiaNoZone extends _Origin {
+  const _MalaysiaNoZone();
 }

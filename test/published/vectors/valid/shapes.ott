@@ -1,0 +1,12 @@
+OTT 1
+{"authority":"xx-shapes","revision":1,"part":"all","coverage":["2026-01-01","2027-12-31"],"columns":["fajr","sunrise","dhuhr","asr","maghrib","isha"],"asrShadow":1,"zones":[{"id":"Etc/UTC","offsets":[["2026-01-01",0]]}],"localities":[{"id":"a-first","group":"g","zone":0,"names":{},"ref":[5500000,5500000],"area":{"polygons":["_sdpH_sdpH_c`|@??_c`|@~b`|@?"],"toleranceM":0}},{"id":"a-second","group":"g","zone":0,"names":{},"ref":[6000000,6000000],"area":{"polygons":["_eunI_eunI_c`|@??_c`|@~b`|@?"],"toleranceM":0}},{"id":"box","group":"g","zone":0,"names":{},"ref":[23500000,44500000],"area":{"polygons":["_{xzj@_op|rA_c`|@??_c`|@~b`|@?"],"toleranceM":1000}},{"id":"donut","group":"g","zone":0,"names":{},"ref":[11000000,11000000],"area":{"polygons":["_gjaR_gjaR_gayB??_gayB~fayB?","_wdrS_wdrS_glW??_glW~flW?"],"toleranceM":0}},{"id":"inner","group":"g","zone":0,"names":{},"ref":[23500000,44500000],"point":{"radiusM":10000}},{"id":"new","group":"g","zone":0,"names":{},"ref":[15000000,48000000],"point":{"radiusM":20000},"validFrom":"2027-01-01"},{"id":"old","group":"g","zone":0,"names":{},"ref":[15000000,48000000],"point":{"radiusM":20000},"validTo":"2026-12-31","successors":["new"]},{"id":"p-east","group":"g","zone":0,"names":{},"ref":[25000000,47000000],"point":{"radiusM":60000}},{"id":"p-west","group":"g","zone":0,"names":{},"ref":[25000000,46000000],"point":{"radiusM":60000}},{"id":"ring","group":"g","zone":0,"names":{},"ref":[20000000,50000000],"point":{"radiusM":25000}}]}
+a-first 2026-03-01 050006201220164018201950eeeeeeeeeeee
+a-second 2026-03-01 050006201220164018201950eeeeeeeeeeee
+box 2026-03-01 050006201220164018201950eeeeeeeeeeee
+donut 2026-03-01 050006201220164018201950eeeeeeeeeeee
+inner 2026-03-01 050006201220164018201950eeeeeeeeeeee
+new 2027-01-01 050006201220164018201950eeeeeeeeeeee
+old 2026-12-29 050006201220164018201950eeeeeeeeeeee
+p-east 2026-03-01 050006201220164018201950eeeeeeeeeeee
+p-west 2026-03-01 050006201220164018201950eeeeeeeeeeee
+ring 2026-03-01 050006201220164018201950eeeeeeeeeeee

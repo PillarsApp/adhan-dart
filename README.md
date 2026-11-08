@@ -259,6 +259,30 @@ final prayerTimes = PrayerTimes.today(londonCoordinates, params);
 
 This method is useful when you need consistent prayer times that match a specific timetable for London, rather than calculated times. The data covers the entire year and is embedded directly in the library.
 
+### Published timetables
+
+Any authority's timetable can be loaded at runtime from an `OTT 1` file, the text format that [docs/PUBLISHED_TIMETABLE_FORMAT.md](docs/PUBLISHED_TIMETABLE_FORMAT.md) describes. The file carries the localities with their geometry, the UTC offset of every day, and the published minutes. The library reads bytes only. Fetching, caching and checking a file's hash belong to the caller.
+
+```dart
+final timetable = PublishedTimetable.decode(bytes);
+timetable.validateAllRows();
+
+switch (timetable.lookup(Coordinates(24.7136, 46.6753), DateComponents(2027, 2, 8))) {
+  case OfficialRow row:
+    final times = PrayerTimes.official(row,
+        parameters: CalculationMethod.umm_al_qura.getParameters());
+    print('${row.locality.name('en')}: Isha ${times.isha}');
+  case NoLocality():
+    print('No published locality covers these coordinates');
+  case NoRow(:final locality):
+    print('${locality.id.value} has no row for this date');
+}
+```
+
+`lookup` resolves the nearest point locality whose radius covers the coordinates, then the first area that contains them, and only among localities in force on the date. Pass `localityId` to pick a locality by hand. `PrayerTimes.official` never falls back. The caller holds the `OfficialLookup` and decides what to do with `NoLocality` and `NoRow`. With a madhab whose shadow factor differs from the published Asr, Asr is the published Asr plus the calculated difference at the locality's reference point.
+
+The bundled Malaysian data is the second source behind the same interface, as `MalaysiaTimetable.source`, so `MalaysiaTimetable.source.lookup(coordinates, date)` returns the same `OfficialLookup` values and `CalculationMethod.malaysia_official` reads its rows through it.
+
 ### Official Malaysian Timetable
 
 The library embeds the prayer timetables that JAKIM publishes through e-Solat, the Selangor district timetables from 2027, and a map of the prayer zones. `CalculationMethod.malaysia_official` reads the published row for the zone and date:

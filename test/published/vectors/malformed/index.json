@@ -1,0 +1,650 @@
+[
+  {
+    "file": "bad-magic.ott",
+    "stage": "decode",
+    "rule": "file.magic",
+    "mutation": "line 1 is OTX 1"
+  },
+  {
+    "file": "major-2.ott",
+    "stage": "decode",
+    "rule": "file.magic",
+    "mutation": "line 1 is OTT 2"
+  },
+  {
+    "file": "empty.ott",
+    "stage": "decode",
+    "rule": "file.empty",
+    "mutation": "the file has no bytes"
+  },
+  {
+    "file": "no-final-newline.ott",
+    "stage": "decode",
+    "rule": "file.lastLineNoLF",
+    "mutation": "the last row line has no LF"
+  },
+  {
+    "file": "crlf.ott",
+    "stage": "decode",
+    "rule": "file.cr",
+    "mutation": "every line ends with CR LF"
+  },
+  {
+    "file": "header-absent.ott",
+    "stage": "decode",
+    "rule": "file.headerAbsent",
+    "mutation": "the file is line 1 only"
+  },
+  {
+    "file": "header-not-json.ott",
+    "stage": "decode",
+    "rule": "header.json",
+    "mutation": "line 2 is {authority"
+  },
+  {
+    "file": "header-not-object.ott",
+    "stage": "decode",
+    "rule": "header.json",
+    "mutation": "line 2 is an array"
+  },
+  {
+    "file": "header-string.ott",
+    "stage": "decode",
+    "rule": "header.json",
+    "mutation": "line 2 is \"abc\""
+  },
+  {
+    "file": "header-lone-surrogate.ott",
+    "stage": "decode",
+    "rule": "header.json",
+    "mutation": "the name en of L1 is the escape \\ud800"
+  },
+  {
+    "file": "header-deep-nesting.ott",
+    "stage": "decode",
+    "rule": "header.json",
+    "mutation": "an ignored key x holds 32 nested arrays inside the header object"
+  },
+  {
+    "file": "header-non-finite.ott",
+    "stage": "decode",
+    "rule": "header.json",
+    "mutation": "an ignored key x is 1e999"
+  },
+  {
+    "file": "bom-in-name.ott",
+    "stage": "decode",
+    "rule": "file.bom",
+    "mutation": "the name en of L1 starts with U+FEFF"
+  },
+  {
+    "file": "bom-at-start.ott",
+    "stage": "decode",
+    "rule": "file.bom",
+    "mutation": "the file starts with EF BB BF"
+  },
+  {
+    "file": "bom-before-header.ott",
+    "stage": "decode",
+    "rule": "file.bom",
+    "mutation": "line 2 starts with EF BB BF"
+  },
+  {
+    "file": "header-not-utf8.ott",
+    "stage": "decode",
+    "rule": "header.json",
+    "mutation": "the name en of L1 is the byte 0xFF"
+  },
+  {
+    "file": "header-duplicate-key.ott",
+    "stage": "decode",
+    "rule": "header.duplicateKey",
+    "mutation": "the names of L1 carry the key en twice"
+  },
+  {
+    "file": "header-duplicate-revision.ott",
+    "stage": "decode",
+    "rule": "header.duplicateKey",
+    "mutation": "revision appears twice at the top level, as 1 and then 2"
+  },
+  {
+    "file": "missing-revision.ott",
+    "stage": "decode",
+    "rule": "header.keyAbsent",
+    "mutation": "revision is absent"
+  },
+  {
+    "file": "authority-empty.ott",
+    "stage": "decode",
+    "rule": "header.authority",
+    "mutation": "authority is \"\""
+  },
+  {
+    "file": "authority-whitespace.ott",
+    "stage": "decode",
+    "rule": "header.authority",
+    "mutation": "authority is \"xx base\""
+  },
+  {
+    "file": "authority-uppercase.ott",
+    "stage": "decode",
+    "rule": "header.authority",
+    "mutation": "authority is \"XX-base\""
+  },
+  {
+    "file": "authority-trailing-line-separator.ott",
+    "stage": "decode",
+    "rule": "header.authority",
+    "mutation": "authority is \"xx-base\" followed by U+2028"
+  },
+  {
+    "file": "authority-trailing-newline.ott",
+    "stage": "decode",
+    "rule": "header.authority",
+    "mutation": "authority is \"xx-base\" followed by LF"
+  },
+  {
+    "file": "revision-too-large.ott",
+    "stage": "decode",
+    "rule": "header.revision",
+    "mutation": "revision is 2147483648"
+  },
+  {
+    "file": "revision-negative.ott",
+    "stage": "decode",
+    "rule": "header.revision",
+    "mutation": "revision is -1"
+  },
+  {
+    "file": "revision-fraction.ott",
+    "stage": "decode",
+    "rule": "header.revision",
+    "mutation": "revision is 1.0"
+  },
+  {
+    "file": "revision-exponent.ott",
+    "stage": "decode",
+    "rule": "header.revision",
+    "mutation": "revision is 1e0"
+  },
+  {
+    "file": "part-empty.ott",
+    "stage": "decode",
+    "rule": "header.part",
+    "mutation": "part is \"\""
+  },
+  {
+    "file": "part-underscore.ott",
+    "stage": "decode",
+    "rule": "header.part",
+    "mutation": "part is \"all_parts\""
+  },
+  {
+    "file": "coverage-three-dates.ott",
+    "stage": "decode",
+    "rule": "header.coverage",
+    "mutation": "coverage has three dates"
+  },
+  {
+    "file": "coverage-date-format.ott",
+    "stage": "decode",
+    "rule": "header.coverage",
+    "mutation": "coverage starts 2026/01/01"
+  },
+  {
+    "file": "coverage-reversed.ott",
+    "stage": "decode",
+    "rule": "header.coverage.order",
+    "mutation": "coverage ends before it starts"
+  },
+  {
+    "file": "asr-shadow-3.ott",
+    "stage": "decode",
+    "rule": "header.asrShadow",
+    "mutation": "asrShadow is 3"
+  },
+  {
+    "file": "asr-shadow-true.ott",
+    "stage": "decode",
+    "rule": "header.asrShadow",
+    "mutation": "asrShadow is true"
+  },
+  {
+    "file": "unknown-column.ott",
+    "stage": "decode",
+    "rule": "column.unknown",
+    "mutation": "a seventh column sunset with minute 1100 on every day"
+  },
+  {
+    "file": "duplicate-column.ott",
+    "stage": "decode",
+    "rule": "column.duplicate",
+    "mutation": "a seventh column fajr with minute 300 on every day"
+  },
+  {
+    "file": "missing-core-column.ott",
+    "stage": "decode",
+    "rule": "column.missingCore",
+    "mutation": "isha is absent from columns and from every day"
+  },
+  {
+    "file": "no-zones.ott",
+    "stage": "decode",
+    "rule": "zones.empty",
+    "mutation": "zones is []"
+  },
+  {
+    "file": "zone-id-empty.ott",
+    "stage": "decode",
+    "rule": "zone.id",
+    "mutation": "the zone id is \"\""
+  },
+  {
+    "file": "zone-id-duplicate.ott",
+    "stage": "decode",
+    "rule": "zone.id.duplicate",
+    "mutation": "a second zone with the id Etc/UTC"
+  },
+  {
+    "file": "offsets-empty.ott",
+    "stage": "decode",
+    "rule": "zone.offsets.empty",
+    "mutation": "offsets is []"
+  },
+  {
+    "file": "offset-triple.ott",
+    "stage": "decode",
+    "rule": "zone.offset.shape",
+    "mutation": "the offset is [date, minutes, 0]"
+  },
+  {
+    "file": "offset-date-format.ott",
+    "stage": "decode",
+    "rule": "zone.offset.date",
+    "mutation": "the offset date is 2026-1-1"
+  },
+  {
+    "file": "offsets-unsorted.ott",
+    "stage": "decode",
+    "rule": "zone.offset.order",
+    "mutation": "offsets are dated 01-01, 06-01, 03-01"
+  },
+  {
+    "file": "offset-too-large.ott",
+    "stage": "decode",
+    "rule": "zone.offset.range",
+    "mutation": "the offset is 1500"
+  },
+  {
+    "file": "offsets-start-after-coverage.ott",
+    "stage": "decode",
+    "rule": "zone.offset.start",
+    "mutation": "the first offset is dated 2026-02-01"
+  },
+  {
+    "file": "no-localities.ott",
+    "stage": "decode",
+    "rule": "localities.empty",
+    "mutation": "localities is [] and the file has no rows"
+  },
+  {
+    "file": "locality-bad-id.ott",
+    "stage": "decode",
+    "rule": "locality.id",
+    "mutation": "the id of L2 is \"L 2\""
+  },
+  {
+    "file": "locality-long-id.ott",
+    "stage": "decode",
+    "rule": "locality.id",
+    "mutation": "the id of L2 is 33 letters"
+  },
+  {
+    "file": "locality-id-trailing-newline.ott",
+    "stage": "decode",
+    "rule": "locality.id",
+    "mutation": "the id of L2 is \"L2\" followed by LF"
+  },
+  {
+    "file": "locality-duplicate-id.ott",
+    "stage": "decode",
+    "rule": "locality.id.duplicate",
+    "mutation": "the id of L2 is L1"
+  },
+  {
+    "file": "locality-group-empty.ott",
+    "stage": "decode",
+    "rule": "locality.group",
+    "mutation": "the group of L1 is \"\""
+  },
+  {
+    "file": "locality-unknown-zone.ott",
+    "stage": "decode",
+    "rule": "locality.zone",
+    "mutation": "L1 names zone 1 of one zone"
+  },
+  {
+    "file": "locality-name-not-string.ott",
+    "stage": "decode",
+    "rule": "locality.names",
+    "mutation": "the name en of L1 is 7"
+  },
+  {
+    "file": "locality-names-not-object.ott",
+    "stage": "decode",
+    "rule": "locality.names",
+    "mutation": "the names of L1 are 5"
+  },
+  {
+    "file": "locality-ref-three-values.ott",
+    "stage": "decode",
+    "rule": "locality.ref.shape",
+    "mutation": "the ref of L1 has three values"
+  },
+  {
+    "file": "locality-ref-fraction.ott",
+    "stage": "decode",
+    "rule": "locality.ref.integer",
+    "mutation": "the ref latitude of L1 is 10.5"
+  },
+  {
+    "file": "locality-ref-exponent.ott",
+    "stage": "decode",
+    "rule": "locality.ref.integer",
+    "mutation": "the ref latitude of L1 is 1e7"
+  },
+  {
+    "file": "locality-ref-int64-min.ott",
+    "stage": "decode",
+    "rule": "locality.ref.integer",
+    "mutation": "the ref latitude of L1 is -9223372036854775808"
+  },
+  {
+    "file": "locality-ref-beyond-int64.ott",
+    "stage": "decode",
+    "rule": "locality.ref.integer",
+    "mutation": "the ref latitude of L1 is 9223372036854775808"
+  },
+  {
+    "file": "locality-ref-out-of-range.ott",
+    "stage": "decode",
+    "rule": "locality.ref.range",
+    "mutation": "the ref latitude of L1 is 90000001"
+  },
+  {
+    "file": "locality-validity-date.ott",
+    "stage": "decode",
+    "rule": "locality.validity.date",
+    "mutation": "validFrom of L1 is 2026-02-30"
+  },
+  {
+    "file": "locality-validity-reversed.ott",
+    "stage": "decode",
+    "rule": "locality.validity.order",
+    "mutation": "validTo of L1 is 2025-12-31, before its validFrom"
+  },
+  {
+    "file": "locality-unknown-successor.ott",
+    "stage": "decode",
+    "rule": "locality.successor",
+    "mutation": "L1 names the successor L9"
+  },
+  {
+    "file": "locality-successors-not-array.ott",
+    "stage": "decode",
+    "rule": "locality.successor",
+    "mutation": "the successors of L1 are \"L2\""
+  },
+  {
+    "file": "locality-no-geometry.ott",
+    "stage": "decode",
+    "rule": "locality.geometry",
+    "mutation": "L1 has no point"
+  },
+  {
+    "file": "locality-both-geometries.ott",
+    "stage": "decode",
+    "rule": "locality.geometry",
+    "mutation": "L1 has an area as well as its point"
+  },
+  {
+    "file": "locality-radius-zero.ott",
+    "stage": "decode",
+    "rule": "locality.point.radius",
+    "mutation": "the radius of L1 is 0"
+  },
+  {
+    "file": "locality-point-not-object.ott",
+    "stage": "decode",
+    "rule": "locality.point.radius",
+    "mutation": "the point of L1 is 5"
+  },
+  {
+    "file": "radius-fraction.ott",
+    "stage": "decode",
+    "rule": "locality.point.radius",
+    "mutation": "the radius of L1 is 12.0"
+  },
+  {
+    "file": "area-no-polygons.ott",
+    "stage": "decode",
+    "rule": "locality.area.polygons",
+    "mutation": "the polygons of L2 are []"
+  },
+  {
+    "file": "area-tolerance-negative.ott",
+    "stage": "decode",
+    "rule": "locality.area.tolerance",
+    "mutation": "the tolerance of L2 is -1"
+  },
+  {
+    "file": "area-polyline-bad-bytes.ott",
+    "stage": "decode",
+    "rule": "locality.area.polyline",
+    "mutation": "the polygon of L2 is \"not a polyline!\""
+  },
+  {
+    "file": "area-polyline-byte-below-63.ott",
+    "stage": "decode",
+    "rule": "locality.area.polyline",
+    "mutation": "the last byte of the polygon of L2 is \"!\""
+  },
+  {
+    "file": "area-polyline-byte-above-126.ott",
+    "stage": "decode",
+    "rule": "locality.area.polyline",
+    "mutation": "the first byte of the polygon of L2 is 0x7F"
+  },
+  {
+    "file": "area-polyline-value-beyond-32-bits.ott",
+    "stage": "decode",
+    "rule": "locality.area.polyline",
+    "mutation": "the first value of the polygon of L2 is 2147483648, in seven chunks"
+  },
+  {
+    "file": "area-polyline-empty.ott",
+    "stage": "decode",
+    "rule": "locality.area.polyline",
+    "mutation": "the polygon of L2 is \"\""
+  },
+  {
+    "file": "area-polyline-truncated.ott",
+    "stage": "decode",
+    "rule": "locality.area.polyline",
+    "mutation": "the polygon of L2 lacks its last byte"
+  },
+  {
+    "file": "area-polyline-eight-chunks.ott",
+    "stage": "decode",
+    "rule": "locality.area.polyline",
+    "mutation": "the first value of the polygon of L2 is written in eight chunks"
+  },
+  {
+    "file": "area-odd-values.ott",
+    "stage": "decode",
+    "rule": "locality.area.ring",
+    "mutation": "the polygon of L2 has seven values"
+  },
+  {
+    "file": "area-two-vertices.ott",
+    "stage": "decode",
+    "rule": "locality.area.ring",
+    "mutation": "the polygon of L2 has two vertices"
+  },
+  {
+    "file": "area-vertex-out-of-range.ott",
+    "stage": "decode",
+    "rule": "locality.area.vertex",
+    "mutation": "a vertex of L2 is at latitude 91"
+  },
+  {
+    "file": "row-two-fields.ott",
+    "stage": "decode",
+    "rule": "row.fields",
+    "mutation": "the row line has no date"
+  },
+  {
+    "file": "row-four-fields.ott",
+    "stage": "decode",
+    "rule": "row.fields",
+    "mutation": "the row line ends with \" x\""
+  },
+  {
+    "file": "row-unknown-locality.ott",
+    "stage": "decode",
+    "rule": "row.locality",
+    "mutation": "the row names L9"
+  },
+  {
+    "file": "row-bad-date.ott",
+    "stage": "decode",
+    "rule": "row.date",
+    "mutation": "the row starts 2026-02-30"
+  },
+  {
+    "file": "row-before-coverage.ott",
+    "stage": "decode",
+    "rule": "row.coverage",
+    "mutation": "the row starts 2025-12-31"
+  },
+  {
+    "file": "row-after-coverage.ott",
+    "stage": "decode",
+    "rule": "row.coverage",
+    "mutation": "the row starts 2028-01-01"
+  },
+  {
+    "file": "row-short-first-day.ott",
+    "stage": "decode",
+    "rule": "row.firstDay.length",
+    "mutation": "the first day has 16 digits"
+  },
+  {
+    "file": "row-nondigit-first-day.ott",
+    "stage": "decode",
+    "rule": "row.firstDay.digits",
+    "mutation": "the first day ends in x0"
+  },
+  {
+    "file": "cell-reset-truncated.ott",
+    "stage": "validate",
+    "rule": "cell.truncatedTime",
+    "mutation": "the last cell is ~05"
+  },
+  {
+    "file": "cell-reset-plus.ott",
+    "stage": "validate",
+    "rule": "cell.digits",
+    "mutation": "the first cell is ~+500"
+  },
+  {
+    "file": "cell-reset-minus.ott",
+    "stage": "validate",
+    "rule": "cell.digits",
+    "mutation": "the first cell is ~-030"
+  },
+  {
+    "file": "cell-reset-tab.ott",
+    "stage": "validate",
+    "rule": "cell.digits",
+    "mutation": "the first cell is ~<TAB>500"
+  },
+  {
+    "file": "cell-reset-vertical-tab.ott",
+    "stage": "validate",
+    "rule": "cell.digits",
+    "mutation": "the first cell is ~<VT>500"
+  },
+  {
+    "file": "cell-reset-nbsp.ott",
+    "stage": "validate",
+    "rule": "cell.digits",
+    "mutation": "the first cell is ~<0xA0>500"
+  },
+  {
+    "file": "cell-minute-60.ott",
+    "stage": "validate",
+    "rule": "cell.minute",
+    "mutation": "the first cell is ~0560"
+  },
+  {
+    "file": "first-day-minute-60.ott",
+    "stage": "validate",
+    "rule": "cell.minute",
+    "mutation": "the first day starts 0560"
+  },
+  {
+    "file": "cell-hour-48.ott",
+    "stage": "validate",
+    "rule": "cell.hour",
+    "mutation": "the last cell is ~4800"
+  },
+  {
+    "file": "cell-unknown-letter.ott",
+    "stage": "validate",
+    "rule": "cell.letter",
+    "mutation": "the first cell is h"
+  },
+  {
+    "file": "cell-delta-below-zero.ott",
+    "stage": "validate",
+    "rule": "cell.delta",
+    "mutation": "the first day starts 0000 and the first cell is a"
+  },
+  {
+    "file": "cell-truncated-day.ott",
+    "stage": "validate",
+    "rule": "cell.truncatedDay",
+    "mutation": "the second day has five cells"
+  },
+  {
+    "file": "core-order.ott",
+    "stage": "validate",
+    "rule": "row.coreOrder",
+    "mutation": "asr is before dhuhr"
+  },
+  {
+    "file": "core-equal.ott",
+    "stage": "validate",
+    "rule": "row.coreOrder",
+    "mutation": "asr equals dhuhr"
+  },
+  {
+    "file": "row-crosses-year.ott",
+    "stage": "validate",
+    "rule": "row.crossesYear",
+    "mutation": "the row starts 2026-12-31 and has two days"
+  },
+  {
+    "file": "row-ends-after-coverage.ott",
+    "stage": "validate",
+    "rule": "row.endsAfterCoverage",
+    "mutation": "coverage ends 2026-01-01 and the row has two days"
+  },
+  {
+    "file": "rows-overlap.ott",
+    "stage": "validate",
+    "rule": "row.overlap",
+    "mutation": "a second row of L1 starts 2026-01-02"
+  }
+]

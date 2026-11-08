@@ -1,0 +1,3 @@
+OTT 1
+{"authority":"xx-base","revision":1,"part":"all","coverage":["2026-01-01","2027-12-31"],"columns":["fajr","sunrise","dhuhr","asr","maghrib","isha"],"asrShadow":1,"zones":[{"id":"Etc/UTC","offsets":[["2026-02-01",0]]}],"localities":[{"id":"L1","group":"g","zone":0,"names":{"en":"Base"},"ref":[10000000,10000000],"point":{"radiusM":10000},"validFrom":"2026-01-01"},{"id":"L2","group":"g","zone":0,"names":{},"ref":[40500000,40500000],"area":{"polygons":["__lhkA__lhkA_c`|@??_c`|@~b`|@?"],"toleranceM":0}}]}
+L1 2026-01-01 050006301220164018201950edeede

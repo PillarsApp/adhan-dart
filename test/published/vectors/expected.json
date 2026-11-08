@@ -1,0 +1,1012 @@
+{
+  "cases": [
+    {
+      "name": "riyadh-first-day",
+      "vector": "valid/kacst-like.ott",
+      "coordinates": [
+        24.7136,
+        46.6753
+      ],
+      "localityId": null,
+      "date": "2026-01-01",
+      "result": "row",
+      "locality": "1001",
+      "published": {
+        "fajr": "2026-01-01T02:14:00Z",
+        "sunrise": "2026-01-01T03:38:00Z",
+        "dhuhr": "2026-01-01T08:57:00Z",
+        "asr": "2026-01-01T11:56:00Z",
+        "maghrib": "2026-01-01T14:16:00Z",
+        "isha": "2026-01-01T15:46:00Z"
+      },
+      "asr": {
+        "shafi": "2026-01-01T11:56:00Z",
+        "hanafi": "2026-01-01T12:40:00Z"
+      }
+    },
+    {
+      "name": "riyadh-second-year",
+      "vector": "valid/kacst-like.ott",
+      "coordinates": [
+        24.7136,
+        46.6753
+      ],
+      "localityId": null,
+      "date": "2027-01-05",
+      "result": "row",
+      "locality": "1001",
+      "published": {
+        "fajr": "2027-01-05T02:15:00Z",
+        "sunrise": "2027-01-05T03:39:00Z",
+        "dhuhr": "2027-01-05T08:58:00Z",
+        "asr": "2027-01-05T11:59:00Z",
+        "maghrib": "2027-01-05T14:19:00Z",
+        "isha": "2027-01-05T15:49:00Z"
+      },
+      "asr": {
+        "shafi": "2027-01-05T11:59:00Z",
+        "hanafi": "2027-01-05T12:43:00Z"
+      }
+    },
+    {
+      "name": "mecca-kaaba",
+      "vector": "valid/kacst-like.ott",
+      "coordinates": [
+        21.4225,
+        39.8262
+      ],
+      "localityId": null,
+      "date": "2026-01-10",
+      "result": "row",
+      "locality": "1002",
+      "published": {
+        "fajr": "2026-01-10T02:40:00Z",
+        "sunrise": "2026-01-10T04:01:00Z",
+        "dhuhr": "2026-01-10T09:28:00Z",
+        "asr": "2026-01-10T12:35:00Z",
+        "maghrib": "2026-01-10T14:56:00Z",
+        "isha": "2026-01-10T16:26:00Z"
+      },
+      "asr": {
+        "shafi": "2026-01-10T12:35:00Z",
+        "hanafi": "2026-01-10T13:21:00Z"
+      }
+    },
+    {
+      "name": "jeddah-outside-every-radius",
+      "vector": "valid/kacst-like.ott",
+      "coordinates": [
+        21.5433,
+        39.1728
+      ],
+      "localityId": null,
+      "date": "2026-01-01",
+      "result": "noLocality"
+    },
+    {
+      "name": "riyadh-date-without-row",
+      "vector": "valid/kacst-like.ott",
+      "coordinates": [
+        24.7136,
+        46.6753
+      ],
+      "localityId": null,
+      "date": "2026-06-15",
+      "result": "noRow",
+      "locality": "1001"
+    },
+    {
+      "name": "riyadh-after-coverage",
+      "vector": "valid/kacst-like.ott",
+      "coordinates": [
+        24.7136,
+        46.6753
+      ],
+      "localityId": null,
+      "date": "2028-01-01",
+      "result": "noRow",
+      "locality": "1001"
+    },
+    {
+      "name": "manual-medina-from-riyadh",
+      "vector": "valid/kacst-like.ott",
+      "coordinates": [
+        24.7136,
+        46.6753
+      ],
+      "localityId": "1003",
+      "date": "2027-01-05",
+      "result": "row",
+      "locality": "1003",
+      "published": {
+        "fajr": "2027-01-05T02:43:00Z",
+        "sunrise": "2027-01-05T04:07:00Z",
+        "dhuhr": "2027-01-05T09:27:00Z",
+        "asr": "2027-01-05T12:27:00Z",
+        "maghrib": "2027-01-05T14:47:00Z",
+        "isha": "2027-01-05T16:17:00Z"
+      },
+      "asr": {
+        "shafi": "2027-01-05T12:27:00Z",
+        "hanafi": "2027-01-05T13:11:00Z"
+      }
+    },
+    {
+      "name": "manual-ignores-coordinates",
+      "vector": "valid/kacst-like.ott",
+      "coordinates": [
+        0.0,
+        0.0
+      ],
+      "localityId": "1001",
+      "date": "2026-01-03",
+      "result": "row",
+      "locality": "1001",
+      "published": {
+        "fajr": "2026-01-03T02:15:00Z",
+        "sunrise": "2026-01-03T03:38:00Z",
+        "dhuhr": "2026-01-03T08:58:00Z",
+        "asr": "2026-01-03T11:58:00Z",
+        "maghrib": "2026-01-03T14:17:00Z",
+        "isha": "2026-01-03T15:47:00Z"
+      },
+      "asr": {
+        "shafi": "2026-01-03T11:58:00Z",
+        "hanafi": "2026-01-03T12:42:00Z"
+      }
+    },
+    {
+      "name": "manual-unknown-id",
+      "vector": "valid/kacst-like.ott",
+      "coordinates": [
+        24.7136,
+        46.6753
+      ],
+      "localityId": "9999",
+      "date": "2026-01-01",
+      "result": "noLocality"
+    },
+    {
+      "name": "tie-breaks-to-the-first-id",
+      "vector": "valid/shapes.ott",
+      "coordinates": [
+        25.0,
+        46.5
+      ],
+      "localityId": null,
+      "date": "2026-03-02",
+      "result": "row",
+      "locality": "p-east",
+      "published": {
+        "fajr": "2026-03-02T05:01:00Z",
+        "sunrise": "2026-03-02T06:21:00Z",
+        "dhuhr": "2026-03-02T12:21:00Z",
+        "asr": "2026-03-02T16:41:00Z",
+        "maghrib": "2026-03-02T18:21:00Z",
+        "isha": "2026-03-02T19:51:00Z"
+      },
+      "asr": {
+        "shafi": "2026-03-02T16:41:00Z",
+        "hanafi": "2026-03-02T17:32:00Z"
+      }
+    },
+    {
+      "name": "nearest-point-wins-east",
+      "vector": "valid/shapes.ott",
+      "coordinates": [
+        25.0,
+        46.9
+      ],
+      "localityId": null,
+      "date": "2026-03-02",
+      "result": "row",
+      "locality": "p-east",
+      "published": {
+        "fajr": "2026-03-02T05:01:00Z",
+        "sunrise": "2026-03-02T06:21:00Z",
+        "dhuhr": "2026-03-02T12:21:00Z",
+        "asr": "2026-03-02T16:41:00Z",
+        "maghrib": "2026-03-02T18:21:00Z",
+        "isha": "2026-03-02T19:51:00Z"
+      },
+      "asr": {
+        "shafi": "2026-03-02T16:41:00Z",
+        "hanafi": "2026-03-02T17:32:00Z"
+      }
+    },
+    {
+      "name": "nearest-point-wins-west",
+      "vector": "valid/shapes.ott",
+      "coordinates": [
+        25.0,
+        46.1
+      ],
+      "localityId": null,
+      "date": "2026-03-02",
+      "result": "row",
+      "locality": "p-west",
+      "published": {
+        "fajr": "2026-03-02T05:01:00Z",
+        "sunrise": "2026-03-02T06:21:00Z",
+        "dhuhr": "2026-03-02T12:21:00Z",
+        "asr": "2026-03-02T16:41:00Z",
+        "maghrib": "2026-03-02T18:21:00Z",
+        "isha": "2026-03-02T19:51:00Z"
+      },
+      "asr": {
+        "shafi": "2026-03-02T16:41:00Z",
+        "hanafi": "2026-03-02T17:32:00Z"
+      }
+    },
+    {
+      "name": "nearest-wins-over-the-lower-id",
+      "vector": "valid/shapes.ott",
+      "coordinates": [
+        25.0,
+        46.45
+      ],
+      "localityId": null,
+      "date": "2026-03-02",
+      "result": "row",
+      "locality": "p-west",
+      "published": {
+        "fajr": "2026-03-02T05:01:00Z",
+        "sunrise": "2026-03-02T06:21:00Z",
+        "dhuhr": "2026-03-02T12:21:00Z",
+        "asr": "2026-03-02T16:41:00Z",
+        "maghrib": "2026-03-02T18:21:00Z",
+        "isha": "2026-03-02T19:51:00Z"
+      },
+      "asr": {
+        "shafi": "2026-03-02T16:41:00Z",
+        "hanafi": "2026-03-02T17:32:00Z"
+      }
+    },
+    {
+      "name": "point-exactly-at-radius",
+      "vector": "valid/shapes.ott",
+      "coordinates": [
+        20.224830090931135,
+        50.0
+      ],
+      "localityId": null,
+      "date": "2026-03-02",
+      "result": "row",
+      "locality": "ring",
+      "published": {
+        "fajr": "2026-03-02T05:01:00Z",
+        "sunrise": "2026-03-02T06:21:00Z",
+        "dhuhr": "2026-03-02T12:21:00Z",
+        "asr": "2026-03-02T16:41:00Z",
+        "maghrib": "2026-03-02T18:21:00Z",
+        "isha": "2026-03-02T19:51:00Z"
+      },
+      "asr": {
+        "shafi": "2026-03-02T16:41:00Z",
+        "hanafi": "2026-03-02T17:34:00Z"
+      }
+    },
+    {
+      "name": "point-one-metre-beyond-radius",
+      "vector": "valid/shapes.ott",
+      "coordinates": [
+        20.22483908413477,
+        50.0
+      ],
+      "localityId": null,
+      "date": "2026-03-02",
+      "result": "noLocality"
+    },
+    {
+      "name": "point-inside-area-wins",
+      "vector": "valid/shapes.ott",
+      "coordinates": [
+        23.5,
+        44.5
+      ],
+      "localityId": null,
+      "date": "2026-03-02",
+      "result": "row",
+      "locality": "inner",
+      "published": {
+        "fajr": "2026-03-02T05:01:00Z",
+        "sunrise": "2026-03-02T06:21:00Z",
+        "dhuhr": "2026-03-02T12:21:00Z",
+        "asr": "2026-03-02T16:41:00Z",
+        "maghrib": "2026-03-02T18:21:00Z",
+        "isha": "2026-03-02T19:51:00Z"
+      },
+      "asr": {
+        "shafi": "2026-03-02T16:41:00Z",
+        "hanafi": "2026-03-02T17:33:00Z"
+      }
+    },
+    {
+      "name": "area-outside-the-point-radius",
+      "vector": "valid/shapes.ott",
+      "coordinates": [
+        23.9,
+        44.9
+      ],
+      "localityId": null,
+      "date": "2026-03-02",
+      "result": "row",
+      "locality": "box",
+      "published": {
+        "fajr": "2026-03-02T05:01:00Z",
+        "sunrise": "2026-03-02T06:21:00Z",
+        "dhuhr": "2026-03-02T12:21:00Z",
+        "asr": "2026-03-02T16:41:00Z",
+        "maghrib": "2026-03-02T18:21:00Z",
+        "isha": "2026-03-02T19:51:00Z"
+      },
+      "asr": {
+        "shafi": "2026-03-02T16:41:00Z",
+        "hanafi": "2026-03-02T17:33:00Z"
+      }
+    },
+    {
+      "name": "area-within-tolerance",
+      "vector": "valid/shapes.ott",
+      "coordinates": [
+        24.005,
+        44.5
+      ],
+      "localityId": null,
+      "date": "2026-03-02",
+      "result": "row",
+      "locality": "box",
+      "published": {
+        "fajr": "2026-03-02T05:01:00Z",
+        "sunrise": "2026-03-02T06:21:00Z",
+        "dhuhr": "2026-03-02T12:21:00Z",
+        "asr": "2026-03-02T16:41:00Z",
+        "maghrib": "2026-03-02T18:21:00Z",
+        "isha": "2026-03-02T19:51:00Z"
+      },
+      "asr": {
+        "shafi": "2026-03-02T16:41:00Z",
+        "hanafi": "2026-03-02T17:33:00Z"
+      }
+    },
+    {
+      "name": "area-beyond-tolerance",
+      "vector": "valid/shapes.ott",
+      "coordinates": [
+        24.02,
+        44.5
+      ],
+      "localityId": null,
+      "date": "2026-03-02",
+      "result": "noLocality"
+    },
+    {
+      "name": "inside-a-hole",
+      "vector": "valid/shapes.ott",
+      "coordinates": [
+        11.0,
+        11.0
+      ],
+      "localityId": null,
+      "date": "2026-03-02",
+      "result": "noLocality"
+    },
+    {
+      "name": "area-with-a-hole",
+      "vector": "valid/shapes.ott",
+      "coordinates": [
+        10.5,
+        10.5
+      ],
+      "localityId": null,
+      "date": "2026-03-02",
+      "result": "row",
+      "locality": "donut",
+      "published": {
+        "fajr": "2026-03-02T05:01:00Z",
+        "sunrise": "2026-03-02T06:21:00Z",
+        "dhuhr": "2026-03-02T12:21:00Z",
+        "asr": "2026-03-02T16:41:00Z",
+        "maghrib": "2026-03-02T18:21:00Z",
+        "isha": "2026-03-02T19:51:00Z"
+      },
+      "asr": {
+        "shafi": "2026-03-02T16:41:00Z",
+        "hanafi": "2026-03-02T17:39:00Z"
+      }
+    },
+    {
+      "name": "first-area-in-header-order-wins",
+      "vector": "valid/shapes.ott",
+      "coordinates": [
+        5.75,
+        5.75
+      ],
+      "localityId": null,
+      "date": "2026-03-02",
+      "result": "row",
+      "locality": "a-first",
+      "published": {
+        "fajr": "2026-03-02T05:01:00Z",
+        "sunrise": "2026-03-02T06:21:00Z",
+        "dhuhr": "2026-03-02T12:21:00Z",
+        "asr": "2026-03-02T16:41:00Z",
+        "maghrib": "2026-03-02T18:21:00Z",
+        "isha": "2026-03-02T19:51:00Z"
+      },
+      "asr": {
+        "shafi": "2026-03-02T16:41:00Z",
+        "hanafi": "2026-03-02T17:43:00Z"
+      }
+    },
+    {
+      "name": "retired-locality-on-its-last-day",
+      "vector": "valid/shapes.ott",
+      "coordinates": [
+        15.0,
+        48.0
+      ],
+      "localityId": null,
+      "date": "2026-12-31",
+      "result": "row",
+      "locality": "old",
+      "published": {
+        "fajr": "2026-12-31T05:02:00Z",
+        "sunrise": "2026-12-31T06:22:00Z",
+        "dhuhr": "2026-12-31T12:22:00Z",
+        "asr": "2026-12-31T16:42:00Z",
+        "maghrib": "2026-12-31T18:22:00Z",
+        "isha": "2026-12-31T19:52:00Z"
+      },
+      "asr": {
+        "shafi": "2026-12-31T16:42:00Z",
+        "hanafi": "2026-12-31T17:30:00Z"
+      }
+    },
+    {
+      "name": "successor-on-its-first-day",
+      "vector": "valid/shapes.ott",
+      "coordinates": [
+        15.0,
+        48.0
+      ],
+      "localityId": null,
+      "date": "2027-01-01",
+      "result": "row",
+      "locality": "new",
+      "published": {
+        "fajr": "2027-01-01T05:00:00Z",
+        "sunrise": "2027-01-01T06:20:00Z",
+        "dhuhr": "2027-01-01T12:20:00Z",
+        "asr": "2027-01-01T16:40:00Z",
+        "maghrib": "2027-01-01T18:20:00Z",
+        "isha": "2027-01-01T19:50:00Z"
+      },
+      "asr": {
+        "shafi": "2027-01-01T16:40:00Z",
+        "hanafi": "2027-01-01T17:28:00Z"
+      }
+    },
+    {
+      "name": "manual-retired-locality-has-no-row",
+      "vector": "valid/shapes.ott",
+      "coordinates": [
+        15.0,
+        48.0
+      ],
+      "localityId": "old",
+      "date": "2027-01-01",
+      "result": "noRow",
+      "locality": "old"
+    },
+    {
+      "name": "outside-everything",
+      "vector": "valid/shapes.ott",
+      "coordinates": [
+        0.0,
+        0.0
+      ],
+      "localityId": null,
+      "date": "2026-03-02",
+      "result": "noLocality"
+    },
+    {
+      "name": "day-before-summer-time",
+      "vector": "valid/dst.ott",
+      "coordinates": [
+        30.0444,
+        31.2357
+      ],
+      "localityId": null,
+      "date": "2026-04-23",
+      "result": "row",
+      "locality": "cairo",
+      "published": {
+        "imsak": "2026-04-23T01:51:00Z",
+        "fajr": "2026-04-23T02:01:00Z",
+        "sunrise": "2026-04-23T03:31:00Z",
+        "dhuhr": "2026-04-23T09:56:00Z",
+        "asr": "2026-04-23T13:31:00Z",
+        "asrHanafi": "2026-04-23T14:31:00Z",
+        "maghrib": "2026-04-23T16:21:00Z",
+        "isha": "2026-04-23T17:41:00Z"
+      },
+      "asr": {
+        "shafi": "2026-04-23T13:31:00Z",
+        "hanafi": "2026-04-23T14:31:00Z"
+      }
+    },
+    {
+      "name": "first-day-of-summer-time",
+      "vector": "valid/dst.ott",
+      "coordinates": [
+        30.0444,
+        31.2357
+      ],
+      "localityId": null,
+      "date": "2026-04-24",
+      "result": "row",
+      "locality": "cairo",
+      "published": {
+        "imsak": "2026-04-24T01:51:00Z",
+        "fajr": "2026-04-24T02:01:00Z",
+        "sunrise": "2026-04-24T03:31:00Z",
+        "dhuhr": "2026-04-24T09:56:00Z",
+        "asr": "2026-04-24T13:31:00Z",
+        "asrHanafi": "2026-04-24T14:31:00Z",
+        "maghrib": "2026-04-24T16:21:00Z",
+        "isha": "2026-04-24T17:41:00Z"
+      },
+      "asr": {
+        "shafi": "2026-04-24T13:31:00Z",
+        "hanafi": "2026-04-24T14:31:00Z"
+      }
+    },
+    {
+      "name": "last-day-of-summer-time",
+      "vector": "valid/dst.ott",
+      "coordinates": [
+        30.0444,
+        31.2357
+      ],
+      "localityId": null,
+      "date": "2026-10-29",
+      "result": "row",
+      "locality": "cairo",
+      "published": {
+        "imsak": "2026-10-29T00:59:00Z",
+        "fajr": "2026-10-29T01:09:00Z",
+        "sunrise": "2026-10-29T02:49:00Z",
+        "dhuhr": "2026-10-29T08:39:00Z",
+        "asr": "2026-10-29T11:59:00Z",
+        "asrHanafi": "2026-10-29T12:59:00Z",
+        "maghrib": "2026-10-29T14:29:00Z",
+        "isha": "2026-10-29T15:49:00Z"
+      },
+      "asr": {
+        "shafi": "2026-10-29T11:59:00Z",
+        "hanafi": "2026-10-29T12:59:00Z"
+      }
+    },
+    {
+      "name": "first-day-after-summer-time",
+      "vector": "valid/dst.ott",
+      "coordinates": [
+        30.0444,
+        31.2357
+      ],
+      "localityId": null,
+      "date": "2026-10-30",
+      "result": "row",
+      "locality": "cairo",
+      "published": {
+        "imsak": "2026-10-30T00:59:00Z",
+        "fajr": "2026-10-30T01:09:00Z",
+        "sunrise": "2026-10-30T02:49:00Z",
+        "dhuhr": "2026-10-30T08:39:00Z",
+        "asr": "2026-10-30T11:59:00Z",
+        "asrHanafi": "2026-10-30T12:59:00Z",
+        "maghrib": "2026-10-30T14:29:00Z",
+        "isha": "2026-10-30T15:49:00Z"
+      },
+      "asr": {
+        "shafi": "2026-10-30T11:59:00Z",
+        "hanafi": "2026-10-30T12:59:00Z"
+      }
+    },
+    {
+      "name": "isha-after-midnight",
+      "vector": "valid/late-isha.ott",
+      "coordinates": [
+        59.91,
+        10.75
+      ],
+      "localityId": null,
+      "date": "2026-06-21",
+      "result": "row",
+      "locality": "north",
+      "published": {
+        "fajr": "2026-06-21T01:30:00Z",
+        "sunrise": "2026-06-21T03:00:00Z",
+        "dhuhr": "2026-06-21T12:00:00Z",
+        "asr": "2026-06-21T17:00:00Z",
+        "maghrib": "2026-06-21T21:50:00Z",
+        "isha": "2026-06-21T23:11:00Z"
+      },
+      "asr": {
+        "shafi": "2026-06-21T15:41:00Z",
+        "hanafi": "2026-06-21T17:00:00Z"
+      }
+    },
+    {
+      "name": "istanbul-keeps-its-zone-after-sorting",
+      "vector": "valid/two-zones.ott",
+      "coordinates": [
+        41.0082,
+        28.9784
+      ],
+      "localityId": null,
+      "date": "2026-02-02",
+      "result": "row",
+      "locality": "ist",
+      "published": {
+        "fajr": "2026-02-02T03:00:00Z",
+        "sunrise": "2026-02-02T04:30:00Z",
+        "dhuhr": "2026-02-02T10:10:00Z",
+        "asr": "2026-02-02T13:10:00Z",
+        "maghrib": "2026-02-02T15:40:00Z",
+        "isha": "2026-02-02T17:10:00Z"
+      },
+      "asr": {
+        "shafi": "2026-02-02T13:10:00Z",
+        "hanafi": "2026-02-02T13:51:00Z"
+      }
+    },
+    {
+      "name": "dubai-keeps-its-zone-after-sorting",
+      "vector": "valid/two-zones.ott",
+      "coordinates": [
+        25.2048,
+        55.2708
+      ],
+      "localityId": null,
+      "date": "2026-02-02",
+      "result": "row",
+      "locality": "dxb",
+      "published": {
+        "fajr": "2026-02-02T01:40:00Z",
+        "sunrise": "2026-02-02T03:00:00Z",
+        "dhuhr": "2026-02-02T08:20:00Z",
+        "asr": "2026-02-02T11:20:00Z",
+        "maghrib": "2026-02-02T13:40:00Z",
+        "isha": "2026-02-02T15:10:00Z"
+      },
+      "asr": {
+        "shafi": "2026-02-02T11:20:00Z",
+        "hanafi": "2026-02-02T12:06:00Z"
+      }
+    },
+    {
+      "name": "winter-offset-is-negative",
+      "vector": "valid/edge-values.ott",
+      "coordinates": [
+        37.74,
+        -25.68
+      ],
+      "localityId": null,
+      "date": "2026-03-28",
+      "result": "row",
+      "locality": "old-west",
+      "published": {
+        "fajr": "2026-03-28T06:31:00Z",
+        "sunrise": "2026-03-28T08:01:00Z",
+        "dhuhr": "2026-03-28T14:11:00Z",
+        "asr": "2026-03-28T17:41:00Z",
+        "maghrib": "2026-03-28T20:11:00Z",
+        "isha": "2026-03-28T21:31:00Z"
+      },
+      "asr": {
+        "shafi": "2026-03-28T17:41:00Z",
+        "hanafi": "2026-03-28T18:35:00Z"
+      }
+    },
+    {
+      "name": "first-day-of-summer-time-azores",
+      "vector": "valid/edge-values.ott",
+      "coordinates": [
+        37.74,
+        -25.68
+      ],
+      "localityId": null,
+      "date": "2026-03-29",
+      "result": "row",
+      "locality": "old-west",
+      "published": {
+        "fajr": "2026-03-29T06:32:00Z",
+        "sunrise": "2026-03-29T08:02:00Z",
+        "dhuhr": "2026-03-29T14:12:00Z",
+        "asr": "2026-03-29T17:42:00Z",
+        "maghrib": "2026-03-29T20:12:00Z",
+        "isha": "2026-03-29T21:32:00Z"
+      },
+      "asr": {
+        "shafi": "2026-03-29T17:42:00Z",
+        "hanafi": "2026-03-29T18:36:00Z"
+      }
+    },
+    {
+      "name": "before-retirement-the-successors-are-not-in-force",
+      "vector": "valid/edge-values.ott",
+      "coordinates": [
+        37.75,
+        -25.67
+      ],
+      "localityId": null,
+      "date": "2026-03-28",
+      "result": "row",
+      "locality": "old-west",
+      "published": {
+        "fajr": "2026-03-28T06:31:00Z",
+        "sunrise": "2026-03-28T08:01:00Z",
+        "dhuhr": "2026-03-28T14:11:00Z",
+        "asr": "2026-03-28T17:41:00Z",
+        "maghrib": "2026-03-28T20:11:00Z",
+        "isha": "2026-03-28T21:31:00Z"
+      },
+      "asr": {
+        "shafi": "2026-03-28T17:41:00Z",
+        "hanafi": "2026-03-28T18:35:00Z"
+      }
+    },
+    {
+      "name": "nearer-successor-west-a",
+      "vector": "valid/edge-values.ott",
+      "coordinates": [
+        37.73,
+        -25.69
+      ],
+      "localityId": null,
+      "date": "2026-04-02",
+      "result": "row",
+      "locality": "west.a",
+      "published": {
+        "fajr": "2026-04-02T05:21:00Z",
+        "sunrise": "2026-04-02T06:46:00Z",
+        "dhuhr": "2026-04-02T14:11:00Z",
+        "asr": "2026-04-02T17:51:00Z",
+        "maghrib": "2026-04-02T20:21:00Z",
+        "isha": "2026-04-02T21:41:00Z"
+      },
+      "asr": {
+        "shafi": "2026-04-02T17:51:00Z",
+        "hanafi": "2026-04-02T18:46:00Z"
+      }
+    },
+    {
+      "name": "nearer-successor-west-b",
+      "vector": "valid/edge-values.ott",
+      "coordinates": [
+        37.75,
+        -25.67
+      ],
+      "localityId": null,
+      "date": "2026-04-02",
+      "result": "row",
+      "locality": "west_b",
+      "published": {
+        "fajr": "2026-04-02T05:21:00Z",
+        "sunrise": "2026-04-02T06:46:00Z",
+        "dhuhr": "2026-04-02T14:11:00Z",
+        "asr": "2026-04-02T17:51:00Z",
+        "maghrib": "2026-04-02T20:21:00Z",
+        "isha": "2026-04-02T21:41:00Z"
+      },
+      "asr": {
+        "shafi": "2026-04-02T17:51:00Z",
+        "hanafi": "2026-04-02T18:46:00Z"
+      }
+    },
+    {
+      "name": "retired-locality-does-not-resolve",
+      "vector": "valid/edge-values.ott",
+      "coordinates": [
+        37.9,
+        -25.68
+      ],
+      "localityId": null,
+      "date": "2026-04-02",
+      "result": "noLocality"
+    },
+    {
+      "name": "manual-retired-locality-after-its-rows",
+      "vector": "valid/edge-values.ott",
+      "coordinates": [
+        37.74,
+        -25.68
+      ],
+      "localityId": "old-west",
+      "date": "2026-04-02",
+      "result": "noRow",
+      "locality": "old-west"
+    },
+    {
+      "name": "first-day-of-the-first-line",
+      "vector": "valid/canon.ott",
+      "coordinates": [
+        20.0,
+        30.0
+      ],
+      "localityId": null,
+      "date": "2026-12-29",
+      "result": "row",
+      "locality": "split",
+      "published": {
+        "fajr": "2026-12-29T05:00:00Z",
+        "sunrise": "2026-12-29T06:30:00Z",
+        "dhuhr": "2026-12-29T12:20:00Z",
+        "asr": "2026-12-29T16:40:00Z",
+        "maghrib": "2026-12-29T18:20:00Z",
+        "isha": "2026-12-29T19:50:00Z"
+      },
+      "asr": {
+        "shafi": "2026-12-29T16:40:00Z",
+        "hanafi": "2026-12-29T17:26:00Z"
+      }
+    },
+    {
+      "name": "letters-a-to-f",
+      "vector": "valid/canon.ott",
+      "coordinates": [
+        20.0,
+        30.0
+      ],
+      "localityId": null,
+      "date": "2026-12-30",
+      "result": "row",
+      "locality": "split",
+      "published": {
+        "fajr": "2026-12-30T04:57:00Z",
+        "sunrise": "2026-12-30T06:28:00Z",
+        "dhuhr": "2026-12-30T12:19:00Z",
+        "asr": "2026-12-30T16:40:00Z",
+        "maghrib": "2026-12-30T18:21:00Z",
+        "isha": "2026-12-30T19:52:00Z"
+      },
+      "asr": {
+        "shafi": "2026-12-30T16:40:00Z",
+        "hanafi": "2026-12-30T17:26:00Z"
+      }
+    },
+    {
+      "name": "letter-g-and-resets-beyond-the-window",
+      "vector": "valid/canon.ott",
+      "coordinates": [
+        20.0,
+        30.0
+      ],
+      "localityId": null,
+      "date": "2026-12-31",
+      "result": "row",
+      "locality": "split",
+      "published": {
+        "fajr": "2026-12-31T05:00:00Z",
+        "sunrise": "2026-12-31T06:32:00Z",
+        "dhuhr": "2026-12-31T12:15:00Z",
+        "asr": "2026-12-31T16:40:00Z",
+        "maghrib": "2026-12-31T18:21:00Z",
+        "isha": "2026-12-31T19:52:00Z"
+      },
+      "asr": {
+        "shafi": "2026-12-31T16:40:00Z",
+        "hanafi": "2026-12-31T17:26:00Z"
+      }
+    },
+    {
+      "name": "first-day-of-the-second-line",
+      "vector": "valid/canon.ott",
+      "coordinates": [
+        20.0,
+        30.0
+      ],
+      "localityId": null,
+      "date": "2027-01-01",
+      "result": "row",
+      "locality": "split",
+      "published": {
+        "fajr": "2027-01-01T05:01:00Z",
+        "sunrise": "2027-01-01T06:33:00Z",
+        "dhuhr": "2027-01-01T12:16:00Z",
+        "asr": "2027-01-01T16:41:00Z",
+        "maghrib": "2027-01-01T18:22:00Z",
+        "isha": "2027-01-01T19:53:00Z"
+      },
+      "asr": {
+        "shafi": "2027-01-01T16:41:00Z",
+        "hanafi": "2027-01-01T17:27:00Z"
+      }
+    },
+    {
+      "name": "letters-a-b-c-and-g-again",
+      "vector": "valid/canon.ott",
+      "coordinates": [
+        20.0,
+        30.0
+      ],
+      "localityId": null,
+      "date": "2027-01-02",
+      "result": "row",
+      "locality": "split",
+      "published": {
+        "fajr": "2027-01-02T04:58:00Z",
+        "sunrise": "2027-01-02T06:31:00Z",
+        "dhuhr": "2027-01-02T12:15:00Z",
+        "asr": "2027-01-02T16:41:00Z",
+        "maghrib": "2027-01-02T18:25:00Z",
+        "isha": "2027-01-02T19:50:00Z"
+      },
+      "asr": {
+        "shafi": "2027-01-02T16:41:00Z",
+        "hanafi": "2027-01-02T17:27:00Z"
+      }
+    },
+    {
+      "name": "resets-of-plus-four-plus-six-minus-four",
+      "vector": "valid/canon.ott",
+      "coordinates": [
+        20.0,
+        30.0
+      ],
+      "localityId": null,
+      "date": "2027-01-03",
+      "result": "row",
+      "locality": "split",
+      "published": {
+        "fajr": "2027-01-03T05:02:00Z",
+        "sunrise": "2027-01-03T06:37:00Z",
+        "dhuhr": "2027-01-03T12:11:00Z",
+        "asr": "2027-01-03T16:44:00Z",
+        "maghrib": "2027-01-03T18:25:00Z",
+        "isha": "2027-01-03T19:50:00Z"
+      },
+      "asr": {
+        "shafi": "2027-01-03T16:44:00Z",
+        "hanafi": "2027-01-03T17:30:00Z"
+      }
+    },
+    {
+      "name": "inside-the-outer-ring-listed-second",
+      "vector": "valid/canon.ott",
+      "coordinates": [
+        50.5,
+        50.5
+      ],
+      "localityId": null,
+      "date": "2026-12-30",
+      "result": "row",
+      "locality": "rings",
+      "published": {
+        "fajr": "2026-12-30T04:57:00Z",
+        "sunrise": "2026-12-30T06:28:00Z",
+        "dhuhr": "2026-12-30T12:19:00Z",
+        "asr": "2026-12-30T16:40:00Z",
+        "maghrib": "2026-12-30T18:21:00Z",
+        "isha": "2026-12-30T19:52:00Z"
+      },
+      "asr": {
+        "shafi": "2026-12-30T16:40:00Z",
+        "hanafi": "2026-12-30T17:11:00Z"
+      }
+    },
+    {
+      "name": "inside-the-hole-listed-first",
+      "vector": "valid/canon.ott",
+      "coordinates": [
+        51.0,
+        51.0
+      ],
+      "localityId": null,
+      "date": "2026-12-30",
+      "result": "noLocality"
+    }
+  ]
+}
