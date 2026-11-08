@@ -633,6 +633,35 @@ Vector canon() {
   return vector;
 }
 
+List<Map<String, dynamic>> refusedInputs() {
+  final base = canon().input;
+  Map<String, dynamic> withSplitName(String name) => {
+        ...base,
+        'localities': [
+          for (final locality in (base['localities'] as List).cast<Map>())
+            if (locality['id'] == 'split')
+              {
+                ...locality,
+                'names': {'en': name}
+              }
+            else
+              locality
+        ],
+      };
+  return [
+    {
+      'name': 'a name holding U+FEFF',
+      'breaks': 'file.bom',
+      'input': withSplitName('\uFEFFSplit'),
+    },
+    {
+      'name': 'a name holding a lone surrogate',
+      'breaks': 'header.json',
+      'input': withSplitName('Sp\uD800'),
+    },
+  ];
+}
+
 void check(bool condition, String claim) {
   if (!condition) throw StateError('vector self-check failed: $claim');
 }

@@ -78,6 +78,18 @@
     "mutation": "the name en of L1 starts with U+FEFF"
   },
   {
+    "file": "bom-at-start.ott",
+    "stage": "decode",
+    "rule": "file.bom",
+    "mutation": "the file starts with EF BB BF"
+  },
+  {
+    "file": "bom-before-header.ott",
+    "stage": "decode",
+    "rule": "file.bom",
+    "mutation": "line 2 starts with EF BB BF"
+  },
+  {
     "file": "header-not-utf8.ott",
     "stage": "decode",
     "rule": "header.json",
@@ -442,6 +454,12 @@
     "stage": "decode",
     "rule": "locality.area.polyline",
     "mutation": "the first byte of the polygon of L2 is 0x7F"
+  },
+  {
+    "file": "area-polyline-value-beyond-32-bits.ott",
+    "stage": "decode",
+    "rule": "locality.area.polyline",
+    "mutation": "the first value of the polygon of L2 is 2147483648, in seven chunks"
   },
   {
     "file": "area-polyline-empty.ott",

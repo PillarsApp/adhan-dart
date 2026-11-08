@@ -47,27 +47,15 @@ void main() {
     });
   }
 
-  test('the encoder refuses a string every decoder rejects', () {
-    final input = jsonDecode(
-            File('$vectorsDir/valid/canon.input.json').readAsStringSync())
-        as Map<String, dynamic>;
-    Map<String, dynamic> withName(String name) => {
-          ...input,
-          'localities': [
-            for (final locality in (input['localities'] as List).cast<Map>())
-              if (locality['id'] == 'split')
-                {
-                  ...locality,
-                  'names': {'en': name}
-                }
-              else
-                locality
-          ],
-        };
-    expect(encodeOtt(withName('Split')), isNotEmpty);
-    expect(() => encodeOtt(withName('\uFEFFSplit')), throwsArgumentError);
-    expect(() => encodeOtt(withName('Sp\uD800')), throwsArgumentError);
-  });
+  for (final refused
+      in ((jsonDecode(File('$vectorsDir/refused.json').readAsStringSync())
+              as Map<String, dynamic>)['inputs'] as List)
+          .cast<Map<String, dynamic>>()) {
+    test('the encoder refuses ${refused['name']}', () {
+      expect(() => encodeOtt(refused['input'] as Map<String, dynamic>),
+          throwsArgumentError);
+    });
+  }
 }
 
 Map<String, dynamic> _shuffle(Map<String, dynamic> input, Random random) {

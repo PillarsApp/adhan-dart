@@ -185,6 +185,10 @@ List<Malformed> malformedVectors() {
       _file(_headerText('{"authority"', '{"x":1e999,"authority"'), _rowLine()));
   header('bom-in-name.ott', 'file.bom', 'the name en of L1 starts with U+FEFF',
       (h) => _point(h)['names'] = {'en': '\uFEFFBase'});
+  decode('bom-at-start.ott', 'file.bom', 'the file starts with EF BB BF',
+      [0xEF, 0xBB, 0xBF, ..._file(_baseHeader(), _rowLine())]);
+  decode('bom-before-header.ott', 'file.bom', 'line 2 starts with EF BB BF',
+      utf8.encode('OTT 1\n\uFEFF${jsonEncode(_baseHeader())}\n${_rowLine()}'));
   decode(
       'header-not-utf8.ott',
       'header.json',
@@ -441,6 +445,14 @@ List<Malformed> malformedVectors() {
     final polyline = MalaysiaZoneMap.encodePolyline(_triangle);
     (_area(h)['area'] as Map)['polygons'] = ['\u007f${polyline.substring(1)}'];
   });
+  header(
+      'area-polyline-value-beyond-32-bits.ott',
+      'locality.area.polyline',
+      'the first value of the polygon of L2 is 2147483648, in seven chunks',
+      (h) => (_area(h)['area'] as Map)['polygons'] = [
+            MalaysiaZoneMap.encodePolyline(
+                [2147483648, ..._triangle.sublist(1)])
+          ]);
   header(
       'area-polyline-empty.ott',
       'locality.area.polyline',

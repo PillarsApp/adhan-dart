@@ -11,6 +11,7 @@ dart run tool/published/vectors.dart
 ## Layout
 
 - `valid/<name>.ott` is a well-formed file. `valid/<name>.input.json` is the encoder input that produces it under the canonical encoding rules, so an encoder test is `encode(input) == ott`.
+- `refused.json` lists encoder inputs that a canonical encoder must refuse, each with the rule the file it would write breaks. An encoder test is that `encode(input)` fails for each.
 - `expected.json` lists lookup cases over the valid files. Each case names the vector, the coordinates, an optional manual `localityId`, the date, and the `result`: `row` with the `locality`, the `published` UTC instant per column and the assembled `asr` for both madhabs; `noRow` with the `locality`; or `noLocality`. Instants are `YYYY-MM-DDTHH:MM:SSZ`.
 - `malformed/<name>.ott` is the valid base file with exactly one mutation, so it breaks exactly one rule. `malformed/index.json` names the `stage` that rejects each file (`decode` for `PublishedTimetable.decode`, `validate` for `validateAllRows()`), the `rule` id from the format doc that the file breaks, and the `mutation`. A decoder's error for the file starts with that rule id. `published_vectors_test.dart` holds every file to its stage and rule, and fails when a rule in the decoder has no file.
 
