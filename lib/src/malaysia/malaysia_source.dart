@@ -13,9 +13,6 @@ const List<PublishedColumn> _malaysiaColumns = [
   PublishedColumn.isha,
 ];
 
-/// The bundled JAKIM timetable behind [OfficialTimetableSource], reachable as
-/// `MalaysiaTimetable.source`. Localities are the zones of the catalog;
-/// `localityAt` is `MalaysiaZones.resolve`, unchanged.
 final class MalaysiaOfficialSource implements OfficialTimetableSource {
   const MalaysiaOfficialSource._();
 

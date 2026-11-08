@@ -179,8 +179,7 @@ abstract interface class OfficialTimetableSource {
 /// A timetable decoded from `OTT 1` bytes.
 ///
 /// [decode] reads the header and indexes the row lines. A line's cells are
-/// decoded on first use and cached, so a process that needs one row never
-/// pays for the whole file. [validateAllRows] decodes every line once.
+/// decoded on first use and cached.
 final class PublishedTimetable implements OfficialTimetableSource {
   final Uint8List _bytes;
   final _Header _header;

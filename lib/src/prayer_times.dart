@@ -140,18 +140,19 @@ class PrayerTimes {
   /// Times assembled from a published [row], presented like every other
   /// constructor: host local by default, else UTC plus [utcOffset].
   ///
-  /// The madhab comes from [parameters]. When its shadow factor differs from
-  /// [OfficialRow.asrShadow], Asr is the published Hanafi column if the row
-  /// has one, else the published Asr shifted by the solar difference between
-  /// the two shadow factors at the locality's reference point. [adjustments]
-  /// are added after that; the method adjustments in [parameters] are
-  /// ignored. It never falls back: a caller holding [NoLocality] or [NoRow]
-  /// calculates with the ordinary constructor.
+  /// The madhab comes from [parameters]. When its shadow factor equals
+  /// [OfficialRow.asrShadow], Asr is the published Asr. For a Hanafi madhab
+  /// with a published `asrHanafi` column, Asr is that column. Otherwise Asr
+  /// is the published Asr shifted by the solar difference between the two
+  /// shadow factors at the locality's reference point. [adjustments], which
+  /// default to the adjustments in [parameters], are added after that. The
+  /// method adjustments in [parameters] are ignored.
   factory PrayerTimes.official(OfficialRow row,
           {required CalculationParameters parameters,
           PrayerAdjustments? adjustments,
           Duration? utcOffset}) =>
-      PrayerTimes._official(row, parameters, adjustments ?? PrayerAdjustments(),
+      PrayerTimes._official(
+          row, parameters, adjustments ?? parameters.adjustments,
           utcOffset: utcOffset);
 
   PrayerTimes._official(OfficialRow row, this.calculationParameters,

@@ -60,6 +60,17 @@ void main() {
     expect(adjusted.asr, hanafi.asr.add(Duration(minutes: 7)));
   });
 
+  test('adjustments default to the adjustments in the parameters', () {
+    final shifts = PrayerAdjustments(fajr: 2, isha: -3);
+    final fromParameters = PrayerTimes.official(row,
+        parameters: _parameters()..adjustments = shifts, utcOffset: Duration());
+    final explicit = PrayerTimes.official(row,
+        parameters: _parameters(), adjustments: shifts, utcOffset: Duration());
+    expect(_six(fromParameters), _six(explicit));
+    expect(fromParameters.fajr,
+        row.published(PublishedColumn.fajr)!.add(Duration(minutes: 2)));
+  });
+
   test('method adjustments move nothing', () {
     final plain = PrayerTimes.official(row,
         parameters: _parameters(), utcOffset: Duration());

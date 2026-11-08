@@ -64,7 +64,6 @@ class MalaysiaTimetable {
   /// stale.
   static const String revision = 'badfebbb-714bce11';
 
-  /// The embedded data as a generic [OfficialTimetableSource].
   static const OfficialTimetableSource source = MalaysiaOfficialSource.instance;
 
   /// The published row for [zone] on [date], or null when the embedded data
