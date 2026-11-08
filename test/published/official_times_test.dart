@@ -175,4 +175,55 @@ void main() {
           DateTime.utc(2026, 12, 21, 12, 20));
     });
   });
+
+  group('the Hanafi shift follows the caller\'s hour-angle correction', () {
+    final chatham =
+        PublishedTimetable.decode(Uint8List.fromList(utf8.encode(encodeOtt({
+      'authority': 'xx-chatham',
+      'revision': 1,
+      'part': 'all',
+      'coverage': ['2026-02-18', '2026-02-18'],
+      'columns': ['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha'],
+      'asrShadow': 1,
+      'zones': [
+        {
+          'id': 'Pacific/Chatham',
+          'offsets': [
+            ['2026-02-18', 825]
+          ]
+        }
+      ],
+      'localities': [
+        {
+          'id': 'chatham',
+          'group': 'chatham',
+          'zone': 0,
+          'names': {'en': 'Chatham Islands'},
+          'ref': [-43953500, -176559700],
+          'point': {'radiusM': 30000}
+        }
+      ],
+      'rows': {
+        'chatham': {
+          '2026-02-18': [300, 390, 800, 1020, 1230, 1320]
+        }
+      },
+    })))).lookup(Coordinates(-43.9535, -176.5597), DateComponents(2026, 2, 18))
+            as OfficialRow;
+
+    for (final (correction, asr) in [
+      (HourAngleCorrection.iterative, DateTime.utc(2026, 2, 18, 4, 16)),
+      (HourAngleCorrection.singlePass, DateTime.utc(2026, 2, 18, 4, 15)),
+    ]) {
+      test('${correction.name} gives Asr at $asr', () {
+        expect(
+            PrayerTimes.official(chatham,
+                    parameters: _parameters(madhab: Madhab.hanafi)
+                      ..hourAngleCorrection = correction,
+                    utcOffset: Duration())
+                .asr,
+            asr);
+      });
+    }
+  });
 }
