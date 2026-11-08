@@ -189,7 +189,16 @@ Every check a decoder makes is one of the rules below. The Dart decoder opens ea
 | `row.endsAfterCoverage` | validate | A line ends at or before `coverage[1]`. |
 | `row.overlap` | validate | Two lines of one locality share no day. |
 
-The `file.*` rules run first, in the order of the table, before any line is parsed, and each presumes the rules above it hold, so a file breaks at most one of them. The other decode-stage rules may be checked in any order, and the validate-stage rules run only on a file that passed the decode stage. Every vector breaks exactly one rule, so the recorded stage and rule are the only ones a correct decoder can report for it. A file that breaks several header or row rules may be reported under any of them.
+The `file.*` rules run first, in the order of the table, before any line is parsed, and each presumes the rules above it hold, so a file breaks at most one of them.
+
+Every other rule presumes that the rules on each value it reads hold, as the three ring rules do. A file breaks a rule only when the rule's check fails and every rule it presumes holds.
+
+- `header.duplicateKey` presumes only that line 2 is UTF-8 and parses as JSON, so a header that also breaks another part of `header.json` may be reported under either.
+- Every rule below `header.duplicateKey` in the table presumes `header.json` and `header.duplicateKey`.
+- A rule on a value presumes that the value is present. For a header key, that rule is `header.keyAbsent`. A range rule presumes the integer rule of its field. An order rule presumes the rules on the values it orders, so `header.coverage.order` presumes `header.coverage`. A rule on a row field presumes `row.fields`, `row.coverage` presumes `row.date`, and `row.firstDay.digits` presumes `row.firstDay.length`. `cell.digits` presumes `cell.truncatedTime`, and `cell.minute` and `cell.hour` presume `cell.digits`.
+- A rule that names another field presumes that field's own rules. `zone.offset.start` and `row.coverage` presume `header.coverage` and `header.coverage.order`. `locality.zone` presumes `zones.empty` and every `zone.*` rule. `locality.successor` and `row.locality` presume `localities.empty`, `locality.id` and `locality.id.duplicate`. `row.firstDay.length` and `row.firstDay.digits` presume the `column.*` rules, because `n` is the length of `columns`.
+
+Within these presumptions the other decode-stage rules may be checked in any order, and the validate-stage rules run only on a file that passed the decode stage. Every vector breaks exactly one rule, so the recorded stage and rule are the only ones a correct decoder can report for it. A file that breaks several rules may be reported under any of them.
 
 ## Semantics every reader applies
 
