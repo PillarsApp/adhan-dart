@@ -55,6 +55,9 @@ class MalaysiaDay {
   PrayerTimesSource get source => PrayerTimesSource.official;
 }
 
+MalaysiaDay malaysiaDayFromRow(OfficialRow row, {Duration? utcOffset}) =>
+    MalaysiaDay._(row, utcOffset);
+
 /// The official Malaysian prayer timetable embedded in this package.
 class MalaysiaTimetable {
   MalaysiaTimetable._();
