@@ -7,6 +7,7 @@ import 'data/date_components.dart';
 import 'data/london_times_lookup.dart';
 import 'internal/day_times.dart';
 import 'internal/present.dart';
+import 'internal/rounding_rule.dart';
 import 'malaysia/malaysia_timetable.dart';
 import 'malaysia/malaysia_zones.dart';
 import 'polar_circle_resolution.dart';
@@ -273,27 +274,29 @@ class PrayerTimes {
           'No London prayer times available for date ${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}');
     }
 
-    DateTime finish(String time, int adjustment, int methodAdjustment) {
-      final utc = londonTimes.parseTime(time, date).toUtc();
-      return CalendarUtil.roundedMinute(
-          utc.add(Duration(minutes: adjustment + methodAdjustment)),
-          parameters.rounding);
+    final rule = RoundingRule.of(parameters.rounding);
+    DateTime adjusted(String time, int adjustment, int methodAdjustment) {
+      return londonTimes
+          .parseTime(time, date)
+          .toUtc()
+          .add(Duration(minutes: adjustment + methodAdjustment));
     }
 
     final adjustments = parameters.adjustments;
     final methodAdjustments = parameters.methodAdjustments;
     return DayTimes(
-        fajr:
-            finish(londonTimes.fajr, adjustments.fajr, methodAdjustments.fajr),
-        sunrise: finish(londonTimes.sunrise, adjustments.sunrise,
-            methodAdjustments.sunrise),
-        dhuhr: finish(
-            londonTimes.dhuhr, adjustments.dhuhr, methodAdjustments.dhuhr),
-        asr: finish(londonTimes.asr, adjustments.asr, methodAdjustments.asr),
-        maghrib: finish(londonTimes.maghrib, adjustments.maghrib,
-            methodAdjustments.maghrib),
-        isha:
-            finish(londonTimes.isha, adjustments.isha, methodAdjustments.isha));
+        fajr: rule.start(adjusted(
+            londonTimes.fajr, adjustments.fajr, methodAdjustments.fajr)),
+        sunrise: rule.sunrise(adjusted(londonTimes.sunrise, adjustments.sunrise,
+            methodAdjustments.sunrise)),
+        dhuhr: rule.start(adjusted(
+            londonTimes.dhuhr, adjustments.dhuhr, methodAdjustments.dhuhr)),
+        asr: rule.start(
+            adjusted(londonTimes.asr, adjustments.asr, methodAdjustments.asr)),
+        maghrib: rule.start(adjusted(londonTimes.maghrib, adjustments.maghrib,
+            methodAdjustments.maghrib)),
+        isha: rule.start(adjusted(
+            londonTimes.isha, adjustments.isha, methodAdjustments.isha)));
   }
 
   Prayer currentPrayer() {

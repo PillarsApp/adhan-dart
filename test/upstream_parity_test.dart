@@ -1,6 +1,6 @@
 import 'package:adhan/adhan.dart';
-import 'package:adhan/src/data/calendar_util.dart';
 import 'package:adhan/src/internal/day_times.dart';
+import 'package:adhan/src/internal/rounding_rule.dart';
 import 'package:adhan/src/polar_circle_resolution.dart';
 import 'package:test/test.dart';
 
@@ -241,10 +241,11 @@ void main() {
         'rounding a local time inside a daylight saving hour keeps the instant',
         () {
       final beforeFallBack = DateTime.utc(2026, 11, 1, 6, 59, 45).toLocal();
-      expect(CalendarUtil.roundedMinute(beforeFallBack).toUtc(),
+      expect(RoundingRule.of(Rounding.nearest).start(beforeFallBack).toUtc(),
           DateTime.utc(2026, 11, 1, 7, 0));
       final beforeSpringForward = DateTime.utc(2026, 3, 8, 7, 59, 45).toLocal();
-      expect(CalendarUtil.roundedMinute(beforeSpringForward).toUtc(),
+      expect(
+          RoundingRule.of(Rounding.nearest).start(beforeSpringForward).toUtc(),
           DateTime.utc(2026, 3, 8, 8, 0));
     });
 
@@ -664,19 +665,19 @@ void main() {
         ..rounding = Rounding.none);
       final noneSunnah = SunnahTimes(none.prayers);
       expect(noneSunnah.middleOfTheNight,
-          CalendarUtil.roundedMinute(none.middle, Rounding.none));
+          RoundingRule.of(Rounding.none).start(none.middle));
       expect(noneSunnah.lastThirdOfTheNight,
-          CalendarUtil.roundedMinute(none.lastThird, Rounding.none));
+          RoundingRule.of(Rounding.none).start(none.lastThird));
 
       final up = exact(CalculationMethod.north_america.getParameters()
         ..rounding = Rounding.up);
       final upSunnah = SunnahTimes(up.prayers);
       expect(upSunnah.middleOfTheNight,
-          CalendarUtil.roundedMinute(up.middle, Rounding.up));
+          RoundingRule.of(Rounding.up).start(up.middle));
       expect(upSunnah.lastThirdOfTheNight,
-          CalendarUtil.roundedMinute(up.lastThird, Rounding.up));
+          RoundingRule.of(Rounding.up).start(up.lastThird));
       expect(upSunnah.lastThirdOfTheNight,
-          isNot(CalendarUtil.roundedMinute(up.lastThird, Rounding.nearest)));
+          isNot(RoundingRule.of(Rounding.nearest).start(up.lastThird)));
     });
 
     test('throws when tomorrow cannot be resolved', () {

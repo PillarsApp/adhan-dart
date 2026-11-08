@@ -1,4 +1,3 @@
-import '../rounding.dart';
 import 'date_components.dart';
 
 class CalendarUtil {
@@ -8,30 +7,6 @@ class CalendarUtil {
   /// return [bool] whether or not its a leap year
   static bool isLeapYear(int year) {
     return year % 4 == 0 && !(year % 100 == 0 && year % 400 != 0);
-  }
-
-  static DateTime roundedMinute(DateTime when,
-      [Rounding rounding = Rounding.nearest]) {
-    final utc = when.toUtc();
-    final int minute;
-    final int second;
-    switch (rounding) {
-      case Rounding.nearest:
-        minute = utc.minute + (utc.second / 60).round();
-        second = 0;
-        break;
-      case Rounding.up:
-        minute = utc.minute + (utc.second / 60).ceil();
-        second = 0;
-        break;
-      case Rounding.none:
-        minute = utc.minute;
-        second = utc.second;
-        break;
-    }
-    final rounded =
-        DateTime.utc(utc.year, utc.month, utc.day, utc.hour, minute, second);
-    return when.isUtc ? rounded : rounded.toLocal();
   }
 
   /// Gets a UTC DateTime for the particular date

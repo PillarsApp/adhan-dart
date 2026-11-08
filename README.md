@@ -164,6 +164,7 @@ params.adjustments.fajr = 2;
 | `nearest` | Round to the nearest minute. This is the default |
 | `up` | Round up to the next minute whenever the time has any seconds |
 | `none` | Keep the computed seconds |
+| `startsUpSunriseDown` | Keep each computed time to the microsecond, round sunrise down to its minute, and round every other time, sunnah times included, up to the next minute when any part of a minute is past it |
 
 **PolarCircleResolution**
 

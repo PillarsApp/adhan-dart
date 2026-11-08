@@ -2,11 +2,10 @@ import '../calculation_method.dart';
 import '../calculation_parameters.dart';
 import '../coordinates.dart';
 import '../data/calendar_util.dart';
-import '../data/time_components.dart';
 import '../extensions/datetime.dart';
 import '../madhab.dart';
-import '../rounding.dart';
 import 'hour_angle_correction_rules.dart';
+import 'rounding_rule.dart';
 import 'solar_time.dart';
 
 class DayTimes {
@@ -52,15 +51,16 @@ class DayTimes {
 
   static DayTimes? compute(Coordinates coordinates, DateTime date,
       CalculationParameters parameters) {
+    final rule = RoundingRule.of(parameters.rounding);
     final correction = parameters.hourAngleCorrection;
     final solarTime = SolarTime(date, coordinates, correction);
     final tomorrow = date.add(Duration(days: 1));
     final tomorrowSolarTime = SolarTime(tomorrow, coordinates, correction);
 
-    final sunrise = _time(date, solarTime.sunrise);
-    final sunset = _time(date, solarTime.sunset);
-    final transit = _time(date, solarTime.transit);
-    final tomorrowSunrise = _time(tomorrow, tomorrowSolarTime.sunrise);
+    final sunrise = rule.instant(date, solarTime.sunrise);
+    final sunset = rule.instant(date, solarTime.sunset);
+    final transit = rule.instant(date, solarTime.transit);
+    final tomorrowSunrise = rule.instant(tomorrow, tomorrowSolarTime.sunrise);
     if (sunrise == null ||
         sunset == null ||
         transit == null ||
@@ -68,8 +68,8 @@ class DayTimes {
       return null;
     }
 
-    final asr =
-        _time(date, solarTime.afternoon(parameters.madhab.getShadowLength()));
+    final asr = rule.instant(
+        date, solarTime.afternoon(parameters.madhab.getShadowLength()));
 
     final night = tomorrowSunrise.difference(sunset);
     final year = date.year;
@@ -79,7 +79,8 @@ class DayTimes {
         parameters.method == CalculationMethod.moon_sighting_committee;
     final nightPortions = parameters.nightPortions();
 
-    var fajr = _time(date, solarTime.hourAngle(-parameters.fajrAngle, false));
+    var fajr =
+        rule.instant(date, solarTime.hourAngle(-parameters.fajrAngle, false));
     if (moonsighting && latitude >= 55) {
       fajr = sunrise.subtract(_fraction(night, 1 / 7));
     }
@@ -99,7 +100,7 @@ class DayTimes {
       final ishaAngle = parameters.ishaAngle;
       DateTime? angleIsha;
       if (ishaAngle != null) {
-        angleIsha = _time(date, solarTime.hourAngle(-ishaAngle, true));
+        angleIsha = rule.instant(date, solarTime.hourAngle(-ishaAngle, true));
       }
       if (moonsighting && latitude >= 55) {
         angleIsha = sunset.add(_fraction(night, 1 / 7));
@@ -119,7 +120,7 @@ class DayTimes {
     final maghribAngle = parameters.maghribAngle;
     if (maghribAngle != null) {
       final angleMaghrib =
-          _time(date, solarTime.hourAngle(-maghribAngle, true));
+          rule.instant(date, solarTime.hourAngle(-maghribAngle, true));
       if (angleMaghrib != null &&
           sunset.isBefore(angleMaghrib) &&
           isha.isAfter(angleMaghrib)) {
@@ -141,35 +142,28 @@ class DayTimes {
 
     final adjustments = parameters.adjustments;
     final methodAdjustments = parameters.methodAdjustments;
-    final rounding = parameters.rounding;
     return DayTimes(
-      fajr: _finish(fajr, adjustments.fajr, methodAdjustments.fajr, rounding),
-      sunrise: _finish(
-          sunrise, adjustments.sunrise, methodAdjustments.sunrise, rounding),
-      dhuhr: _finish(
-          transit, adjustments.dhuhr, methodAdjustments.dhuhr, rounding),
-      asr: _finish(asr, adjustments.asr, methodAdjustments.asr, rounding),
-      maghrib: _finish(
-          maghrib, adjustments.maghrib, methodAdjustments.maghrib, rounding),
-      isha: _finish(isha, adjustments.isha, methodAdjustments.isha, rounding),
+      fajr:
+          rule.start(_adjusted(fajr, adjustments.fajr, methodAdjustments.fajr)),
+      sunrise: rule.sunrise(
+          _adjusted(sunrise, adjustments.sunrise, methodAdjustments.sunrise)),
+      dhuhr: rule.start(
+          _adjusted(transit, adjustments.dhuhr, methodAdjustments.dhuhr)),
+      asr: rule.start(_adjusted(asr, adjustments.asr, methodAdjustments.asr)),
+      maghrib: rule.start(
+          _adjusted(maghrib, adjustments.maghrib, methodAdjustments.maghrib)),
+      isha:
+          rule.start(_adjusted(isha, adjustments.isha, methodAdjustments.isha)),
     );
   }
 
-  static DateTime? _time(DateTime date, double hours) {
-    if (hours.isNaN || hours.isInfinite) {
-      return null;
-    }
-    return TimeComponents.fromDouble(hours).dateComponents(date);
+  static DateTime _adjusted(
+      DateTime time, int adjustment, int methodAdjustment) {
+    return time.add(Duration(minutes: adjustment + methodAdjustment));
   }
 
   static Duration _fraction(Duration night, double portion) {
     return Duration(microseconds: (portion * night.inMicroseconds).round());
-  }
-
-  static DateTime _finish(
-      DateTime time, int adjustment, int methodAdjustment, Rounding rounding) {
-    return CalendarUtil.roundedMinute(
-        time.add(Duration(minutes: adjustment + methodAdjustment)), rounding);
   }
 
   static DateTime _seasonAdjustedMorningTwilight(

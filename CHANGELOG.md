@@ -1,3 +1,7 @@
+## 3.1.0
+
+- Add `Rounding.startsUpSunriseDown`, which keeps each computed time to the microsecond, rounds sunrise down to its minute, and rounds every other time, sunnah times included, up to the next minute when any part of a minute is past it. `nearest`, `up` and `none` keep their output and their indices.
+
 ## 3.0.0
 
 - Add `PublishedTimetable.decode`, which reads a prayer timetable published in the `OTT 1` text format at runtime, and `validateAllRows`, which checks every row once. `docs/PUBLISHED_TIMETABLE_FORMAT.md` defines the format and `test/published/vectors/` pins it.

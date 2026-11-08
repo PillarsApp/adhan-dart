@@ -1,6 +1,7 @@
 import 'prayer_times.dart';
 import 'data/calendar_util.dart';
 import 'data/date_components.dart';
+import 'internal/rounding_rule.dart';
 
 class SunnahTimes {
   /// The midpoint between Maghrib and Fajr
@@ -32,16 +33,12 @@ class SunnahTimes {
         utcOffset: prayerTimes.utcOffset);
 
     final night = tomorrowPrayerTimes.fajr.difference(prayerTimes.maghrib);
-    final rounding = prayerTimes.calculationParameters.rounding;
+    final rule = RoundingRule.of(prayerTimes.calculationParameters.rounding);
 
-    _middleOfTheNight = CalendarUtil.roundedMinute(
-        prayerTimes.maghrib
-            .add(Duration(microseconds: night.inMicroseconds ~/ 2)),
-        rounding);
+    _middleOfTheNight = rule.start(prayerTimes.maghrib
+        .add(Duration(microseconds: night.inMicroseconds ~/ 2)));
 
-    _lastThirdOfTheNight = CalendarUtil.roundedMinute(
-        prayerTimes.maghrib
-            .add(Duration(microseconds: night.inMicroseconds * 2 ~/ 3)),
-        rounding);
+    _lastThirdOfTheNight = rule.start(prayerTimes.maghrib
+        .add(Duration(microseconds: night.inMicroseconds * 2 ~/ 3)));
   }
 }

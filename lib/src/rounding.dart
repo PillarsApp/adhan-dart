@@ -8,4 +8,9 @@ enum Rounding {
 
   /// Keep the computed seconds.
   none,
+
+  /// Keep each computed time to the microsecond. Round sunrise down to its
+  /// minute, and round every other time, sunnah times included, up to the next
+  /// minute when any part of a minute is past it.
+  startsUpSunriseDown,
 }

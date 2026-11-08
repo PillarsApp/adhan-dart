@@ -1,0 +1,305 @@
+{
+  "output": "UTC",
+  "cases": [
+    {
+      "method": "umm_al_qura",
+      "prayer": "fajr",
+      "secondsPastMinute": 0.522,
+      "latitude": 24.7136,
+      "longitude": 46.6753,
+      "date": "2026-01-07",
+      "unrounded": "2026-01-07T02:16:00.522Z",
+      "expected": {
+        "nearest": "2026-01-07T02:16:00Z",
+        "up": "2026-01-07T02:16:00Z",
+        "none": "2026-01-07T02:16:00Z",
+        "startsUpSunriseDown": "2026-01-07T02:17:00Z"
+      }
+    },
+    {
+      "method": "umm_al_qura",
+      "prayer": "fajr",
+      "secondsPastMinute": 1.56,
+      "latitude": 24.7136,
+      "longitude": 46.6753,
+      "date": "2026-06-01",
+      "unrounded": "2026-06-01T00:34:01.560Z",
+      "expected": {
+        "nearest": "2026-06-01T00:34:00Z",
+        "up": "2026-06-01T00:35:00Z",
+        "none": "2026-06-01T00:34:01Z",
+        "startsUpSunriseDown": "2026-06-01T00:35:00Z"
+      }
+    },
+    {
+      "method": "umm_al_qura",
+      "prayer": "fajr",
+      "secondsPastMinute": 59.426,
+      "latitude": 24.7136,
+      "longitude": 46.6753,
+      "date": "2026-07-20",
+      "unrounded": "2026-07-20T00:46:59.426Z",
+      "expected": {
+        "nearest": "2026-07-20T00:47:00Z",
+        "up": "2026-07-20T00:47:00Z",
+        "none": "2026-07-20T00:46:59Z",
+        "startsUpSunriseDown": "2026-07-20T00:47:00Z"
+      }
+    },
+    {
+      "method": "umm_al_qura",
+      "prayer": "sunrise",
+      "secondsPastMinute": 0.274,
+      "latitude": 24.7136,
+      "longitude": 46.6753,
+      "date": "2026-01-02",
+      "unrounded": "2026-01-02T03:38:00.274Z",
+      "expected": {
+        "nearest": "2026-01-02T03:38:00Z",
+        "up": "2026-01-02T03:38:00Z",
+        "none": "2026-01-02T03:38:00Z",
+        "startsUpSunriseDown": "2026-01-02T03:38:00Z"
+      }
+    },
+    {
+      "method": "umm_al_qura",
+      "prayer": "sunrise",
+      "secondsPastMinute": 1.594,
+      "latitude": 24.7136,
+      "longitude": 46.6753,
+      "date": "2026-04-26",
+      "unrounded": "2026-04-26T02:22:01.594Z",
+      "expected": {
+        "nearest": "2026-04-26T02:22:00Z",
+        "up": "2026-04-26T02:23:00Z",
+        "none": "2026-04-26T02:22:01Z",
+        "startsUpSunriseDown": "2026-04-26T02:22:00Z"
+      }
+    },
+    {
+      "method": "umm_al_qura",
+      "prayer": "sunrise",
+      "secondsPastMinute": 59.342,
+      "latitude": 24.7136,
+      "longitude": 46.6753,
+      "date": "2026-02-17",
+      "unrounded": "2026-02-17T03:25:59.342Z",
+      "expected": {
+        "nearest": "2026-02-17T03:26:00Z",
+        "up": "2026-02-17T03:26:00Z",
+        "none": "2026-02-17T03:25:59Z",
+        "startsUpSunriseDown": "2026-02-17T03:25:00Z"
+      }
+    },
+    {
+      "method": "umm_al_qura",
+      "prayer": "dhuhr",
+      "secondsPastMinute": 0.627,
+      "latitude": 24.7136,
+      "longitude": 46.6753,
+      "date": "2026-01-16",
+      "unrounded": "2026-01-16T09:03:00.627Z",
+      "expected": {
+        "nearest": "2026-01-16T09:03:00Z",
+        "up": "2026-01-16T09:03:00Z",
+        "none": "2026-01-16T09:03:00Z",
+        "startsUpSunriseDown": "2026-01-16T09:04:00Z"
+      }
+    },
+    {
+      "method": "umm_al_qura",
+      "prayer": "dhuhr",
+      "secondsPastMinute": 1.639,
+      "latitude": 24.7136,
+      "longitude": 46.6753,
+      "date": "2026-04-05",
+      "unrounded": "2026-04-05T08:56:01.639Z",
+      "expected": {
+        "nearest": "2026-04-05T08:56:00Z",
+        "up": "2026-04-05T08:57:00Z",
+        "none": "2026-04-05T08:56:01Z",
+        "startsUpSunriseDown": "2026-04-05T08:57:00Z"
+      }
+    },
+    {
+      "method": "umm_al_qura",
+      "prayer": "dhuhr",
+      "secondsPastMinute": 59.742,
+      "latitude": 24.7136,
+      "longitude": 46.6753,
+      "date": "2026-03-26",
+      "unrounded": "2026-03-26T08:58:59.742Z",
+      "expected": {
+        "nearest": "2026-03-26T08:59:00Z",
+        "up": "2026-03-26T08:59:00Z",
+        "none": "2026-03-26T08:58:59Z",
+        "startsUpSunriseDown": "2026-03-26T08:59:00Z"
+      }
+    },
+    {
+      "method": "umm_al_qura",
+      "prayer": "asr",
+      "secondsPastMinute": 0.64,
+      "latitude": 24.7136,
+      "longitude": 46.6753,
+      "date": "2026-06-05",
+      "unrounded": "2026-06-05T12:14:00.640Z",
+      "expected": {
+        "nearest": "2026-06-05T12:14:00Z",
+        "up": "2026-06-05T12:14:00Z",
+        "none": "2026-06-05T12:14:00Z",
+        "startsUpSunriseDown": "2026-06-05T12:15:00Z"
+      }
+    },
+    {
+      "method": "umm_al_qura",
+      "prayer": "asr",
+      "secondsPastMinute": 1.532,
+      "latitude": 24.7136,
+      "longitude": 46.6753,
+      "date": "2026-04-17",
+      "unrounded": "2026-04-17T12:22:01.532Z",
+      "expected": {
+        "nearest": "2026-04-17T12:22:00Z",
+        "up": "2026-04-17T12:23:00Z",
+        "none": "2026-04-17T12:22:01Z",
+        "startsUpSunriseDown": "2026-04-17T12:23:00Z"
+      }
+    },
+    {
+      "method": "umm_al_qura",
+      "prayer": "asr",
+      "secondsPastMinute": 59.682,
+      "latitude": 24.7136,
+      "longitude": 46.6753,
+      "date": "2026-02-26",
+      "unrounded": "2026-02-26T12:25:59.682Z",
+      "expected": {
+        "nearest": "2026-02-26T12:26:00Z",
+        "up": "2026-02-26T12:26:00Z",
+        "none": "2026-02-26T12:25:59Z",
+        "startsUpSunriseDown": "2026-02-26T12:26:00Z"
+      }
+    },
+    {
+      "method": "umm_al_qura",
+      "prayer": "maghrib",
+      "secondsPastMinute": 0.725,
+      "latitude": 24.7136,
+      "longitude": 46.6753,
+      "date": "2026-02-28",
+      "unrounded": "2026-02-28T14:55:00.725Z",
+      "expected": {
+        "nearest": "2026-02-28T14:55:00Z",
+        "up": "2026-02-28T14:55:00Z",
+        "none": "2026-02-28T14:55:00Z",
+        "startsUpSunriseDown": "2026-02-28T14:56:00Z"
+      }
+    },
+    {
+      "method": "umm_al_qura",
+      "prayer": "maghrib",
+      "secondsPastMinute": 1.67,
+      "latitude": 24.7136,
+      "longitude": 46.6753,
+      "date": "2026-03-06",
+      "unrounded": "2026-03-06T14:58:01.670Z",
+      "expected": {
+        "nearest": "2026-03-06T14:58:00Z",
+        "up": "2026-03-06T14:59:00Z",
+        "none": "2026-03-06T14:58:01Z",
+        "startsUpSunriseDown": "2026-03-06T14:59:00Z"
+      }
+    },
+    {
+      "method": "umm_al_qura",
+      "prayer": "maghrib",
+      "secondsPastMinute": 59.489,
+      "latitude": 24.7136,
+      "longitude": 46.6753,
+      "date": "2026-01-04",
+      "unrounded": "2026-01-04T14:17:59.489Z",
+      "expected": {
+        "nearest": "2026-01-04T14:18:00Z",
+        "up": "2026-01-04T14:18:00Z",
+        "none": "2026-01-04T14:17:59Z",
+        "startsUpSunriseDown": "2026-01-04T14:18:00Z"
+      }
+    },
+    {
+      "method": "umm_al_qura",
+      "prayer": "isha",
+      "secondsPastMinute": 0.725,
+      "latitude": 24.7136,
+      "longitude": 46.6753,
+      "date": "2026-02-28",
+      "unrounded": "2026-02-28T16:25:00.725Z",
+      "expected": {
+        "nearest": "2026-02-28T16:25:00Z",
+        "up": "2026-02-28T16:25:00Z",
+        "none": "2026-02-28T16:25:00Z",
+        "startsUpSunriseDown": "2026-02-28T16:26:00Z"
+      }
+    },
+    {
+      "method": "umm_al_qura",
+      "prayer": "isha",
+      "secondsPastMinute": 1.67,
+      "latitude": 24.7136,
+      "longitude": 46.6753,
+      "date": "2026-03-06",
+      "unrounded": "2026-03-06T16:28:01.670Z",
+      "expected": {
+        "nearest": "2026-03-06T16:28:00Z",
+        "up": "2026-03-06T16:29:00Z",
+        "none": "2026-03-06T16:28:01Z",
+        "startsUpSunriseDown": "2026-03-06T16:29:00Z"
+      }
+    },
+    {
+      "method": "umm_al_qura",
+      "prayer": "isha",
+      "secondsPastMinute": 59.489,
+      "latitude": 24.7136,
+      "longitude": 46.6753,
+      "date": "2026-01-04",
+      "unrounded": "2026-01-04T15:47:59.489Z",
+      "expected": {
+        "nearest": "2026-01-04T15:48:00Z",
+        "up": "2026-01-04T15:48:00Z",
+        "none": "2026-01-04T15:47:59Z",
+        "startsUpSunriseDown": "2026-01-04T15:48:00Z"
+      }
+    },
+    {
+      "method": "unified_london_times",
+      "prayer": "fajr",
+      "secondsPastMinute": 0.0,
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "date": "2026-03-01",
+      "unrounded": "2026-03-01T05:06:00.000Z",
+      "expected": {
+        "nearest": "2026-03-01T05:06:00Z",
+        "up": "2026-03-01T05:06:00Z",
+        "none": "2026-03-01T05:06:00Z",
+        "startsUpSunriseDown": "2026-03-01T05:06:00Z"
+      }
+    },
+    {
+      "method": "unified_london_times",
+      "prayer": "sunrise",
+      "secondsPastMinute": 0.0,
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "date": "2026-03-01",
+      "unrounded": "2026-03-01T06:43:00.000Z",
+      "expected": {
+        "nearest": "2026-03-01T06:43:00Z",
+        "up": "2026-03-01T06:43:00Z",
+        "none": "2026-03-01T06:43:00Z",
+        "startsUpSunriseDown": "2026-03-01T06:43:00Z"
+      }
+    }
+  ]
+}
