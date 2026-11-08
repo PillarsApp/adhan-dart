@@ -179,15 +179,24 @@ class PrayerTimes {
 
     _source = PrayerTimesSource.calculated;
     if (calculationParameters.method == CalculationMethod.malaysia_official) {
-      final official = MalaysiaOfficialTimes.lookup(
-          coordinates, date, calculationParameters, utcOffset);
-      _source = official.source;
-      _malaysiaZone = official.zone;
-      _malaysiaDay = official.day;
-      final times = official.times;
-      if (times != null) {
-        _assign(times);
-        return;
+      final code = calculationParameters.malaysiaZone;
+      switch (MalaysiaTimetable.source.lookup(coordinates, _dateComponents,
+          localityId: code == null ? null : LocalityId(code))) {
+        case OfficialRow row:
+          _source = PrayerTimesSource.official;
+          _officialRow = row;
+          final zone = MalaysiaZones.zone(row.locality.id.value)!;
+          _malaysiaZone = zone;
+          _malaysiaDay = MalaysiaTimetable.day(zone, _dateComponents,
+              utcOffset: utcOffset);
+          _assign(assembleOfficialDay(
+              row, calculationParameters, calculationParameters.adjustments));
+          return;
+        case NoRow(:final locality):
+          _source = PrayerTimesSource.calculatedNoRow;
+          _malaysiaZone = MalaysiaZones.zone(locality.id.value);
+        case NoLocality():
+          _source = PrayerTimesSource.calculatedNoZone;
       }
     }
 
