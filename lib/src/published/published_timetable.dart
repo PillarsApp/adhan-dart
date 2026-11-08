@@ -5,13 +5,13 @@ import 'dart:typed_data';
 import '../coordinates.dart';
 import '../data/date_components.dart';
 import '../data/delta_cells_codec.dart';
+import '../data/malaysia_data_revision.dart';
 import '../data/malaysia_times_codec.dart';
 import '../data/malaysia_times_data.dart';
 import '../data/malaysia_zone_map.dart' show MalaysiaZoneMap;
-import '../malaysia/malaysia_timetable.dart';
 import '../malaysia/malaysia_zones.dart';
 
-part '../malaysia/malaysia_source.dart';
+part 'malaysia_source.dart';
 part 'format.dart';
 part 'locality_index.dart';
 

@@ -1,4 +1,5 @@
 import '../data/date_components.dart';
+import '../data/malaysia_data_revision.dart';
 import '../internal/present.dart';
 import '../prayer_times_source.dart';
 import '../published/published_timetable.dart';
@@ -62,7 +63,7 @@ class MalaysiaTimetable {
   /// the SHA-256 of the times file, a hyphen, and the same for the zones file.
   /// Update it with every data release; the revision test fails when it is
   /// stale.
-  static const String revision = 'badfebbb-714bce11';
+  static const String revision = malaysiaDataRevision;
 
   static const OfficialTimetableSource source = MalaysiaOfficialSource.instance;
 

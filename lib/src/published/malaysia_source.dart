@@ -1,4 +1,4 @@
-part of '../published/published_timetable.dart';
+part of 'published_timetable.dart';
 
 const int _malaysiaOffsetMinutes = 480;
 
@@ -52,7 +52,7 @@ final class MalaysiaOfficialSource implements OfficialTimetableSource {
   String get authority => 'jakim';
 
   @override
-  String get revision => MalaysiaTimetable.revision;
+  String get revision => malaysiaDataRevision;
 
   @override
   Iterable<Locality> get localities => _localities.values;
