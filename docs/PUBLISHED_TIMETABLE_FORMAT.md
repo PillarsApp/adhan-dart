@@ -4,7 +4,7 @@ This page describes the `OTT 1` file format that `PublishedTimetable.decode` rea
 
 ## File shape
 
-An `OTT 1` file is one UTF-8 text file. Every line, the last one included, ends with a single LF (`0x0A`). A CR (`0x0D`) anywhere in the file is malformed.
+A valid `OTT 1` file is UTF-8: the header line is UTF-8 JSON and every row line is ASCII. A decoder does not decode the file as text. It splits the bytes at LF (`0x0A`) and reads each row line byte by byte, so a byte outside the row grammar, any byte above `0x7F` included, breaks the rule for its position (`cell-reset-nbsp.ott` puts the byte `0xA0` after a tilde and breaks `cell.digits`), and a header line that is not UTF-8 breaks `header.json`. Every line, the last one included, ends with a single LF. A CR (`0x0D`) anywhere in the file is malformed, and so is a UTF-8 byte order mark (`EF BB BF`) anywhere in the file, inside a string included.
 
 - Line 1 is the magic and the major version, exactly `OTT 1`.
 - Line 2 is the header, one JSON object on one line.
@@ -13,8 +13,8 @@ An `OTT 1` file is one UTF-8 text file. Every line, the last one included, ends 
 ```
 OTT 1
 {"authority":"sa-umm-al-qura","revision":12,"part":"all","coverage":["2026-01-01","2027-12-31"],"columns":["fajr","sunrise","dhuhr","asr","maghrib","isha"],"asrShadow":1,"zones":[{"id":"Asia/Riyadh","offsets":[["2026-01-01",180]]}],"localities":[{"id":"1001","group":"1001","zone":0,"names":{"ar":"الرياض","en":"Riyadh","ur":"ریاض"},"ref":[24670000,46690000],"point":{"radiusM":25000}}]}
-1001 2026-01-01 051506371157145717171847ededeedddddd
-1001 2027-01-01 051606371157145817181848dedddd
+1001 2026-01-01 050006301220164018201950edeedededeedededde
+1001 2027-01-01 050206311221164218211952eeeeeedddddd
 ```
 
 A decoder rejects a magic other than `OTT` and a major version other than `1`. A decoder ignores header keys this page does not name. A new key never changes the meaning of the keys named here. A change that would alter their meaning is a new major version.
@@ -76,7 +76,7 @@ The offset in force on a date is the `minutes` of the entry with the greatest da
 
 Exactly one of `point` and `area` is present. A locality is in force on a date when the date is at or after `validFrom` (or `validFrom` is absent) and at or before `validTo` (or `validTo` is absent).
 
-A ring is a Google encoded polyline at precision 6, so each decoded value is a microdegree integer, latitude first. Each value is written in at most seven chunks (the encoder writes the fewest chunks, and a 32-bit value never needs more) and decodes to a signed 32-bit integer; a ring that breaks either is `locality.area.polyline`. A ring with an odd number of values is `locality.area.ring`. A ring has at least three vertices and every vertex is inside the `ref` ranges. The closing edge from the last vertex back to the first is implicit, so the encoder does not repeat the first vertex. The area is the even-odd fill of all rings together, so a hole is any ring inside another ring, and ring order carries no meaning.
+A ring is a Google encoded polyline at precision 6, so each decoded value is a microdegree integer, latitude first. Each value (the delta that one run of chunks encodes, not the running coordinate) is written in at most seven chunks (the encoder writes the fewest chunks, and a 32-bit value never needs more) and decodes to a signed 32-bit integer; a ring that breaks either, or that is the empty string, is `locality.area.polyline`. A ring with an odd number of values is `locality.area.ring`. A ring has at least three vertices and every vertex is inside the `ref` ranges. The closing edge from the last vertex back to the first is implicit, so the encoder does not repeat the first vertex. The area is the even-odd fill of all rings together, so a hole is any ring inside another ring, and ring order carries no meaning.
 
 Every integer in the file fits in a signed 32-bit integer. Readers on a 32-bit target multiply microdegrees in 64-bit arithmetic, because a cross product of two microdegree differences does not fit in 32 bits. A reader whose integers carry 53 bits, such as Dart compiled to JavaScript, is exact only while every ring edge spans less than about 9 degrees in both latitude and longitude.
 
@@ -109,7 +109,7 @@ The codec is the Malaysia delta codec with the column count taken from the heade
 
 The decoder rejects a cell that is not a letter from `a` to `g` or a tilde and four digits, a day with fewer than `n` cells, `MM` above 59, `HH` above 47, and any minute outside 0 to 2879 after a delta is applied.
 
-`cells` for a line holding the two days `[315, 397, 717, 897, 1037, 1127]` and `[316, 397, 718, 897, 1038, 1128]` is `051506371157145717171847ededee`.
+`cells` for a line holding the two days `[300, 390, 740, 1000, 1100, 1190]` and `[301, 390, 741, 1001, 1100, 1191]` is `050006301220164018201950edeede`.
 
 ## Validation stages
 
@@ -168,7 +168,7 @@ Every check a decoder makes is one of the rules below. The Dart decoder opens ea
 | `locality.point.radius` | decode | `point` is an object whose `radiusM` is an integer from 1 to 2147483647. |
 | `locality.area.polygons` | decode | `area` is an object whose `polygons` is an array with at least one ring. |
 | `locality.area.tolerance` | decode | `toleranceM` is an integer from 0 to 2147483647. |
-| `locality.area.polyline` | decode | A ring is a string of bytes 63 to 126 whose values are complete, at most seven chunks each, and 32-bit. |
+| `locality.area.polyline` | decode | A ring is a non-empty string of bytes 63 to 126 whose values are complete, at most seven chunks each, and 32-bit. |
 | `locality.area.ring` | decode | A ring decodes to an even number of values and at least three vertices. |
 | `locality.area.vertex` | decode | Every vertex is inside the `ref` ranges. |
 | `row.fields` | decode | A row line is three fields separated by single spaces. |
@@ -189,7 +189,7 @@ Every check a decoder makes is one of the rules below. The Dart decoder opens ea
 | `row.endsAfterCoverage` | validate | A line ends at or before `coverage[1]`. |
 | `row.overlap` | validate | Two lines of one locality share no day. |
 
-A decode-stage rule and a validate-stage rule can both apply to one file only when the file is malformed twice over. The vectors never are, so the recorded stage is the only stage at which a correct decoder rejects the file.
+The `file.*` rules run first, in the order of the table, before any line is parsed, and each presumes the rules above it hold, so a file breaks at most one of them. The other decode-stage rules may be checked in any order, and the validate-stage rules run only on a file that passed the decode stage. Every vector breaks exactly one rule, so the recorded stage and rule are the only ones a correct decoder can report for it. A file that breaks several header or row rules may be reported under any of them.
 
 ## Semantics every reader applies
 
@@ -222,7 +222,7 @@ Distances are in whole millimetres, so two implementations agree even when their
 
 ### Hanafi Asr
 
-`asrShadow` names the shadow factor of the published `asr`. A reader that assembles prayer times for a madhab with the same factor uses the published Asr. When the factors differ, Asr is the published Asr plus `floor((asr(userShadow) − asr(asrShadow)) × 60 + 0.5)` minutes. Both solar Asr times are computed with the library's own solar-time algorithm (adhan's `SolarTime`, the same code in the Dart and Swift forks), at the locality's reference point on the row's date, as fractional hours; the difference in minutes is rounded to the nearest minute with a half rounded up, so a shift of −2.5 becomes −2 and one of 2.5 becomes 3. When the header has an `asrHanafi` column and the madhab is Hanafi, the reader uses that column instead. The `expected.json` vectors give the assembled Asr for both madhabs.
+`asrShadow` names the shadow factor of the published `asr`. A reader that assembles prayer times for a madhab with the same factor uses the published Asr. When the factors differ, Asr is the published Asr plus `floor((asr(userShadow) − asr(asrShadow)) × 60 + 0.5)` minutes. Both solar Asr times are computed with the library's own solar-time algorithm (adhan's `SolarTime`, not an external ephemeris), at the locality's reference point on the row's date, as fractional hours; the difference in minutes is rounded to the nearest minute with a half rounded up, so a shift of −2.5 becomes −2 and one of 2.5 becomes 3. When the header has an `asrHanafi` column and the madhab is Hanafi, the reader uses that column instead. The `expected.json` vectors give the assembled Asr for both madhabs.
 
 At a high latitude the sun can fail to reach the Hanafi shadow length on a day it does reach the Shafi one, so the solar difference is undefined. A reader asked for that Asr without an `asrHanafi` column reports that it cannot assemble the day instead of returning a time (Dart throws `StateError` from `PrayerTimes.official`). An authority whose localities can reach such a day must publish `asrHanafi`.
 
@@ -236,7 +236,7 @@ The input is the header fields plus `rows`, a map from locality id to a map from
 
 ```json
 {"authority":"sa-umm-al-qura","revision":12,"part":"all","coverage":["2026-01-01","2027-12-31"],"columns":["fajr","sunrise","dhuhr","asr","maghrib","isha"],"asrShadow":1,"zones":[...],"localities":[...],
- "rows":{"1001":{"2026-01-01":[315,397,717,897,1037,1127],"2026-01-02":[316,397,718,897,1038,1128]}}}
+ "rows":{"1001":{"2026-01-01":[300,390,740,1000,1100,1190],"2026-01-02":[301,390,741,1001,1100,1191]}}}
 ```
 
 ### Rules
@@ -244,7 +244,7 @@ The input is the header fields plus `rows`, a map from locality id to a map from
 1. Write `OTT 1` and LF.
 2. Write the header as JSON with no whitespace between tokens. Keys in this order: `authority`, `revision`, `part`, `coverage`, `columns`, `asrShadow`, `zones`, `localities`. Inside a zone: `id`, `offsets`. Inside a locality: `id`, `group`, `zone`, `names`, `ref`, then `point` or `area`, then `validFrom`, `validTo`, `successors`, each only when present. Inside `point`: `radiusM`. Inside `area`: `polygons`, `toleranceM`.
 3. Sort `zones` by `id` and each zone's `offsets` by date. Sort `localities` by `id`, the keys of `names`, and `successors`. Every sort compares strings by UTF-16 code unit, which is what JavaScript's default sort, Dart's `compareTo` and Swift's `utf16` comparison do; it differs from a code point sort only for characters outside the Basic Multilingual Plane. Keep `columns` and `polygons` in input order. The encoder rewrites each locality's `zone` to the index of the same zone in the sorted `zones`, so the written index always refers to the sorted array.
-4. Escape strings as JSON.stringify and Dart's `jsonEncode` do: `"` as `\"`, `\` as `\\`, and the control characters U+0000 to U+001F as `\b`, `\f`, `\n`, `\r`, `\t` or `\u00XX` with lowercase hex digits (`\u001b`). U+007F and every other character are literal UTF-8. Write integers in decimal with no exponent, no fraction and no plus sign, with a minus sign only when the value is negative.
+4. Refuse an input whose strings hold U+FEFF or a lone surrogate, because the file they would produce breaks `file.bom` or `header.json`. Escape the other strings as JSON.stringify and Dart's `jsonEncode` do: `"` as `\"`, `\` as `\\`, and the control characters U+0000 to U+001F as `\b`, `\f`, `\n`, `\r`, `\t` or `\u00XX` with lowercase hex digits (`\u001b`). U+007F and every other character are literal UTF-8. Write integers in decimal with no exponent, no fraction and no plus sign, with a minus sign only when the value is negative.
 5. Write the row lines for the localities in header order. For each locality, split its dates into maximal runs of consecutive days that stay inside one calendar year, in date order, and write one line per run. Use a letter whenever the change is -3 to +3 and `~HHMM` otherwise.
 6. End every line with LF.
 
