@@ -1,8 +1,9 @@
 ## 3.0.0
 
 - Add `PublishedTimetable.decode`, which reads a prayer timetable published in the `OTT 1` text format at runtime, and `validateAllRows`, which checks every row once. `docs/PUBLISHED_TIMETABLE_FORMAT.md` defines the format and `test/published/vectors/` pins it.
-- Add `OfficialTimetableSource` with `localityAt` and `lookup`, the sealed `OfficialLookup` (`OfficialRow`, `NoLocality`, `NoRow`), `Locality`, `LocalityId` and `PublishedColumn`.
-- Add `PrayerTimes.official`, which assembles prayer times from a published row with the caller's madhab and adjustments, and `PrayerTimes.officialRow`. Its `adjustments` default to `parameters.adjustments`; the method adjustments in the parameters are ignored, because they describe a calculation.
+- Add `OfficialTimetableSource` with `localityAt` and `lookup`, the sealed `OfficialLookup` (`OfficialRow`, `NoLocality`, `NoRow`), `Locality`, `LocalityId` and `PublishedColumn`. A published source throws `ArgumentError` for a coordinate off the globe or a date that is not a calendar day.
+- Every `FormatException` from `decode` and `validateAllRows` starts with the id of the rule the bytes break, as the format doc lists them. `decode` keeps its own copy of the bytes.
+- Add `PrayerTimes.official`, which assembles prayer times from a published row with the caller's madhab and adjustments, and `PrayerTimes.officialRow`. Its `adjustments` default to `parameters.adjustments`; the method adjustments in the parameters are ignored, because they describe a calculation. It throws `StateError` for a Hanafi Asr the sun never reaches when the row has no `asrHanafi` column. Its `coordinates` are the locality's reference point.
 - Add `MalaysiaTimetable.source`, the bundled Malaysian data behind the same interface. `CalculationMethod.malaysia_official` reads its rows through it and produces the same times as 2.5.0 on every zone and day of 2026 and 2027, which `test/malaysia_parity_test.dart` checks against a golden recorded at 2.5.0.
 - Breaking: the SDK constraint is now `>=3.3.0 <4.0.0`. Dart 2 consumers stay on 2.5.0.
 

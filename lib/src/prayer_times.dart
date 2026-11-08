@@ -172,6 +172,13 @@ class PrayerTimes {
   /// shadow factors at the locality's reference point. [adjustments], which
   /// default to the adjustments in [parameters], are added after that. The
   /// method adjustments in [parameters] are ignored.
+  ///
+  /// Throws [StateError] when that shift is undefined because the sun does
+  /// not reach one of the two shadow lengths at the reference point on that
+  /// day and the row publishes no Asr for the requested factor.
+  ///
+  /// [coordinates] is the locality's reference point. Use the caller's own
+  /// position for Qibla and display.
   factory PrayerTimes.official(OfficialRow row,
           {required CalculationParameters parameters,
           PrayerAdjustments? adjustments,
