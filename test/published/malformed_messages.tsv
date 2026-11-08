@@ -1,0 +1,60 @@
+bad-magic.ott	decode	line 1 is not "OTT 1"
+major-2.ott	decode	line 1 is not "OTT 1"
+empty.ott	decode	the file is empty
+header-not-json.ott	decode	line 2 is not JSON
+header-not-object.ott	decode	line 2 is not a JSON object
+missing-revision.ott	decode	revision is absent
+revision-too-large.ott	decode	revision is outside 0 to 2147483647
+revision-negative.ott	decode	revision is outside 0 to 2147483647
+coverage-reversed.ott	decode	coverage ends before it starts
+missing-core-column.ott	decode	columns lacks isha
+unknown-column.ott	decode	sunset is not a column name
+duplicate-column.ott	decode	fajr appears twice in columns
+asr-shadow-3.ott	decode	asrShadow is outside 1 to 2
+no-zones.ott	decode	zones has fewer than 1 entries
+offsets-unsorted.ott	decode	offset dates of Etc/UTC are not ascending
+offsets-start-after-coverage.ott	decode	the first offset of Etc/UTC is after coverage starts
+offset-too-large.ott	decode	an offset of Etc/UTC is outside -1440 to 1440
+no-localities.ott	decode	localities has fewer than 1 entries
+locality-bad-id.ott	decode	locality id "L 1" is malformed
+locality-long-id.ott	decode	locality id "LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL" is malformed
+locality-duplicate-id.ott	decode	locality id L1 is duplicated
+locality-unknown-zone.ott	decode	zone of L1 is outside 0 to 0
+locality-no-geometry.ott	decode	L1 must have exactly one of point and area
+locality-both-geometries.ott	decode	L1 must have exactly one of point and area
+locality-ref-out-of-range.ott	decode	ref latitude of L1 is outside -90000000 to 90000000
+locality-ref-fraction.ott	decode	ref latitude of L1 is not an integer
+locality-radius-zero.ott	decode	radiusM of L1 is outside 1 to 2147483647
+locality-validity-reversed.ott	decode	validTo of L1 is before validFrom
+locality-unknown-successor.ott	decode	successor L9 of L1 is not in the header
+area-two-vertices.ott	decode	a ring of L1 has fewer than three vertices
+row-unknown-locality.ott	decode	row locality L2 is not in the header
+row-bad-date.ott	decode	the first date of a row of L1 is not a calendar day
+row-before-coverage.ott	decode	a row of L1 starts outside coverage
+row-after-coverage.ott	decode	a row of L1 starts outside coverage
+row-two-fields.ott	decode	a row line does not have three fields
+row-short-first-day.ott	decode	the first day of a row of L1 has fewer than 24 digits
+row-nondigit-first-day.ott	decode	the first day of a row of L1 is not digits
+crlf.ott	decode	the file contains a CR
+authority-empty.ott	decode	authority is empty
+authority-whitespace.ott	decode	authority contains whitespace
+part-empty.ott	decode	part is empty
+offsets-empty.ott	decode	offsets of Etc/UTC has fewer than 1 entries
+locality-group-empty.ott	decode	group of L1 is empty
+locality-name-not-string.ott	decode	name en of L1 is not a string
+area-no-polygons.ott	decode	polygons of L1 has fewer than 1 entries
+area-tolerance-negative.ott	decode	toleranceM of L1 is outside 0 to 2147483647
+area-vertex-out-of-range.ott	decode	a vertex of L1 is outside the coordinate range
+area-polyline-bad-bytes.ott	decode	a polygon of L1 is not an encoded polyline
+row-four-fields.ott	decode	a row line has more than three fields
+no-final-newline.ott	decode	the last line has no LF
+cell-minute-60.ott	validate	Minute above 59 in the row of L1 starting DateComponents(2026, 1, 1)
+cell-hour-48.ott	validate	Time after 47:59 in the row of L1 starting DateComponents(2026, 1, 1)
+cell-unknown-letter.ott	validate	Unexpected cell "h" in the row of L1 starting DateComponents(2026, 1, 1)
+cell-truncated-day.ott	validate	Truncated day in the row of L1 starting DateComponents(2026, 1, 1)
+cell-delta-below-zero.ott	validate	Delta leaves the day in the row of L1 starting DateComponents(2026, 1, 1)
+first-day-minute-60.ott	validate	Minute above 59 in the row of L1 starting DateComponents(2026, 1, 1)
+core-order.ott	validate	core columns are not increasing in the row of L1 starting DateComponents(2026, 1, 1)
+row-crosses-year.ott	validate	the row of L1 starting DateComponents(2026, 12, 30) crosses 1 January
+row-ends-after-coverage.ott	validate	the row of L1 starting DateComponents(2026, 1, 1) ends after coverage
+rows-overlap.ott	validate	two lines of L1 share DateComponents(2026, 1, 2)

@@ -110,7 +110,7 @@ A decoder validates in two stages, so a process that only needs one row never pa
 
 **Validate all rows.** `validateAllRows()` decodes every line once and checks that every minute is 0 to 2879, that the core columns strictly increase on every day in the order `fajr`, `sunrise`, `dhuhr`, `asr`, `maghrib`, `isha`, that no line crosses 1 January or ends after `coverage`, and that no two lines of one locality overlap. A failure throws `FormatException`. A lookup on a file that was never validated decodes the covering line on first use and throws `FormatException` from the lookup if that line is malformed.
 
-The `test/published/vectors/malformed/` directory has one file per rule, and `index.json` names the stage that rejects each file.
+The `test/published/vectors/malformed/` directory has a file for each of these rules and for the header rules above, and `index.json` names the stage that rejects each file.
 
 ## Semantics every reader applies
 

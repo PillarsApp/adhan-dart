@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
+import 'dart:typed_data';
 
 import 'package:adhan/adhan.dart';
 import 'package:adhan/src/data/malaysia_zone_map.dart';
@@ -22,7 +23,32 @@ void main() {
     file.parent.createSync(recursive: true);
     file.writeAsStringSync(entry.value);
   }
-  stdout.writeln('wrote ${files.length} files under $vectorsDir');
+  File(malformedMessagesPath).writeAsStringSync(generateMalformedMessages());
+  stdout.writeln('wrote ${files.length} files under $vectorsDir and '
+      '$malformedMessagesPath');
+}
+
+const malformedMessagesPath = 'test/published/malformed_messages.tsv';
+
+String generateMalformedMessages() {
+  final out = StringBuffer();
+  for (final entry in _malformed()) {
+    final bytes = Uint8List.fromList(utf8.encode(entry.content));
+    String outcome;
+    try {
+      final timetable = PublishedTimetable.decode(bytes);
+      try {
+        timetable.validateAllRows();
+        outcome = 'accepted';
+      } on FormatException catch (error) {
+        outcome = 'validate\t${error.message}';
+      }
+    } on FormatException catch (error) {
+      outcome = 'decode\t${error.message}';
+    }
+    out.write('${entry.file}\t$outcome\n');
+  }
+  return out.toString();
 }
 
 Map<String, String> generateVectors() {
@@ -752,6 +778,52 @@ List<_Malformed> _malformed() {
       'L1 2026-01-01 0300063012201640182019x0\n');
   bad('crlf.ott', 'lines end with CR LF',
       _file(_baseHeader(), _baseRows).replaceAll('\n', '\r\n'));
+  badHeader(
+      'authority-empty.ott', 'authority is empty', (h) => h['authority'] = '');
+  badHeader('authority-whitespace.ott', 'authority has a space',
+      (h) => h['authority'] = 'xx base');
+  badHeader('part-empty.ott', 'part is empty', (h) => h['part'] = '');
+  badHeader('offsets-empty.ott', 'a zone has no offsets',
+      (h) => (h['zones'] as List).first['offsets'] = []);
+  badHeader('locality-group-empty.ott', 'a locality group is empty',
+      (h) => _locality(h)['group'] = '');
+  badHeader('locality-name-not-string.ott', 'a name value is a number',
+      (h) => _locality(h)['names'] = {'en': 7});
+  badHeader('area-no-polygons.ott', 'an area has no rings', (h) {
+    _locality(h).remove('point');
+    _locality(h)['area'] = {'polygons': [], 'toleranceM': 0};
+  });
+  badHeader('area-tolerance-negative.ott', 'an area tolerance is below 0', (h) {
+    _locality(h).remove('point');
+    _locality(h)['area'] = {
+      'polygons': [
+        MalaysiaZoneMap.encodePolyline(
+            _square(9000000, 9000000, 11000000, 11000000))
+      ],
+      'toleranceM': -1
+    };
+  });
+  badHeader('area-vertex-out-of-range.ott',
+      'a ring vertex is above 90 degrees latitude', (h) {
+    _locality(h).remove('point');
+    _locality(h)['area'] = {
+      'polygons': [
+        MalaysiaZoneMap.encodePolyline(
+            _square(89000000, 9000000, 91000000, 11000000))
+      ],
+      'toleranceM': 0
+    };
+  });
+  badHeader('area-polyline-bad-bytes.ott', 'a ring is not an encoded polyline',
+      (h) {
+    _locality(h).remove('point');
+    _locality(h)['area'] = {
+      'polygons': ['not a polyline!'],
+      'toleranceM': 0
+    };
+  });
+  badRows('row-four-fields.ott', 'a row has four fields',
+      'L1 2026-01-01 030006301220164018201950edeede x\n');
   bad('no-final-newline.ott', 'the last line has no LF',
       _file(_baseHeader(), _baseRows.trimRight()));
 
@@ -774,6 +846,12 @@ List<_Malformed> _malformed() {
       'L1 2026-01-01 030006301640122018201950edeede\n');
   badCells('row-crosses-year.ott', 'a line starting 2026-12-30 has three days',
       'L1 2026-12-30 030006301220164018201950edeededddddd\n');
+  validate.add(_Malformed(
+      'row-ends-after-coverage.ott',
+      'validate',
+      'coverage ends 2026-01-01 and the line has two days',
+      _file(_header((h) => h['coverage'] = ['2026-01-01', '2026-01-01']),
+          'L1 2026-01-01 030006301220164018201950edeede\n')));
   badCells('rows-overlap.ott', 'two lines of one locality share 2026-01-02',
       'L1 2026-01-01 030006301220164018201950edeede\nL1 2026-01-02 030006301220164018201950edeede\n');
   return [...decode, ...validate];
@@ -827,7 +905,7 @@ These files pin the `OTT 1` format that `docs/PUBLISHED_TIMETABLE_FORMAT.md` des
 dart run tool/published/vectors.dart
 ```
 
-`test/published/vectors_test.dart` fails when the files on disk differ from what the generator writes.
+`test/published/vectors_test.dart` fails when the files on disk differ from what the generator writes. The generator also writes `test/published/malformed_messages.tsv`, the Dart decoder's message for every malformed file, and `published_vectors_test.dart` holds each file to that message, so a vector that stops failing on its own rule is caught.
 
 ## Layout
 

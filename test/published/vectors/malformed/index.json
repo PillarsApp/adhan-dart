@@ -190,6 +190,61 @@
     "reason": "lines end with CR LF"
   },
   {
+    "file": "authority-empty.ott",
+    "stage": "decode",
+    "reason": "authority is empty"
+  },
+  {
+    "file": "authority-whitespace.ott",
+    "stage": "decode",
+    "reason": "authority has a space"
+  },
+  {
+    "file": "part-empty.ott",
+    "stage": "decode",
+    "reason": "part is empty"
+  },
+  {
+    "file": "offsets-empty.ott",
+    "stage": "decode",
+    "reason": "a zone has no offsets"
+  },
+  {
+    "file": "locality-group-empty.ott",
+    "stage": "decode",
+    "reason": "a locality group is empty"
+  },
+  {
+    "file": "locality-name-not-string.ott",
+    "stage": "decode",
+    "reason": "a name value is a number"
+  },
+  {
+    "file": "area-no-polygons.ott",
+    "stage": "decode",
+    "reason": "an area has no rings"
+  },
+  {
+    "file": "area-tolerance-negative.ott",
+    "stage": "decode",
+    "reason": "an area tolerance is below 0"
+  },
+  {
+    "file": "area-vertex-out-of-range.ott",
+    "stage": "decode",
+    "reason": "a ring vertex is above 90 degrees latitude"
+  },
+  {
+    "file": "area-polyline-bad-bytes.ott",
+    "stage": "decode",
+    "reason": "a ring is not an encoded polyline"
+  },
+  {
+    "file": "row-four-fields.ott",
+    "stage": "decode",
+    "reason": "a row has four fields"
+  },
+  {
     "file": "no-final-newline.ott",
     "stage": "decode",
     "reason": "the last line has no LF"
@@ -233,6 +288,11 @@
     "file": "row-crosses-year.ott",
     "stage": "validate",
     "reason": "a line starting 2026-12-30 has three days"
+  },
+  {
+    "file": "row-ends-after-coverage.ott",
+    "stage": "validate",
+    "reason": "coverage ends 2026-01-01 and the line has two days"
   },
   {
     "file": "rows-overlap.ott",

@@ -6,7 +6,7 @@ These files pin the `OTT 1` format that `docs/PUBLISHED_TIMETABLE_FORMAT.md` des
 dart run tool/published/vectors.dart
 ```
 
-`test/published/vectors_test.dart` fails when the files on disk differ from what the generator writes.
+`test/published/vectors_test.dart` fails when the files on disk differ from what the generator writes. The generator also writes `test/published/malformed_messages.tsv`, the Dart decoder's message for every malformed file, and `published_vectors_test.dart` holds each file to that message, so a vector that stops failing on its own rule is caught.
 
 ## Layout
 

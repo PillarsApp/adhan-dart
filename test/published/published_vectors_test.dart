@@ -139,6 +139,31 @@ void main() {
       expect(stages.keys.toSet(), files);
     });
 
+    test('every malformed file fails on the rule recorded for it', () {
+      final recorded = {
+        for (final line
+            in File('test/published/malformed_messages.tsv').readAsLinesSync())
+          line.split('\t').first: line
+      };
+      expect(recorded.keys.toSet(), files);
+      for (final file in files) {
+        String outcome;
+        try {
+          final timetable =
+              PublishedTimetable.decode(_bytes('malformed/$file'));
+          try {
+            timetable.validateAllRows();
+            outcome = 'accepted';
+          } on FormatException catch (error) {
+            outcome = 'validate\t${error.message}';
+          }
+        } on FormatException catch (error) {
+          outcome = 'decode\t${error.message}';
+        }
+        expect('$file\t$outcome', recorded[file], reason: file);
+      }
+    });
+
     for (final entry in stages.entries) {
       final bytes = _bytes('malformed/${entry.key}');
       if (entry.value == 'decode') {
