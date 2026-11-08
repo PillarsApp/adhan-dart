@@ -34,6 +34,7 @@ String encodeOtt(Map<String, dynamic> input) {
     'zones': zones,
     'localities': localities,
   };
+  _requireEncodable(header);
   final out = StringBuffer('OTT 1\n${jsonEncode(header)}\n');
   final rows = (input['rows'] as Map).cast<String, Map>();
   for (final locality in localities) {
@@ -45,6 +46,33 @@ String encodeOtt(Map<String, dynamic> input) {
     }
   }
   return out.toString();
+}
+
+void _requireEncodable(Object? value) {
+  switch (value) {
+    case String():
+      for (var i = 0; i < value.length; i++) {
+        final unit = value.codeUnitAt(i);
+        if (unit == 0xFEFF) {
+          throw ArgumentError('a string holds U+FEFF, which breaks file.bom');
+        }
+        if (unit < 0xD800 || unit > 0xDFFF) continue;
+        final next = i + 1 < value.length ? value.codeUnitAt(i + 1) : 0;
+        if (unit <= 0xDBFF && next >= 0xDC00 && next <= 0xDFFF) {
+          i++;
+          continue;
+        }
+        throw ArgumentError(
+            'a string holds a lone surrogate, which breaks header.json');
+      }
+    case Map():
+      for (final entry in value.entries) {
+        _requireEncodable(entry.key);
+        _requireEncodable(entry.value);
+      }
+    case List():
+      value.forEach(_requireEncodable);
+  }
 }
 
 List<Map<String, dynamic>> _sortedZones(List zones) {

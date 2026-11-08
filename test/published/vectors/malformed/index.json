@@ -48,6 +48,36 @@
     "mutation": "line 2 is an array"
   },
   {
+    "file": "header-string.ott",
+    "stage": "decode",
+    "rule": "header.json",
+    "mutation": "line 2 is \"abc\""
+  },
+  {
+    "file": "header-lone-surrogate.ott",
+    "stage": "decode",
+    "rule": "header.json",
+    "mutation": "the name en of L1 is the escape \\ud800"
+  },
+  {
+    "file": "header-deep-nesting.ott",
+    "stage": "decode",
+    "rule": "header.json",
+    "mutation": "an ignored key x holds 32 nested arrays inside the header object"
+  },
+  {
+    "file": "header-non-finite.ott",
+    "stage": "decode",
+    "rule": "header.json",
+    "mutation": "an ignored key x is 1e999"
+  },
+  {
+    "file": "bom-in-name.ott",
+    "stage": "decode",
+    "rule": "file.bom",
+    "mutation": "the name en of L1 starts with U+FEFF"
+  },
+  {
     "file": "header-not-utf8.ott",
     "stage": "decode",
     "rule": "header.json",
@@ -58,6 +88,12 @@
     "stage": "decode",
     "rule": "header.duplicateKey",
     "mutation": "the names of L1 carry the key en twice"
+  },
+  {
+    "file": "header-duplicate-revision.ott",
+    "stage": "decode",
+    "rule": "header.duplicateKey",
+    "mutation": "revision appears twice at the top level, as 1 and then 2"
   },
   {
     "file": "missing-revision.ott",
@@ -78,6 +114,24 @@
     "mutation": "authority is \"xx base\""
   },
   {
+    "file": "authority-uppercase.ott",
+    "stage": "decode",
+    "rule": "header.authority",
+    "mutation": "authority is \"XX-base\""
+  },
+  {
+    "file": "authority-trailing-line-separator.ott",
+    "stage": "decode",
+    "rule": "header.authority",
+    "mutation": "authority is \"xx-base\" followed by U+2028"
+  },
+  {
+    "file": "authority-trailing-newline.ott",
+    "stage": "decode",
+    "rule": "header.authority",
+    "mutation": "authority is \"xx-base\" followed by LF"
+  },
+  {
     "file": "revision-too-large.ott",
     "stage": "decode",
     "rule": "header.revision",
@@ -90,10 +144,28 @@
     "mutation": "revision is -1"
   },
   {
+    "file": "revision-fraction.ott",
+    "stage": "decode",
+    "rule": "header.revision",
+    "mutation": "revision is 1.0"
+  },
+  {
+    "file": "revision-exponent.ott",
+    "stage": "decode",
+    "rule": "header.revision",
+    "mutation": "revision is 1e0"
+  },
+  {
     "file": "part-empty.ott",
     "stage": "decode",
     "rule": "header.part",
     "mutation": "part is \"\""
+  },
+  {
+    "file": "part-underscore.ott",
+    "stage": "decode",
+    "rule": "header.part",
+    "mutation": "part is \"all_parts\""
   },
   {
     "file": "coverage-three-dates.ott",
@@ -118,6 +190,12 @@
     "stage": "decode",
     "rule": "header.asrShadow",
     "mutation": "asrShadow is 3"
+  },
+  {
+    "file": "asr-shadow-true.ott",
+    "stage": "decode",
+    "rule": "header.asrShadow",
+    "mutation": "asrShadow is true"
   },
   {
     "file": "unknown-column.ott",
@@ -201,13 +279,19 @@
     "file": "locality-bad-id.ott",
     "stage": "decode",
     "rule": "locality.id",
-    "mutation": "the id of L1 is \"L 1\""
+    "mutation": "the id of L2 is \"L 2\""
   },
   {
     "file": "locality-long-id.ott",
     "stage": "decode",
     "rule": "locality.id",
-    "mutation": "the id of L1 is 33 letters"
+    "mutation": "the id of L2 is 33 letters"
+  },
+  {
+    "file": "locality-id-trailing-newline.ott",
+    "stage": "decode",
+    "rule": "locality.id",
+    "mutation": "the id of L2 is \"L2\" followed by LF"
   },
   {
     "file": "locality-duplicate-id.ott",
@@ -234,6 +318,12 @@
     "mutation": "the name en of L1 is 7"
   },
   {
+    "file": "locality-names-not-object.ott",
+    "stage": "decode",
+    "rule": "locality.names",
+    "mutation": "the names of L1 are 5"
+  },
+  {
     "file": "locality-ref-three-values.ott",
     "stage": "decode",
     "rule": "locality.ref.shape",
@@ -244,6 +334,24 @@
     "stage": "decode",
     "rule": "locality.ref.integer",
     "mutation": "the ref latitude of L1 is 10.5"
+  },
+  {
+    "file": "locality-ref-exponent.ott",
+    "stage": "decode",
+    "rule": "locality.ref.integer",
+    "mutation": "the ref latitude of L1 is 1e7"
+  },
+  {
+    "file": "locality-ref-int64-min.ott",
+    "stage": "decode",
+    "rule": "locality.ref.integer",
+    "mutation": "the ref latitude of L1 is -9223372036854775808"
+  },
+  {
+    "file": "locality-ref-beyond-int64.ott",
+    "stage": "decode",
+    "rule": "locality.ref.integer",
+    "mutation": "the ref latitude of L1 is 9223372036854775808"
   },
   {
     "file": "locality-ref-out-of-range.ott",
@@ -270,6 +378,12 @@
     "mutation": "L1 names the successor L9"
   },
   {
+    "file": "locality-successors-not-array.ott",
+    "stage": "decode",
+    "rule": "locality.successor",
+    "mutation": "the successors of L1 are \"L2\""
+  },
+  {
     "file": "locality-no-geometry.ott",
     "stage": "decode",
     "rule": "locality.geometry",
@@ -286,6 +400,18 @@
     "stage": "decode",
     "rule": "locality.point.radius",
     "mutation": "the radius of L1 is 0"
+  },
+  {
+    "file": "locality-point-not-object.ott",
+    "stage": "decode",
+    "rule": "locality.point.radius",
+    "mutation": "the point of L1 is 5"
+  },
+  {
+    "file": "radius-fraction.ott",
+    "stage": "decode",
+    "rule": "locality.point.radius",
+    "mutation": "the radius of L1 is 12.0"
   },
   {
     "file": "area-no-polygons.ott",
@@ -306,10 +432,40 @@
     "mutation": "the polygon of L2 is \"not a polyline!\""
   },
   {
+    "file": "area-polyline-byte-below-63.ott",
+    "stage": "decode",
+    "rule": "locality.area.polyline",
+    "mutation": "the last byte of the polygon of L2 is \"!\""
+  },
+  {
+    "file": "area-polyline-byte-above-126.ott",
+    "stage": "decode",
+    "rule": "locality.area.polyline",
+    "mutation": "the first byte of the polygon of L2 is 0x7F"
+  },
+  {
+    "file": "area-polyline-empty.ott",
+    "stage": "decode",
+    "rule": "locality.area.polyline",
+    "mutation": "the polygon of L2 is \"\""
+  },
+  {
     "file": "area-polyline-truncated.ott",
     "stage": "decode",
     "rule": "locality.area.polyline",
     "mutation": "the polygon of L2 lacks its last byte"
+  },
+  {
+    "file": "area-polyline-eight-chunks.ott",
+    "stage": "decode",
+    "rule": "locality.area.polyline",
+    "mutation": "the first value of the polygon of L2 is written in eight chunks"
+  },
+  {
+    "file": "area-odd-values.ott",
+    "stage": "decode",
+    "rule": "locality.area.ring",
+    "mutation": "the polygon of L2 has seven values"
   },
   {
     "file": "area-two-vertices.ott",

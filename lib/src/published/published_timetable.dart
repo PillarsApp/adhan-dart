@@ -8,7 +8,6 @@ import '../data/delta_cells_codec.dart';
 import '../data/malaysia_data_revision.dart';
 import '../data/malaysia_times_codec.dart';
 import '../data/malaysia_times_data.dart';
-import '../data/malaysia_zone_map.dart' show MalaysiaZoneMap;
 import '../malaysia/malaysia_zones.dart';
 
 part 'malaysia_source.dart';
@@ -205,6 +204,9 @@ final class PublishedTimetable implements OfficialTimetableSource {
     }
     if (bytes.contains(_cr)) {
       throw _violation(OttRule.fileCr, 'the file contains a CR');
+    }
+    if (_containsBom(bytes)) {
+      throw _violation(OttRule.fileBom, 'the file contains a byte order mark');
     }
     final copy = Uint8List.fromList(bytes);
     final firstBreak = copy.indexOf(_lf);

@@ -25,15 +25,17 @@ Every rule a decoder enforces has an id, listed under [Rule ids](#rule-ids). A d
 
 The header is a JSON object. Every key in the table is required. The decoder rejects a header that lacks a key, or whose value breaks the rule in the table.
 
-An object in the header, at any depth, never carries the same key twice. JSON parsers keep one of the two values and differ on which, so a decoder does not rely on its parser here: after the header parses, it scans the header line once, remembering the keys of each open object, and rejects the second occurrence of a key (`header.duplicateKey`). A key compares after its escapes are decoded, so `"en"` and `"\u0065n"` are the same key.
+An object in the header, at any depth, never carries the same key twice. JSON parsers keep one of the two values and differ on which, so a decoder does not rely on its parser here: after the header parses, it scans the header line once, remembering the keys of each open object, and rejects the second occurrence of a key (`header.duplicateKey`). A key compares after its escapes are decoded, so `"en"` and `"\u0065n"` are the same key. The same scan counts the open objects and arrays: a header that nests deeper than 32 levels, the header object itself being level 1, is malformed (`header.json`). A string escape that is a lone surrogate (`\ud800` with no low surrogate after it) and a number that is not finite (such as `1e999`) are malformed (`header.json`), under an ignored key too, because JSON parsers differ on both.
 
-Every integer in the header is a JSON integer with no fraction and no exponent. Only a `ref` value and an offset's `minutes` may be negative. Every other integer is 0 or more.
+Every integer in the header is a JSON number written as digits with an optional leading minus sign. `1.0`, `12.0`, `1e0` and `1e7` are not integers, whatever value they denote. A number that is not an integer representable in a signed 32-bit integer breaks its field's integer rule; a 32-bit integer outside the field's bounds breaks its range rule. Only a `ref` value and an offset's `minutes` may be negative. Every other integer is 0 or more.
+
+Every pattern on this page matches the whole string. A value with a trailing line break does not match.
 
 | Key | Value | Rule |
 |---|---|---|
-| `authority` | string | Not empty. No whitespace. The identifier of the publishing authority, such as `sa-umm-al-qura`. |
+| `authority` | string | Matches `^[a-z0-9][a-z0-9-]{0,63}$`. The identifier of the publishing authority, such as `sa-umm-al-qura`. |
 | `revision` | integer | 0 to 2147483647. The authority's revision counter for this edition. |
-| `part` | string | Not empty. No whitespace. The name of this part inside the edition, such as `all`. |
+| `part` | string | Matches `^[a-z0-9][a-z0-9-]{0,63}$`. The name of this part inside the edition, such as `all`. |
 | `coverage` | `[from, to]` | Two dates, `from` at or before `to`. Every row date lies in this range. A date in the range with no row is "no row", not an error. |
 | `columns` | array of strings | Unique names from the column set below. Contains all six core columns. The order is the order of the cells in every row line. |
 | `asrShadow` | integer | 1 or 2. The shadow factor of the published `asr` column. |
@@ -74,7 +76,7 @@ The offset in force on a date is the `minutes` of the entry with the greatest da
 
 Exactly one of `point` and `area` is present. A locality is in force on a date when the date is at or after `validFrom` (or `validFrom` is absent) and at or before `validTo` (or `validTo` is absent).
 
-A ring is a Google encoded polyline at precision 6, so each decoded value is a microdegree integer, latitude first. A ring has at least three vertices and every vertex is inside the `ref` ranges. The closing edge from the last vertex back to the first is implicit, so the encoder does not repeat the first vertex. The area is the even-odd fill of all rings together, so a hole is any ring inside another ring, and ring order carries no meaning.
+A ring is a Google encoded polyline at precision 6, so each decoded value is a microdegree integer, latitude first. Each value is written in at most seven chunks (the encoder writes the fewest chunks, and a 32-bit value never needs more) and decodes to a signed 32-bit integer; a ring that breaks either is `locality.area.polyline`. A ring with an odd number of values is `locality.area.ring`. A ring has at least three vertices and every vertex is inside the `ref` ranges. The closing edge from the last vertex back to the first is implicit, so the encoder does not repeat the first vertex. The area is the even-odd fill of all rings together, so a hole is any ring inside another ring, and ring order carries no meaning.
 
 Every integer in the file fits in a signed 32-bit integer. Readers on a 32-bit target multiply microdegrees in 64-bit arithmetic, because a cross product of two microdegree differences does not fit in 32 bits. A reader whose integers carry 53 bits, such as Dart compiled to JavaScript, is exact only while every ring edge spans less than about 9 degrees in both latitude and longitude.
 
@@ -113,7 +115,7 @@ The decoder rejects a cell that is not a letter from `a` to `g` or a tilde and f
 
 A decoder validates in two stages, so a process that only needs one row never pays for the whole file.
 
-**Decode.** `PublishedTimetable.decode` reads line 1 and the header, checks every header rule above, and scans every row line once. For a row line it checks the three-field shape, that `localityId` is in the header, that `firstDate` is a real date inside `coverage`, that `cells` starts with `4 × n` ASCII digits, and that the line has no CR. It does not decode cells. A failure throws `FormatException`.
+**Decode.** `PublishedTimetable.decode` first checks the file rules on the bytes (not empty, ends with LF, no CR, no byte order mark), then reads line 1 and the header, checks every header rule above, and scans every row line once. For a row line it checks the three-field shape, that `localityId` is in the header, that `firstDate` is a real date inside `coverage`, that `cells` starts with `4 × n` ASCII digits, and that the line has no CR. It does not decode cells. A failure throws `FormatException`.
 
 **Validate all rows.** `validateAllRows()` decodes every line once and checks that every minute is 0 to 2879, that the core columns strictly increase on every day in the order `fajr`, `sunrise`, `dhuhr`, `asr`, `maghrib`, `isha`, that no line crosses 1 January or ends after `coverage`, and that no two lines of one locality overlap. A failure throws `FormatException`. A lookup on a file that was never validated decodes the covering line on first use and throws `FormatException` from the lookup if that line is malformed.
 
@@ -126,14 +128,15 @@ Every check a decoder makes is one of the rules below. The Dart decoder opens ea
 | `file.empty` | decode | The file has at least one byte. |
 | `file.lastLineNoLF` | decode | The last byte is LF. |
 | `file.cr` | decode | No byte is CR. |
+| `file.bom` | decode | No byte sequence is `EF BB BF`. |
 | `file.magic` | decode | Line 1 is `OTT 1`. |
 | `file.headerAbsent` | decode | A header line follows line 1. |
-| `header.json` | decode | Line 2 is UTF-8 and parses as one JSON object. |
+| `header.json` | decode | Line 2 is UTF-8 and parses as one JSON object that nests at most 32 levels, with no lone surrogate escape and no non-finite number. |
 | `header.duplicateKey` | decode | No object in the header repeats a key. |
 | `header.keyAbsent` | decode | Every required key is present. |
-| `header.authority` | decode | `authority` is a non-empty string without whitespace. |
+| `header.authority` | decode | `authority` is a string matching `^[a-z0-9][a-z0-9-]{0,63}$`. |
 | `header.revision` | decode | `revision` is an integer from 0 to 2147483647. |
-| `header.part` | decode | `part` is a non-empty string without whitespace. |
+| `header.part` | decode | `part` is a string matching `^[a-z0-9][a-z0-9-]{0,63}$`. |
 | `header.coverage` | decode | `coverage` is two dates. |
 | `header.coverage.order` | decode | `coverage[0]` is at or before `coverage[1]`. |
 | `header.asrShadow` | decode | `asrShadow` is 1 or 2. |
@@ -156,7 +159,7 @@ Every check a decoder makes is one of the rules below. The Dart decoder opens ea
 | `locality.zone` | decode | `zone` is an index into `zones`. |
 | `locality.names` | decode | `names` is an object whose values are strings. |
 | `locality.ref.shape` | decode | `ref` is `[lat, lon]`. |
-| `locality.ref.integer` | decode | A `ref` value is an integer. |
+| `locality.ref.integer` | decode | A `ref` value is a 32-bit integer. |
 | `locality.ref.range` | decode | `lat` is within ±90000000 and `lon` within ±180000000. |
 | `locality.validity.date` | decode | `validFrom` and `validTo` are dates. |
 | `locality.validity.order` | decode | `validTo` is at or after `validFrom`. |
@@ -165,8 +168,8 @@ Every check a decoder makes is one of the rules below. The Dart decoder opens ea
 | `locality.point.radius` | decode | `point` is an object whose `radiusM` is an integer from 1 to 2147483647. |
 | `locality.area.polygons` | decode | `area` is an object whose `polygons` is an array with at least one ring. |
 | `locality.area.tolerance` | decode | `toleranceM` is an integer from 0 to 2147483647. |
-| `locality.area.polyline` | decode | A ring is a string of bytes 63 to 126 that ends a complete polyline value. |
-| `locality.area.ring` | decode | A ring decodes to at least three vertices. |
+| `locality.area.polyline` | decode | A ring is a string of bytes 63 to 126 whose values are complete, at most seven chunks each, and 32-bit. |
+| `locality.area.ring` | decode | A ring decodes to an even number of values and at least three vertices. |
 | `locality.area.vertex` | decode | Every vertex is inside the `ref` ranges. |
 | `row.fields` | decode | A row line is three fields separated by single spaces. |
 | `row.locality` | decode | The row's locality id is in the header. |
@@ -174,10 +177,10 @@ Every check a decoder makes is one of the rules below. The Dart decoder opens ea
 | `row.coverage` | decode | The row's first date is inside `coverage`. |
 | `row.firstDay.length` | decode | `cells` has at least `4 × n` bytes. |
 | `row.firstDay.digits` | decode | The first `4 × n` bytes of `cells` are digits. |
-| `cell.truncatedTime` | validate | Four bytes follow a tilde and open the first day. |
-| `cell.digits` | validate | The four bytes of `HHMM` are digits. |
-| `cell.minute` | validate | `MM` is at most 59. |
-| `cell.hour` | validate | `HH` is at most 47. |
+| `cell.truncatedTime` | validate | Four bytes follow a tilde. |
+| `cell.digits` | validate | The four bytes after a tilde are digits. |
+| `cell.minute` | validate | `MM` of any `HHMM`, in the first day or after a tilde, is at most 59. |
+| `cell.hour` | validate | `HH` of any `HHMM`, in the first day or after a tilde, is at most 47. |
 | `cell.truncatedDay` | validate | Every day after the first has `n` cells. |
 | `cell.letter` | validate | A cell that is not a tilde is a letter from `a` to `g`. |
 | `cell.delta` | validate | A delta keeps the column within 0 to 2879. |
@@ -219,7 +222,7 @@ Distances are in whole millimetres, so two implementations agree even when their
 
 ### Hanafi Asr
 
-`asrShadow` names the shadow factor of the published `asr`. A reader that assembles prayer times for a madhab with the same factor uses the published Asr. When the factors differ, Asr is the published Asr plus `round((asr(userShadow) − asr(asrShadow)) × 60)` minutes, both solar Asr times computed at the locality's reference point on the row's date. When the header has an `asrHanafi` column and the madhab is Hanafi, the reader uses that column instead. The `expected.json` vectors give the assembled Asr for both madhabs.
+`asrShadow` names the shadow factor of the published `asr`. A reader that assembles prayer times for a madhab with the same factor uses the published Asr. When the factors differ, Asr is the published Asr plus `floor((asr(userShadow) − asr(asrShadow)) × 60 + 0.5)` minutes. Both solar Asr times are computed with the library's own solar-time algorithm (adhan's `SolarTime`, the same code in the Dart and Swift forks), at the locality's reference point on the row's date, as fractional hours; the difference in minutes is rounded to the nearest minute with a half rounded up, so a shift of −2.5 becomes −2 and one of 2.5 becomes 3. When the header has an `asrHanafi` column and the madhab is Hanafi, the reader uses that column instead. The `expected.json` vectors give the assembled Asr for both madhabs.
 
 At a high latitude the sun can fail to reach the Hanafi shadow length on a day it does reach the Shafi one, so the solar difference is undefined. A reader asked for that Asr without an `asrHanafi` column reports that it cannot assemble the day instead of returning a time (Dart throws `StateError` from `PrayerTimes.official`). An authority whose localities can reach such a day must publish `asrHanafi`.
 

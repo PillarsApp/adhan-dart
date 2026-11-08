@@ -38,7 +38,7 @@ DateTime _asr(OfficialRow row, CalculationParameters parameters) {
         'does not reach one of the two shadow lengths there and the row '
         'publishes no Asr for factor $userShadow');
   }
-  return published.add(Duration(minutes: shift.round()));
+  return published.add(Duration(minutes: (shift + 0.5).floor()));
 }
 
 ShadowLength _shadowLength(int factor) =>

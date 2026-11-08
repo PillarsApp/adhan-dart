@@ -2,6 +2,9 @@ part of 'published_timetable.dart';
 
 const String _magicLine = 'OTT 1';
 const int _int32Max = 2147483647;
+const int _int32Min = -2147483648;
+const int _maxHeaderDepth = 32;
+const int _maxPolylineChunks = 7;
 const int _lf = 0x0A;
 const int _cr = 0x0D;
 const int _space = 0x20;
@@ -10,6 +13,7 @@ enum OttRule {
   fileEmpty('file.empty'),
   fileLastLineNoLf('file.lastLineNoLF'),
   fileCr('file.cr'),
+  fileBom('file.bom'),
   fileMagic('file.magic'),
   fileHeaderAbsent('file.headerAbsent'),
   headerJson('header.json'),
@@ -72,6 +76,7 @@ FormatException _violation(OttRule rule, String detail) =>
     FormatException('${rule.id}: $detail');
 
 final RegExp _localityIdPattern = RegExp(r'^[A-Za-z0-9_.-]{1,32}$');
+final RegExp _namePattern = RegExp(r'^[a-z0-9][a-z0-9-]{0,63}$');
 
 final DateTime _epoch = DateTime.utc(1970);
 
@@ -144,10 +149,10 @@ String _string(Object? value, OttRule rule, String what,
   return value;
 }
 
-String _token(Object? value, OttRule rule, String what) {
-  final text = _string(value, rule, what);
-  if (text.contains(RegExp(r'\s'))) {
-    throw _violation(rule, '$what contains whitespace');
+String _name(Object? value, OttRule rule, String what) {
+  final text = _string(value, rule, what, allowEmpty: true);
+  if (!_namePattern.hasMatch(text)) {
+    throw _violation(rule, '$what does not match ${_namePattern.pattern}');
   }
   return text;
 }
@@ -162,10 +167,11 @@ int _int(Object? value, OttRule rule, String what,
 }
 
 int _refValue(Object? value, String what, int limit) {
-  if (value is! int) {
-    throw _violation(OttRule.localityRefInteger, '$what is not an integer');
+  if (value is! int || value < _int32Min || value > _int32Max) {
+    throw _violation(
+        OttRule.localityRefInteger, '$what is not a 32-bit integer');
   }
-  if (value.abs() > limit) {
+  if (value < -limit || value > limit) {
     throw _violation(
         OttRule.localityRefRange, '$what is outside ${-limit} to $limit');
   }
@@ -181,19 +187,20 @@ PublishedColumn _parseColumn(Object? value) {
   throw _violation(OttRule.columnUnknown, '$value is not a column name');
 }
 
-/// JSON parsers keep one value of a repeated key silently, so the header text
-/// is scanned once after it parsed: every open object remembers its keys.
-void _rejectDuplicateKeys(String header) {
+/// Dart's parser keeps one value of a repeated key silently.
+void _rejectDuplicateKeysAndDeepNesting(String header) {
   final frames = <Set<String>?>[];
   var expectKey = false;
   var i = 0;
   while (i < header.length) {
     final unit = header.codeUnitAt(i);
-    if (unit == 0x7B) {
-      frames.add(<String>{});
-      expectKey = true;
-    } else if (unit == 0x5B) {
-      frames.add(null);
+    if (unit == 0x7B || unit == 0x5B) {
+      if (frames.length == _maxHeaderDepth) {
+        throw _violation(OttRule.headerJson,
+            'line 2 nests deeper than $_maxHeaderDepth levels');
+      }
+      frames.add(unit == 0x7B ? <String>{} : null);
+      if (unit == 0x7B) expectKey = true;
     } else if (unit == 0x7D || unit == 0x5D) {
       frames.removeLast();
     } else if (unit == 0x2C) {
@@ -216,6 +223,37 @@ void _rejectDuplicateKeys(String header) {
       i = end;
     }
     i++;
+  }
+}
+
+/// Dart's parser keeps a lone surrogate escape and a number that overflows to
+/// infinity.
+void _rejectLoneSurrogatesAndNonFiniteNumbers(Object? value) {
+  switch (value) {
+    case String():
+      for (var i = 0; i < value.length; i++) {
+        final unit = value.codeUnitAt(i);
+        if (unit < 0xD800 || unit > 0xDFFF) continue;
+        final next = i + 1 < value.length ? value.codeUnitAt(i + 1) : 0;
+        if (unit <= 0xDBFF && next >= 0xDC00 && next <= 0xDFFF) {
+          i++;
+          continue;
+        }
+        throw _violation(
+            OttRule.headerJson, 'line 2 has a lone surrogate escape');
+      }
+    case double():
+      if (!value.isFinite) {
+        throw _violation(
+            OttRule.headerJson, 'line 2 has a number that is not finite');
+      }
+    case Map<String, Object?>():
+      for (final entry in value.entries) {
+        _rejectLoneSurrogatesAndNonFiniteNumbers(entry.key);
+        _rejectLoneSurrogatesAndNonFiniteNumbers(entry.value);
+      }
+    case List<Object?>():
+      value.forEach(_rejectLoneSurrogatesAndNonFiniteNumbers);
   }
 }
 
@@ -381,23 +419,55 @@ final class _LocalityRecord {
   }
 
   static List<int> _parseRing(String encoded, String id) {
-    for (final unit in encoded.codeUnits) {
-      if (unit < 63 || unit > 126) {
-        throw _violation(OttRule.localityAreaPolyline,
-            'a polygon of $id is not an encoded polyline');
+    FormatException polyline(String detail) =>
+        _violation(OttRule.localityAreaPolyline, 'a polygon of $id $detail');
+    final values = <int>[];
+    var index = 0;
+    var latitude = 0;
+    var longitude = 0;
+    while (index < encoded.length) {
+      var result = 0;
+      var chunks = 0;
+      int chunk;
+      do {
+        if (index == encoded.length) throw polyline('is truncated');
+        chunk = encoded.codeUnitAt(index++) - 63;
+        if (chunk < 0 || chunk > 63) {
+          throw polyline('is not an encoded polyline');
+        }
+        if (chunks == _maxPolylineChunks) {
+          throw polyline('has a value of more than $_maxPolylineChunks chunks');
+        }
+        result |= (chunk & 0x1f) << (5 * chunks);
+        chunks++;
+      } while (chunk >= 0x20);
+      final delta = (result & 1) == 1 ? ~(result >> 1) : result >> 1;
+      if (delta < _int32Min || delta > _int32Max) {
+        throw polyline('has a value that does not fit in 32 bits');
+      }
+      if (values.length.isEven) {
+        latitude += delta;
+        values.add(latitude);
+      } else {
+        longitude += delta;
+        values.add(longitude);
       }
     }
-    if (encoded.codeUnitAt(encoded.length - 1) - 63 >= 0x20) {
+    if (values.length.isOdd) {
       throw _violation(
-          OttRule.localityAreaPolyline, 'a polygon of $id is truncated');
+          OttRule.localityAreaRing, 'a ring of $id has an odd value count');
     }
-    final values = MalaysiaZoneMap.decodePolyline(encoded);
-    if (values.length.isOdd || values.length < 6) {
+    if (values.length < 6) {
       throw _violation(OttRule.localityAreaRing,
           'a ring of $id has fewer than three vertices');
     }
     for (var i = 0; i < values.length; i += 2) {
-      if (values[i].abs() > 90000000 || values[i + 1].abs() > 180000000) {
+      final vertexLatitude = values[i];
+      final vertexLongitude = values[i + 1];
+      if (vertexLatitude < -90000000 ||
+          vertexLatitude > 90000000 ||
+          vertexLongitude < -180000000 ||
+          vertexLongitude > 180000000) {
         throw _violation(OttRule.localityAreaVertex,
             'a vertex of $id is outside the coordinate range');
       }
@@ -455,8 +525,9 @@ final class _Header {
     } on FormatException {
       throw _violation(OttRule.headerJson, 'line 2 is not JSON');
     }
-    _rejectDuplicateKeys(text);
     final json = _object(decoded, OttRule.headerJson, 'line 2');
+    _rejectDuplicateKeysAndDeepNesting(text);
+    _rejectLoneSurrogatesAndNonFiniteNumbers(json);
     for (final key in [
       'authority',
       'revision',
@@ -534,10 +605,10 @@ final class _Header {
     }
     return _Header._(
         authority:
-            _token(json['authority'], OttRule.headerAuthority, 'authority'),
+            _name(json['authority'], OttRule.headerAuthority, 'authority'),
         revision:
             _int(json['revision'], OttRule.headerRevision, 'revision', min: 0),
-        part: _token(json['part'], OttRule.headerPart, 'part'),
+        part: _name(json['part'], OttRule.headerPart, 'part'),
         coverageFrom: coverageFrom,
         coverageTo: coverageTo,
         columns: List.unmodifiable(columns),
@@ -560,6 +631,15 @@ final class _RowLine {
 
   _RowLine(
       this.locality, this.firstDay, this.year, this.cellsStart, this.cellsEnd);
+}
+
+bool _containsBom(Uint8List bytes) {
+  for (var i = 0; i + 2 < bytes.length; i++) {
+    if (bytes[i] == 0xEF && bytes[i + 1] == 0xBB && bytes[i + 2] == 0xBF) {
+      return true;
+    }
+  }
+  return false;
 }
 
 List<List<_RowLine>> _indexLines(Uint8List bytes, int start, _Header header) {

@@ -9,8 +9,15 @@ const core = ['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha'];
 
 const _earthRadius = 6371008.8;
 
-List<Vector> validVectors() =>
-    [kacstLike(), shapes(), dst(), lateIsha(), twoZones(), edgeValues()];
+List<Vector> validVectors() => [
+      kacstLike(),
+      shapes(),
+      dst(),
+      lateIsha(),
+      twoZones(),
+      edgeValues(),
+      canon()
+    ];
 
 class Vector {
   final String name;
@@ -110,9 +117,10 @@ int _shift(
   ShadowLength length(int shadow) =>
       shadow == 1 ? ShadowLength.single : ShadowLength.double;
   return ((solar.afternoon(length(userShadow)) -
-              solar.afternoon(length(rowShadow))) *
-          60)
-      .round();
+                  solar.afternoon(length(rowShadow))) *
+              60 +
+          0.5)
+      .floor();
 }
 
 String _iso(DateTime utc) => utc.toIso8601String().replaceFirst('.000', '');
@@ -561,6 +569,67 @@ Vector edgeValues() {
       'retired-locality-does-not-resolve', [37.9, -25.68], '2026-04-02');
   vector.noRow('manual-retired-locality-after-its-rows', here, '2026-04-02',
       localityId: 'old-west', locality: 'old-west');
+  return vector;
+}
+
+Vector canon() {
+  const day1 = [300, 390, 740, 1000, 1100, 1190];
+  const day2 = [297, 388, 739, 1000, 1101, 1192];
+  const day3 = [300, 392, 735, 1000, 1101, 1192];
+  const day4 = [301, 393, 736, 1001, 1102, 1193];
+  const day5 = [298, 391, 735, 1001, 1105, 1190];
+  const day6 = [302, 397, 731, 1004, 1105, 1190];
+  final outer = _square(50000000, 50000000, 52000000, 52000000);
+  final hole = _square(50800000, 50800000, 51200000, 51200000);
+  final ringsInSortedOrder = [outer, hole]..sort((a, b) =>
+      MalaysiaZoneMap.encodePolyline(a)
+          .compareTo(MalaysiaZoneMap.encodePolyline(b)));
+  final rings = ringsInSortedOrder.reversed.toList();
+  final vector = Vector('canon', {
+    'authority': 'xx-canon',
+    'revision': 5,
+    'part': 'all',
+    'coverage': ['2026-01-01', '2027-12-31'],
+    'columns': core,
+    'asrShadow': 1,
+    'zones': [
+      _zone('Etc/UTC', [
+        ['2026-01-01', 0]
+      ])
+    ],
+    'localities': [
+      _area('rings', 'g', [50500000, 50500000], rings, 0),
+      _point('split', 'g', [20000000, 30000000], 10000,
+          names: {
+            '\uFF58': 'Fullwidth',
+            'en': 'Split',
+            '\u{1D54F}': 'Astral',
+            'del': '\u007f',
+            'ctl': '\b\f',
+          },
+          validFrom: '2026-01-01',
+          validTo: '2027-12-31'),
+    ],
+    'rows': {
+      'split': _days('2026-12-29', [day1, day2, day3, day4, day5, day6]),
+      'rings': _days('2026-12-29', [day1, day2]),
+    },
+  });
+  const here = [20.0, 30.0];
+  vector.row('first-day-of-the-first-line', here, '2026-12-29',
+      locality: 'split');
+  vector.row('letters-a-to-f', here, '2026-12-30', locality: 'split');
+  vector.row('letter-g-and-resets-beyond-the-window', here, '2026-12-31',
+      locality: 'split');
+  vector.row('first-day-of-the-second-line', here, '2027-01-01',
+      locality: 'split');
+  vector.row('letters-a-b-c-and-g-again', here, '2027-01-02',
+      locality: 'split');
+  vector.row('resets-of-plus-four-plus-six-minus-four', here, '2027-01-03',
+      locality: 'split');
+  vector.row('inside-the-outer-ring-listed-second', [50.5, 50.5], '2026-12-30',
+      locality: 'rings');
+  vector.noLocality('inside-the-hole-listed-first', [51.0, 51.0], '2026-12-30');
   return vector;
 }
 

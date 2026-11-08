@@ -99,6 +99,25 @@ const List<int> _triangle = [
   41000000
 ];
 
+String _polylineValue(int value, {int chunks = 0}) {
+  var v = value < 0 ? ~(value << 1) : value << 1;
+  final out = StringBuffer();
+  var written = 0;
+  while (v >= 0x20 || written < chunks - 1) {
+    out.writeCharCode((0x20 | (v & 0x1f)) + 63);
+    v >>= 5;
+    written++;
+  }
+  out.writeCharCode(v + 63);
+  return out.toString();
+}
+
+String _headerText(String from, String to) {
+  final text = jsonEncode(_baseHeader());
+  if (!text.contains(from)) throw StateError('"$from" is not in the header');
+  return text.replaceFirst(from, to);
+}
+
 Map<String, dynamic> _header(void Function(Map<String, dynamic> header) edit) {
   final header = _baseHeader();
   edit(header);
@@ -147,6 +166,25 @@ List<Malformed> malformedVectors() {
       _file('{authority', _rowLine()));
   decode('header-not-object.ott', 'header.json', 'line 2 is an array',
       _file('[]', _rowLine()));
+  decode('header-string.ott', 'header.json', 'line 2 is "abc"',
+      _file('"abc"', _rowLine()));
+  decode(
+      'header-lone-surrogate.ott',
+      'header.json',
+      'the name en of L1 is the escape \\ud800',
+      _file(_headerText('"en":"Base"', '"en":"\\ud800"'), _rowLine()));
+  decode(
+      'header-deep-nesting.ott',
+      'header.json',
+      'an ignored key x holds 32 nested arrays inside the header object',
+      _file(
+          _headerText(
+              '{"authority"', '{"x":${'[' * 32}${']' * 32},"authority"'),
+          _rowLine()));
+  decode('header-non-finite.ott', 'header.json', 'an ignored key x is 1e999',
+      _file(_headerText('{"authority"', '{"x":1e999,"authority"'), _rowLine()));
+  header('bom-in-name.ott', 'file.bom', 'the name en of L1 starts with U+FEFF',
+      (h) => _point(h)['names'] = {'en': '\uFEFFBase'});
   decode(
       'header-not-utf8.ott',
       'header.json',
@@ -163,17 +201,41 @@ List<Malformed> malformedVectors() {
           jsonEncode(_baseHeader()).replaceFirst(
               '"names":{"en":"Base"}', '"names":{"en":"Base","en":"Base"}'),
           _rowLine()));
+  decode(
+      'header-duplicate-revision.ott',
+      'header.duplicateKey',
+      'revision appears twice at the top level, as 1 and then 2',
+      _file(_headerText('"revision":1,', '"revision":1,"revision":2,'),
+          _rowLine()));
   header('missing-revision.ott', 'header.keyAbsent', 'revision is absent',
       (h) => h.remove('revision'));
   header('authority-empty.ott', 'header.authority', 'authority is ""',
       (h) => h['authority'] = '');
   header('authority-whitespace.ott', 'header.authority',
       'authority is "xx base"', (h) => h['authority'] = 'xx base');
+  header('authority-uppercase.ott', 'header.authority',
+      'authority is "XX-base"', (h) => h['authority'] = 'XX-base');
+  header(
+      'authority-trailing-line-separator.ott',
+      'header.authority',
+      'authority is "xx-base" followed by U+2028',
+      (h) => h['authority'] = 'xx-base\u2028');
+  header(
+      'authority-trailing-newline.ott',
+      'header.authority',
+      'authority is "xx-base" followed by LF',
+      (h) => h['authority'] = 'xx-base\n');
   header('revision-too-large.ott', 'header.revision', 'revision is 2147483648',
       (h) => h['revision'] = 2147483648);
   header('revision-negative.ott', 'header.revision', 'revision is -1',
       (h) => h['revision'] = -1);
+  header('revision-fraction.ott', 'header.revision', 'revision is 1.0',
+      (h) => h['revision'] = 1.0);
+  decode('revision-exponent.ott', 'header.revision', 'revision is 1e0',
+      _file(_headerText('"revision":1,', '"revision":1e0,'), _rowLine()));
   header('part-empty.ott', 'header.part', 'part is ""', (h) => h['part'] = '');
+  header('part-underscore.ott', 'header.part', 'part is "all_parts"',
+      (h) => h['part'] = 'all_parts');
   header(
       'coverage-three-dates.ott',
       'header.coverage',
@@ -191,6 +253,8 @@ List<Malformed> malformedVectors() {
       (h) => h['coverage'] = ['2027-12-31', '2026-01-01']);
   header('asr-shadow-3.ott', 'header.asrShadow', 'asrShadow is 3',
       (h) => h['asrShadow'] = 3);
+  header('asr-shadow-true.ott', 'header.asrShadow', 'asrShadow is true',
+      (h) => h['asrShadow'] = true);
   decode(
       'unknown-column.ott',
       'column.unknown',
@@ -270,18 +334,12 @@ List<Malformed> malformedVectors() {
       'localities.empty',
       'localities is [] and the file has no rows',
       _file(_header((h) => h['localities'] = []), ''));
-  decode(
-      'locality-bad-id.ott',
-      'locality.id',
-      'the id of L1 is "L 1"',
-      _file(_header((h) => _point(h)['id'] = 'L 1'),
-          _rowLine().replaceFirst('L1 ', 'L 1 ')));
-  decode(
-      'locality-long-id.ott',
-      'locality.id',
-      'the id of L1 is 33 letters',
-      _file(_header((h) => _point(h)['id'] = 'L' * 33),
-          _rowLine().replaceFirst('L1 ', '${'L' * 33} ')));
+  header('locality-bad-id.ott', 'locality.id', 'the id of L2 is "L 2"',
+      (h) => _area(h)['id'] = 'L 2');
+  header('locality-long-id.ott', 'locality.id', 'the id of L2 is 33 letters',
+      (h) => _area(h)['id'] = 'L' * 33);
+  header('locality-id-trailing-newline.ott', 'locality.id',
+      'the id of L2 is "L2" followed by LF', (h) => _area(h)['id'] = 'L2\n');
   header('locality-duplicate-id.ott', 'locality.id.duplicate',
       'the id of L2 is L1', (h) => _area(h)['id'] = 'L1');
   header('locality-group-empty.ott', 'locality.group', 'the group of L1 is ""',
@@ -290,6 +348,8 @@ List<Malformed> malformedVectors() {
       'L1 names zone 1 of one zone', (h) => _point(h)['zone'] = 1);
   header('locality-name-not-string.ott', 'locality.names',
       'the name en of L1 is 7', (h) => _point(h)['names'] = {'en': 7});
+  header('locality-names-not-object.ott', 'locality.names',
+      'the names of L1 are 5', (h) => _point(h)['names'] = 5);
   header(
       'locality-ref-three-values.ott',
       'locality.ref.shape',
@@ -300,6 +360,22 @@ List<Malformed> malformedVectors() {
       'locality.ref.integer',
       'the ref latitude of L1 is 10.5',
       (h) => _point(h)['ref'] = [10.5, 10000000]);
+  decode(
+      'locality-ref-exponent.ott',
+      'locality.ref.integer',
+      'the ref latitude of L1 is 1e7',
+      _file(_headerText('"ref":[10000000,', '"ref":[1e7,'), _rowLine()));
+  header(
+      'locality-ref-int64-min.ott',
+      'locality.ref.integer',
+      'the ref latitude of L1 is -9223372036854775808',
+      (h) => _point(h)['ref'] = [-9223372036854775808, 10000000]);
+  decode(
+      'locality-ref-beyond-int64.ott',
+      'locality.ref.integer',
+      'the ref latitude of L1 is 9223372036854775808',
+      _file(_headerText('"ref":[10000000,', '"ref":[9223372036854775808,'),
+          _rowLine()));
   header(
       'locality-ref-out-of-range.ott',
       'locality.ref.range',
@@ -317,6 +393,8 @@ List<Malformed> malformedVectors() {
       (h) => _point(h)['validTo'] = '2025-12-31');
   header('locality-unknown-successor.ott', 'locality.successor',
       'L1 names the successor L9', (h) => _point(h)['successors'] = ['L9']);
+  header('locality-successors-not-array.ott', 'locality.successor',
+      'the successors of L1 are "L2"', (h) => _point(h)['successors'] = 'L2');
   header('locality-no-geometry.ott', 'locality.geometry', 'L1 has no point',
       (h) => _point(h).remove('point'));
   header(
@@ -329,6 +407,13 @@ List<Malformed> malformedVectors() {
           });
   header('locality-radius-zero.ott', 'locality.point.radius',
       'the radius of L1 is 0', (h) => _point(h)['point'] = {'radiusM': 0});
+  header('locality-point-not-object.ott', 'locality.point.radius',
+      'the point of L1 is 5', (h) => _point(h)['point'] = 5);
+  header(
+      'radius-fraction.ott',
+      'locality.point.radius',
+      'the radius of L1 is 12.0',
+      (h) => _point(h)['point'] = {'radiusM': 12.0});
   header(
       'area-no-polygons.ott',
       'locality.area.polygons',
@@ -344,6 +429,23 @@ List<Malformed> malformedVectors() {
       'locality.area.polyline',
       'the polygon of L2 is "not a polyline!"',
       (h) => (_area(h)['area'] as Map)['polygons'] = ['not a polyline!']);
+  header('area-polyline-byte-below-63.ott', 'locality.area.polyline',
+      'the last byte of the polygon of L2 is "!"', (h) {
+    final polyline = MalaysiaZoneMap.encodePolyline(_triangle);
+    (_area(h)['area'] as Map)['polygons'] = [
+      '${polyline.substring(0, polyline.length - 1)}!'
+    ];
+  });
+  header('area-polyline-byte-above-126.ott', 'locality.area.polyline',
+      'the first byte of the polygon of L2 is 0x7F', (h) {
+    final polyline = MalaysiaZoneMap.encodePolyline(_triangle);
+    (_area(h)['area'] as Map)['polygons'] = ['\u007f${polyline.substring(1)}'];
+  });
+  header(
+      'area-polyline-empty.ott',
+      'locality.area.polyline',
+      'the polygon of L2 is ""',
+      (h) => (_area(h)['area'] as Map)['polygons'] = ['']);
   header('area-polyline-truncated.ott', 'locality.area.polyline',
       'the polygon of L2 lacks its last byte', (h) {
     final polyline = MalaysiaZoneMap.encodePolyline(_triangle);
@@ -351,6 +453,22 @@ List<Malformed> malformedVectors() {
       polyline.substring(0, polyline.length - 1)
     ];
   });
+  header('area-polyline-eight-chunks.ott', 'locality.area.polyline',
+      'the first value of the polygon of L2 is written in eight chunks', (h) {
+    final polyline = MalaysiaZoneMap.encodePolyline(_triangle);
+    final first = _polylineValue(_triangle[0]);
+    if (!polyline.startsWith(first)) throw StateError('first value differs');
+    (_area(h)['area'] as Map)['polygons'] = [
+      _polylineValue(_triangle[0], chunks: 8) + polyline.substring(first.length)
+    ];
+  });
+  header(
+      'area-odd-values.ott',
+      'locality.area.ring',
+      'the polygon of L2 has seven values',
+      (h) => (_area(h)['area'] as Map)['polygons'] = [
+            MalaysiaZoneMap.encodePolyline(_triangle) + _polylineValue(1000)
+          ]);
   header(
       'area-two-vertices.ott',
       'locality.area.ring',

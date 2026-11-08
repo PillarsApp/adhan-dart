@@ -828,6 +828,185 @@
       "date": "2026-04-02",
       "result": "noRow",
       "locality": "old-west"
+    },
+    {
+      "name": "first-day-of-the-first-line",
+      "vector": "valid/canon.ott",
+      "coordinates": [
+        20.0,
+        30.0
+      ],
+      "localityId": null,
+      "date": "2026-12-29",
+      "result": "row",
+      "locality": "split",
+      "published": {
+        "fajr": "2026-12-29T05:00:00Z",
+        "sunrise": "2026-12-29T06:30:00Z",
+        "dhuhr": "2026-12-29T12:20:00Z",
+        "asr": "2026-12-29T16:40:00Z",
+        "maghrib": "2026-12-29T18:20:00Z",
+        "isha": "2026-12-29T19:50:00Z"
+      },
+      "asr": {
+        "shafi": "2026-12-29T16:40:00Z",
+        "hanafi": "2026-12-29T17:26:00Z"
+      }
+    },
+    {
+      "name": "letters-a-to-f",
+      "vector": "valid/canon.ott",
+      "coordinates": [
+        20.0,
+        30.0
+      ],
+      "localityId": null,
+      "date": "2026-12-30",
+      "result": "row",
+      "locality": "split",
+      "published": {
+        "fajr": "2026-12-30T04:57:00Z",
+        "sunrise": "2026-12-30T06:28:00Z",
+        "dhuhr": "2026-12-30T12:19:00Z",
+        "asr": "2026-12-30T16:40:00Z",
+        "maghrib": "2026-12-30T18:21:00Z",
+        "isha": "2026-12-30T19:52:00Z"
+      },
+      "asr": {
+        "shafi": "2026-12-30T16:40:00Z",
+        "hanafi": "2026-12-30T17:26:00Z"
+      }
+    },
+    {
+      "name": "letter-g-and-resets-beyond-the-window",
+      "vector": "valid/canon.ott",
+      "coordinates": [
+        20.0,
+        30.0
+      ],
+      "localityId": null,
+      "date": "2026-12-31",
+      "result": "row",
+      "locality": "split",
+      "published": {
+        "fajr": "2026-12-31T05:00:00Z",
+        "sunrise": "2026-12-31T06:32:00Z",
+        "dhuhr": "2026-12-31T12:15:00Z",
+        "asr": "2026-12-31T16:40:00Z",
+        "maghrib": "2026-12-31T18:21:00Z",
+        "isha": "2026-12-31T19:52:00Z"
+      },
+      "asr": {
+        "shafi": "2026-12-31T16:40:00Z",
+        "hanafi": "2026-12-31T17:26:00Z"
+      }
+    },
+    {
+      "name": "first-day-of-the-second-line",
+      "vector": "valid/canon.ott",
+      "coordinates": [
+        20.0,
+        30.0
+      ],
+      "localityId": null,
+      "date": "2027-01-01",
+      "result": "row",
+      "locality": "split",
+      "published": {
+        "fajr": "2027-01-01T05:01:00Z",
+        "sunrise": "2027-01-01T06:33:00Z",
+        "dhuhr": "2027-01-01T12:16:00Z",
+        "asr": "2027-01-01T16:41:00Z",
+        "maghrib": "2027-01-01T18:22:00Z",
+        "isha": "2027-01-01T19:53:00Z"
+      },
+      "asr": {
+        "shafi": "2027-01-01T16:41:00Z",
+        "hanafi": "2027-01-01T17:27:00Z"
+      }
+    },
+    {
+      "name": "letters-a-b-c-and-g-again",
+      "vector": "valid/canon.ott",
+      "coordinates": [
+        20.0,
+        30.0
+      ],
+      "localityId": null,
+      "date": "2027-01-02",
+      "result": "row",
+      "locality": "split",
+      "published": {
+        "fajr": "2027-01-02T04:58:00Z",
+        "sunrise": "2027-01-02T06:31:00Z",
+        "dhuhr": "2027-01-02T12:15:00Z",
+        "asr": "2027-01-02T16:41:00Z",
+        "maghrib": "2027-01-02T18:25:00Z",
+        "isha": "2027-01-02T19:50:00Z"
+      },
+      "asr": {
+        "shafi": "2027-01-02T16:41:00Z",
+        "hanafi": "2027-01-02T17:27:00Z"
+      }
+    },
+    {
+      "name": "resets-of-plus-four-plus-six-minus-four",
+      "vector": "valid/canon.ott",
+      "coordinates": [
+        20.0,
+        30.0
+      ],
+      "localityId": null,
+      "date": "2027-01-03",
+      "result": "row",
+      "locality": "split",
+      "published": {
+        "fajr": "2027-01-03T05:02:00Z",
+        "sunrise": "2027-01-03T06:37:00Z",
+        "dhuhr": "2027-01-03T12:11:00Z",
+        "asr": "2027-01-03T16:44:00Z",
+        "maghrib": "2027-01-03T18:25:00Z",
+        "isha": "2027-01-03T19:50:00Z"
+      },
+      "asr": {
+        "shafi": "2027-01-03T16:44:00Z",
+        "hanafi": "2027-01-03T17:30:00Z"
+      }
+    },
+    {
+      "name": "inside-the-outer-ring-listed-second",
+      "vector": "valid/canon.ott",
+      "coordinates": [
+        50.5,
+        50.5
+      ],
+      "localityId": null,
+      "date": "2026-12-30",
+      "result": "row",
+      "locality": "rings",
+      "published": {
+        "fajr": "2026-12-30T04:57:00Z",
+        "sunrise": "2026-12-30T06:28:00Z",
+        "dhuhr": "2026-12-30T12:19:00Z",
+        "asr": "2026-12-30T16:40:00Z",
+        "maghrib": "2026-12-30T18:21:00Z",
+        "isha": "2026-12-30T19:52:00Z"
+      },
+      "asr": {
+        "shafi": "2026-12-30T16:40:00Z",
+        "hanafi": "2026-12-30T17:11:00Z"
+      }
+    },
+    {
+      "name": "inside-the-hole-listed-first",
+      "vector": "valid/canon.ott",
+      "coordinates": [
+        51.0,
+        51.0
+      ],
+      "localityId": null,
+      "date": "2026-12-30",
+      "result": "noLocality"
     }
   ]
 }
