@@ -2,6 +2,23 @@ const int maxPublishedMinute = 2879;
 
 const String _deltaCells = 'abcdefg';
 
+enum CellRule {
+  truncatedTime('cell.truncatedTime'),
+  digits('cell.digits'),
+  minute('cell.minute'),
+  hour('cell.hour'),
+  letter('cell.letter'),
+  delta('cell.delta'),
+  truncatedDay('cell.truncatedDay');
+
+  const CellRule(this.id);
+
+  final String id;
+}
+
+FormatException _violation(CellRule rule, String detail, int position) =>
+    FormatException('${rule.id}: $detail at offset $position');
+
 String encodeCells(List<List<int>> days, int columns) {
   final out = StringBuffer();
   List<int>? previous;
@@ -28,49 +45,61 @@ String encodeCells(List<List<int>> days, int columns) {
   return out.toString();
 }
 
+int readHhmm(String cells, int position) {
+  if (position + 4 > cells.length) {
+    throw _violation(CellRule.truncatedTime,
+        'a time has ${cells.length - position} of four digits', position);
+  }
+  final digits = List<int>.generate(4, (i) {
+    final unit = cells.codeUnitAt(position + i);
+    if (unit < 0x30 || unit > 0x39) {
+      throw _violation(
+          CellRule.digits, 'a time has a byte that is not a digit', position);
+    }
+    return unit - 0x30;
+  });
+  final minutes = digits[2] * 10 + digits[3];
+  if (minutes > 59) {
+    throw _violation(CellRule.minute, 'a time has minute $minutes', position);
+  }
+  final value = (digits[0] * 10 + digits[1]) * 60 + minutes;
+  if (value > maxPublishedMinute) {
+    throw _violation(CellRule.hour, 'a time is after 47:59', position);
+  }
+  return value;
+}
+
 List<List<int>> decodeCells(String cells, int columns) {
   var position = 0;
-  int readHhmm() {
-    if (position + 4 > cells.length) {
-      throw FormatException('Truncated time', cells, position);
-    }
-    final hours = int.tryParse(cells.substring(position, position + 2));
-    final minutes = int.tryParse(cells.substring(position + 2, position + 4));
-    if (hours == null || minutes == null || hours < 0 || minutes < 0) {
-      throw FormatException('Expected four digits', cells, position);
-    }
-    if (minutes > 59) {
-      throw FormatException('Minute above 59', cells, position);
-    }
+  int time() {
+    final value = readHhmm(cells, position);
     position += 4;
-    final value = hours * 60 + minutes;
-    if (value > maxPublishedMinute) {
-      throw FormatException('Time after 47:59', cells, position - 4);
-    }
     return value;
   }
 
   final days = <List<int>>[
-    [for (var i = 0; i < columns; i++) readHhmm()],
+    [for (var i = 0; i < columns; i++) time()],
   ];
   while (position < cells.length) {
     final previous = days.last;
     final day = <int>[];
     for (var i = 0; i < columns; i++) {
       if (position >= cells.length) {
-        throw FormatException('Truncated day', cells, position);
+        throw _violation(CellRule.truncatedDay,
+            'a day has ${day.length} of $columns cells', position);
       }
       final cell = cells[position++];
       if (cell == '~') {
-        day.add(readHhmm());
+        day.add(time());
       } else {
         final delta = _deltaCells.indexOf(cell) - 3;
         if (delta < -3) {
-          throw FormatException('Unexpected cell "$cell"', cells, position - 1);
+          throw _violation(CellRule.letter, 'a cell is "$cell"', position - 1);
         }
         final value = previous[i] + delta;
         if (value < 0 || value > maxPublishedMinute) {
-          throw FormatException('Delta leaves the day', cells, position - 1);
+          throw _violation(
+              CellRule.delta, 'a delta leaves 0 to 47:59', position - 1);
         }
         day.add(value);
       }

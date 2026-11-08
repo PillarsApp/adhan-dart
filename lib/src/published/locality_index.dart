@@ -6,20 +6,26 @@ const double _metresPerDegreeLongitudeAtEquator = 111320;
 
 double _radians(double degrees) => degrees * math.pi / 180;
 
-void _requireFinite(Coordinates coordinates) {
-  if (!coordinates.latitude.isFinite) {
+void _requireOnGlobe(Coordinates coordinates) {
+  if (!(coordinates.latitude.abs() <= 90)) {
     throw ArgumentError.value(
-        coordinates.latitude, 'latitude', 'must be a finite number');
+        coordinates.latitude, 'latitude', 'must be a number from -90 to 90');
   }
-  if (!coordinates.longitude.isFinite) {
-    throw ArgumentError.value(
-        coordinates.longitude, 'longitude', 'must be a finite number');
+  if (!(coordinates.longitude.abs() <= 180)) {
+    throw ArgumentError.value(coordinates.longitude, 'longitude',
+        'must be a number from -180 to 180');
+  }
+}
+
+void _requireCalendarDay(DateComponents date) {
+  if (!_isCalendarDay(date)) {
+    throw ArgumentError.value(date, 'date', 'must be a calendar day');
   }
 }
 
 _LocalityRecord? _resolveLocality(List<_LocalityRecord> records,
     Coordinates coordinates, DateComponents date) {
-  _requireFinite(coordinates);
+  _requireOnGlobe(coordinates);
   final latitude = coordinates.latitude;
   final longitude = coordinates.longitude;
   _LocalityRecord? nearest;

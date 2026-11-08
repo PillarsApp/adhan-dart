@@ -31,6 +31,13 @@ DateTime _asr(OfficialRow row, CalculationParameters parameters) {
   final shift = (solar.afternoon(_shadowLength(userShadow)) -
           solar.afternoon(_shadowLength(row.asrShadow))) *
       60;
+  if (!shift.isFinite) {
+    throw StateError('Asr with shadow factor $userShadow is undefined at '
+        '${row.locality.referencePoint.latitude}, '
+        '${row.locality.referencePoint.longitude} on ${row.date}: the sun '
+        'does not reach one of the two shadow lengths there and the row '
+        'publishes no Asr for factor $userShadow');
+  }
   return published.add(Duration(minutes: shift.round()));
 }
 

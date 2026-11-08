@@ -3,6 +3,8 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:adhan/adhan.dart';
+import 'package:adhan/src/data/delta_cells_codec.dart' show CellRule;
+import 'package:adhan/src/published/published_timetable.dart' show OttRule;
 import 'package:test/test.dart';
 
 const _vectorsDir = 'test/published/vectors';
@@ -16,6 +18,22 @@ DateComponents _date(String iso) {
 
 CalculationParameters _parameters(Madhab madhab) =>
     CalculationMethod.umm_al_qura.getParameters()..madhab = madhab;
+
+final _riyadh = Coordinates(24.7136, 46.6753);
+
+(String, String) _outcome(Uint8List bytes) {
+  try {
+    final timetable = PublishedTimetable.decode(bytes);
+    try {
+      timetable.validateAllRows();
+      return ('accepted', '');
+    } on FormatException catch (error) {
+      return ('validate', error.message);
+    }
+  } on FormatException catch (error) {
+    return ('decode', error.message);
+  }
+}
 
 void main() {
   final expected =
@@ -125,59 +143,108 @@ void main() {
                 File('$_vectorsDir/malformed/index.json').readAsStringSync())
             as List)
         .cast<Map<String, dynamic>>();
-    final stages = {
-      for (final entry in index) entry['file'] as String: entry['stage']
-    };
     final files = Directory('$_vectorsDir/malformed')
         .listSync()
         .whereType<File>()
         .map((file) => file.uri.pathSegments.last)
         .where((name) => name.endsWith('.ott'))
         .toSet();
+    final rules = {
+      for (final rule in OttRule.values) rule.id,
+      for (final rule in CellRule.values) rule.id,
+    };
 
-    test('the index names every malformed file', () {
-      expect(stages.keys.toSet(), files);
+    test('the index names every malformed file once', () {
+      final named = index.map((entry) => entry['file'] as String).toList();
+      expect(named.toSet(), files);
+      expect(named.length, files.length);
     });
 
-    test('every malformed file fails on the rule recorded for it', () {
+    test('every decoder rule has a malformed file and every file names a rule',
+        () {
+      expect(index.map((entry) => entry['rule']).toSet(), rules);
+    });
+
+    test('the format doc lists every rule with the stage the vectors record',
+        () {
+      final table =
+          RegExp(r'^\| `([\w.]+)` \| (decode|validate) \|', multiLine: true)
+              .allMatches(
+                  File('docs/PUBLISHED_TIMETABLE_FORMAT.md').readAsStringSync())
+              .map((match) => '${match[1]}\t${match[2]}')
+              .toSet();
       final recorded = {
-        for (final line
-            in File('test/published/malformed_messages.tsv').readAsLinesSync())
-          line.split('\t').first: line
+        for (final entry in index) '${entry['rule']}\t${entry['stage']}'
       };
-      expect(recorded.keys.toSet(), files);
-      for (final file in files) {
-        String outcome;
-        try {
-          final timetable =
-              PublishedTimetable.decode(_bytes('malformed/$file'));
-          try {
-            timetable.validateAllRows();
-            outcome = 'accepted';
-          } on FormatException catch (error) {
-            outcome = 'validate\t${error.message}';
-          }
-        } on FormatException catch (error) {
-          outcome = 'decode\t${error.message}';
-        }
-        expect('$file\t$outcome', recorded[file], reason: file);
+      expect(table, recorded);
+      expect(table.map((row) => row.split('\t').first).toSet(), rules);
+    });
+
+    for (final entry in index) {
+      final file = entry['file'] as String;
+      test('$file fails at ${entry['stage']} on ${entry['rule']}', () {
+        final (stage, message) = _outcome(_bytes('malformed/$file'));
+        expect(stage, entry['stage']);
+        expect(message, startsWith('${entry['rule']}: '));
+      });
+    }
+  });
+
+  group('decode', () {
+    test('keeps its own copy of the bytes', () {
+      final pristine = vectors['valid/kacst-like.ott']!;
+      final bytes = _bytes('valid/kacst-like.ott');
+      final timetable = PublishedTimetable.decode(bytes);
+      bytes.fillRange(0, bytes.length, 0x67);
+      for (final day in [1, 2]) {
+        final date = DateComponents(2026, 1, day);
+        expect(
+            (timetable.lookup(_riyadh, date) as OfficialRow)
+                .published(PublishedColumn.fajr),
+            (pristine.lookup(_riyadh, date) as OfficialRow)
+                .published(PublishedColumn.fajr));
       }
     });
 
-    for (final entry in stages.entries) {
-      final bytes = _bytes('malformed/${entry.key}');
-      if (entry.value == 'decode') {
-        test('${entry.key} fails to decode', () {
-          expect(() => PublishedTimetable.decode(bytes),
-              throwsA(isA<FormatException>()));
-        });
-      } else {
-        test('${entry.key} decodes but fails validation', () {
-          final timetable = PublishedTimetable.decode(bytes);
-          expect(timetable.validateAllRows, throwsA(isA<FormatException>()));
-        });
+    test('a date that is not a calendar day is an argument error', () {
+      final timetable = vectors['valid/kacst-like.ott']!;
+      expect(() => timetable.lookup(_riyadh, DateComponents(2026, 2, 30)),
+          throwsArgumentError);
+      expect(
+          () => timetable.lookup(_riyadh, DateComponents(2026, 2, 30),
+              localityId: LocalityId('1001')),
+          throwsArgumentError);
+      expect(() => timetable.localityAt(_riyadh, DateComponents(2026, 13, 1)),
+          throwsArgumentError);
+    });
+
+    test('a coordinate off the globe is an argument error', () {
+      final timetable = vectors['valid/kacst-like.ott']!;
+      for (final point in [
+        Coordinates(90.5, 46),
+        Coordinates(-91, 46),
+        Coordinates(24, 180.5),
+        Coordinates(24, -181),
+        Coordinates(double.nan, 46),
+        Coordinates(24, double.infinity),
+      ]) {
+        expect(() => timetable.localityAt(point, DateComponents(2026, 1, 1)),
+            throwsArgumentError,
+            reason: '$point');
+        expect(() => timetable.lookup(point, DateComponents(2026, 1, 1)),
+            throwsArgumentError,
+            reason: '$point');
       }
-    }
+      expect(
+          timetable.localityAt(
+              Coordinates(90, 180), DateComponents(2026, 1, 1)),
+          isNull);
+      expect(
+          timetable.lookup(
+              Coordinates(double.nan, 48), DateComponents(2026, 1, 3),
+              localityId: LocalityId('1001')),
+          isA<OfficialRow>());
+    });
   });
 
   group('header', () {
@@ -219,23 +286,6 @@ void main() {
       expect(
           timetable.localityAt(Coordinates(15, 48), DateComponents(2027, 6, 1)),
           fresh);
-    });
-
-    test('a non-finite coordinate is an argument error', () {
-      final timetable = vectors['valid/shapes.ott']!;
-      expect(
-          () => timetable.localityAt(
-              Coordinates(double.nan, 48), DateComponents(2026, 6, 1)),
-          throwsArgumentError);
-      expect(
-          () => timetable.lookup(
-              Coordinates(15, double.infinity), DateComponents(2026, 6, 1)),
-          throwsArgumentError);
-      expect(
-          timetable.lookup(
-              Coordinates(double.nan, 48), DateComponents(2026, 12, 30),
-              localityId: LocalityId('old')),
-          isA<OfficialRow>());
     });
   });
 }

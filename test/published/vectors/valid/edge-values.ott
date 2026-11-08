@@ -1,0 +1,5 @@
+OTT 1
+{"authority":"xx-edge","revision":0,"part":"west","coverage":["2026-01-01","2026-12-31"],"columns":["fajr","sunrise","dhuhr","asr","maghrib","isha"],"asrShadow":1,"zones":[{"id":"Atlantic/Azores","offsets":[["2026-01-01",-60],["2026-03-29",0],["2026-10-25",-60]]}],"localities":[{"id":"old-west","group":"Açores","zone":0,"names":{},"ref":[37740000,-25680000],"point":{"radiusM":30000},"validTo":"2026-03-31","successors":["west.a","west_b"]},{"id":"west.a","group":"Açores","zone":0,"names":{"en":"West A"},"ref":[37730000,-25690000],"point":{"radiusM":15000},"validFrom":"2026-04-01"},{"id":"west_b","group":"Açores","zone":0,"names":{"en":"West B\u001b\\","pt":"Ponta \"Oeste\"\tB"},"ref":[37750000,-25670000],"point":{"radiusM":15000},"validFrom":"2026-04-01"}]}
+old-west 2026-03-27 053007001310164019102030eeeeee~0632~0802~1412~1742~2012~2132eeeeee
+west.a 2026-04-01 052006451410175020202140eeeeeeeeeeee
+west_b 2026-04-01 052006451410175020202140eeeeeeffffff

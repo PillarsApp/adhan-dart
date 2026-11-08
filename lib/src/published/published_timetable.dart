@@ -166,20 +166,25 @@ abstract interface class OfficialTimetableSource {
   Locality? locality(LocalityId id);
 
   /// The locality in force at [coordinates] on [date], or null when none
-  /// covers them. Throws [ArgumentError] for a non-finite coordinate.
+  /// covers them. A published source throws [ArgumentError] for a latitude
+  /// outside -90 to 90, a longitude outside -180 to 180, or a [date] that is
+  /// not a calendar day.
   Locality? localityAt(Coordinates coordinates, DateComponents date);
 
   /// The row at [coordinates] on [date]. A [localityId] skips resolution and
   /// never reads the coordinates: an unknown id is [NoLocality], a known id
   /// is used whether or not it is in force on [date].
+  ///
+  /// A source that decodes lazily may throw [FormatException] here when the
+  /// data was never validated and the row's line is malformed.
   OfficialLookup lookup(Coordinates coordinates, DateComponents date,
       {LocalityId? localityId});
 }
 
 /// A timetable decoded from `OTT 1` bytes.
 ///
-/// [decode] reads the header and indexes the row lines. A line's cells are
-/// decoded on first use and cached.
+/// [decode] copies the bytes, reads the header and indexes the row lines. A
+/// line's cells are decoded on first use and cached.
 final class PublishedTimetable implements OfficialTimetableSource {
   final Uint8List _bytes;
   final _Header _header;
@@ -189,27 +194,38 @@ final class PublishedTimetable implements OfficialTimetableSource {
 
   /// Throws [FormatException] unless line 1 and the header are valid `OTT 1`
   /// and every row line names a known locality, starts on a date inside
-  /// coverage and opens with a full first day of digits.
+  /// coverage and opens with a full first day of digits. The message starts
+  /// with the id of the rule the bytes break, as the rule table in
+  /// `docs/PUBLISHED_TIMETABLE_FORMAT.md` lists them. The caller may change
+  /// [bytes] afterwards; the timetable keeps its own copy.
   factory PublishedTimetable.decode(Uint8List bytes) {
-    if (bytes.isEmpty) throw FormatException('the file is empty');
-    if (bytes.last != _lf) throw FormatException('the last line has no LF');
-    if (bytes.contains(_cr)) throw FormatException('the file contains a CR');
-    final firstBreak = bytes.indexOf(_lf);
-    if (String.fromCharCodes(bytes, 0, firstBreak) != _magicLine) {
-      throw FormatException('line 1 is not "$_magicLine"');
+    if (bytes.isEmpty) throw _violation(OttRule.fileEmpty, 'the file is empty');
+    if (bytes.last != _lf) {
+      throw _violation(OttRule.fileLastLineNoLf, 'the last line has no LF');
     }
-    final secondBreak = bytes.indexOf(_lf, firstBreak + 1);
-    if (secondBreak < 0) throw FormatException('the header line is absent');
-    final header = _Header.parse(
-        utf8.decode(Uint8List.sublistView(bytes, firstBreak + 1, secondBreak)));
+    if (bytes.contains(_cr)) {
+      throw _violation(OttRule.fileCr, 'the file contains a CR');
+    }
+    final copy = Uint8List.fromList(bytes);
+    final firstBreak = copy.indexOf(_lf);
+    if (String.fromCharCodes(copy, 0, firstBreak) != _magicLine) {
+      throw _violation(OttRule.fileMagic, 'line 1 is not "$_magicLine"');
+    }
+    final secondBreak = copy.indexOf(_lf, firstBreak + 1);
+    if (secondBreak < 0) {
+      throw _violation(OttRule.fileHeaderAbsent, 'the header line is absent');
+    }
+    final header =
+        _Header.parse(Uint8List.sublistView(copy, firstBreak + 1, secondBreak));
     return PublishedTimetable._(
-        bytes, header, _indexLines(bytes, secondBreak + 1, header));
+        copy, header, _indexLines(copy, secondBreak + 1, header));
   }
 
   /// Decodes every line once and throws [FormatException] unless every minute
   /// is 0 to 2879, the core columns strictly increase on every day, no line
   /// crosses 1 January or leaves coverage, and no two lines of one locality
-  /// share a day.
+  /// share a day. The message starts with the id of the rule the bytes break,
+  /// as the rule table in `docs/PUBLISHED_TIMETABLE_FORMAT.md` lists them.
   void validateAllRows() {
     for (final lines in _lines) {
       _RowLine? previous;
@@ -217,8 +233,8 @@ final class PublishedTimetable implements OfficialTimetableSource {
         _days(line);
         if (previous != null &&
             previous.firstDay + previous.days!.length > line.firstDay) {
-          throw FormatException(
-              'two lines of ${_id(line)} share ${_dateOfDay(line.firstDay)}');
+          throw _violation(OttRule.rowOverlap,
+              'two lines of ${_id(line)} share ${_iso(_dateOfDay(line.firstDay))}');
         }
         previous = line;
       }
@@ -248,12 +264,15 @@ final class PublishedTimetable implements OfficialTimetableSource {
   Locality? locality(LocalityId id) => _record(id)?.locality;
 
   @override
-  Locality? localityAt(Coordinates coordinates, DateComponents date) =>
-      _resolveLocality(_header.localities, coordinates, date)?.locality;
+  Locality? localityAt(Coordinates coordinates, DateComponents date) {
+    _requireCalendarDay(date);
+    return _resolveLocality(_header.localities, coordinates, date)?.locality;
+  }
 
   @override
   OfficialLookup lookup(Coordinates coordinates, DateComponents date,
       {LocalityId? localityId}) {
+    _requireCalendarDay(date);
     final record = localityId == null
         ? _resolveLocality(_header.localities, coordinates, date)
         : _record(localityId);
@@ -308,17 +327,19 @@ final class PublishedTimetable implements OfficialTimetableSource {
     for (final day in days) {
       for (var i = 1; i < _header.coreIndices.length; i++) {
         if (day[_header.coreIndices[i]] <= day[_header.coreIndices[i - 1]]) {
-          throw FormatException(
-              'core columns are not increasing in ${_label(line)}');
+          throw _violation(OttRule.rowCoreOrder,
+              'core columns are not strictly increasing in ${_label(line)}');
         }
       }
     }
     final lastDay = line.firstDay + days.length - 1;
     if (_dateOfDay(lastDay).year != line.year) {
-      throw FormatException('${_label(line)} crosses 1 January');
+      throw _violation(
+          OttRule.rowCrossesYear, '${_label(line)} crosses 1 January');
     }
     if (lastDay > _header.lastDay) {
-      throw FormatException('${_label(line)} ends after coverage');
+      throw _violation(
+          OttRule.rowEndsAfterCoverage, '${_label(line)} ends after coverage');
     }
     return line.days = days;
   }
@@ -327,5 +348,5 @@ final class PublishedTimetable implements OfficialTimetableSource {
       _header.localities[line.locality].locality.id.value;
 
   String _label(_RowLine line) =>
-      'the row of ${_id(line)} starting ${_dateOfDay(line.firstDay)}';
+      'the row of ${_id(line)} starting ${_iso(_dateOfDay(line.firstDay))}';
 }

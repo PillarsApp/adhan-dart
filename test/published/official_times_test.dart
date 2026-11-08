@@ -1,7 +1,11 @@
+import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:adhan/adhan.dart';
 import 'package:test/test.dart';
+
+import '../../tool/published/ott_encoder.dart';
 
 final _riyadh = Coordinates(24.7136, 46.6753);
 final _firstDay = DateComponents(2026, 1, 1);
@@ -56,7 +60,7 @@ void main() {
         parameters: _parameters(madhab: Madhab.hanafi),
         adjustments: PrayerAdjustments(asr: 7),
         utcOffset: Duration());
-    expect(hanafi.asr, DateTime.utc(2026, 1, 1, 12, 41));
+    expect(hanafi.asr, DateTime.utc(2026, 1, 1, 12, 40));
     expect(adjusted.asr, hanafi.asr.add(Duration(minutes: 7)));
   });
 
@@ -104,6 +108,71 @@ void main() {
         Prayer.dhuhr);
     expect(times.nextPrayerByDateTime(DateTime.utc(2026, 1, 1, 9)), Prayer.asr);
     expect(
-        times.timeForPrayer(Prayer.maghrib), DateTime.utc(2026, 1, 1, 14, 17));
+        times.timeForPrayer(Prayer.maghrib), DateTime.utc(2026, 1, 1, 14, 16));
+  });
+
+  group('Hanafi Asr where the sun never reaches the Hanafi shadow', () {
+    OfficialRow polarRow(List<String> columns, List<int> minutes) {
+      final bytes = utf8.encode(encodeOtt({
+        'authority': 'xx-polar',
+        'revision': 1,
+        'part': 'all',
+        'coverage': ['2026-01-01', '2026-12-31'],
+        'columns': columns,
+        'asrShadow': 1,
+        'zones': [
+          {
+            'id': 'Europe/Oslo',
+            'offsets': [
+              ['2026-01-01', 60]
+            ]
+          }
+        ],
+        'localities': [
+          {
+            'id': 'tromso',
+            'group': 'troms',
+            'zone': 0,
+            'names': {'en': 'Tromsø'},
+            'ref': [69650000, 18950000],
+            'point': {'radiusM': 30000}
+          }
+        ],
+        'rows': {
+          'tromso': {'2026-12-21': minutes}
+        },
+      }));
+      return PublishedTimetable.decode(Uint8List.fromList(bytes))
+              .lookup(Coordinates(69.65, 18.95), DateComponents(2026, 12, 21))
+          as OfficialRow;
+    }
+
+    const core = ['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha'];
+
+    test(
+        'without an asrHanafi column it is a StateError, and Shafi still works',
+        () {
+      final row = polarRow(core, [300, 660, 720, 780, 840, 1020]);
+      expect(
+          PrayerTimes.official(row,
+                  parameters: _parameters(), utcOffset: Duration())
+              .asr,
+          DateTime.utc(2026, 12, 21, 12));
+      expect(
+          () => PrayerTimes.official(row,
+              parameters: _parameters(madhab: Madhab.hanafi)),
+          throwsA(isA<StateError>()));
+    });
+
+    test('with an asrHanafi column that column is the Hanafi Asr', () {
+      final row = polarRow(
+          [...core, 'asrHanafi'], [300, 660, 720, 780, 840, 1020, 800]);
+      expect(
+          PrayerTimes.official(row,
+                  parameters: _parameters(madhab: Madhab.hanafi),
+                  utcOffset: Duration())
+              .asr,
+          DateTime.utc(2026, 12, 21, 12, 20));
+    });
   });
 }
