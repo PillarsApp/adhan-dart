@@ -14,6 +14,9 @@ DateComponents _date(String iso) {
   return DateComponents(parts[0], parts[1], parts[2]);
 }
 
+CalculationParameters _parameters(Madhab madhab) =>
+    CalculationMethod.umm_al_qura.getParameters()..madhab = madhab;
+
 void main() {
   final expected =
       jsonDecode(File('$_vectorsDir/expected.json').readAsStringSync())
@@ -60,9 +63,53 @@ void main() {
             expect(row.authority, timetable.authority);
             expect(row.revision, timetable.revision);
             expect(row.asrShadow, timetable.asrShadow);
+            final asr = (testCase['asr'] as Map<String, dynamic>)
+                .cast<String, String>();
+            for (final madhab in Madhab.values) {
+              final times = PrayerTimes.official(row,
+                  parameters: _parameters(madhab), utcOffset: Duration());
+              expect(times.asr.isUtc, isTrue, reason: madhab.name);
+              expect(times.asr, DateTime.parse(asr[madhab.name]!),
+                  reason: madhab.name);
+              expect(times.fajr, row.published(PublishedColumn.fajr));
+              expect(times.sunrise, row.published(PublishedColumn.sunrise));
+              expect(times.dhuhr, row.published(PublishedColumn.dhuhr));
+              expect(times.maghrib, row.published(PublishedColumn.maghrib));
+              expect(times.isha, row.published(PublishedColumn.isha));
+            }
         }
       });
     }
+  });
+
+  group('presentation', () {
+    final row = vectors['valid/dst.ott']!
+            .lookup(Coordinates(30.0444, 31.2357), DateComponents(2026, 4, 24))
+        as OfficialRow;
+
+    test('no utcOffset presents host local times of the published instants',
+        () {
+      final times =
+          PrayerTimes.official(row, parameters: _parameters(Madhab.shafi));
+      expect(times.fajr.isUtc, isFalse);
+      expect(times.fajr.toUtc(), row.published(PublishedColumn.fajr));
+      expect(times.isha.toUtc(), row.published(PublishedColumn.isha));
+    });
+
+    test('a zero utcOffset presents the UTC instants', () {
+      final times = PrayerTimes.official(row,
+          parameters: _parameters(Madhab.shafi), utcOffset: Duration());
+      expect(times.fajr.isUtc, isTrue);
+      expect(times.fajr, row.published(PublishedColumn.fajr));
+      expect(times.isha, row.published(PublishedColumn.isha));
+    });
+
+    test('a non-zero utcOffset shifts the UTC instants', () {
+      final times = PrayerTimes.official(row,
+          parameters: _parameters(Madhab.shafi), utcOffset: Duration(hours: 3));
+      expect(times.fajr,
+          row.published(PublishedColumn.fajr)!.add(Duration(hours: 3)));
+    });
   });
 
   group('validateAllRows', () {

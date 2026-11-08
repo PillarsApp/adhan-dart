@@ -11,7 +11,10 @@ import 'malaysia/malaysia_timetable.dart';
 import 'malaysia/malaysia_zones.dart';
 import 'polar_circle_resolution.dart';
 import 'prayer.dart';
+import 'prayer_adjustments.dart';
 import 'prayer_times_source.dart';
+import 'published/official_row.dart';
+import 'published/published_timetable.dart';
 
 class PrayerTimes {
   late DateTime _fajr;
@@ -50,6 +53,12 @@ class PrayerTimes {
   /// shift, presented like the six times. Null unless [source] is official
   /// and the method is [CalculationMethod.malaysia_official].
   MalaysiaDay? get malaysiaDay => _malaysiaDay;
+
+  OfficialRow? _officialRow;
+
+  /// The published row behind official times, before adjustments and the
+  /// Hanafi shift. Null for calculated times and for the London lookup.
+  OfficialRow? get officialRow => _officialRow;
 
   // If you give a UTC Offset then Prayer Times will convert local(with device timezone) time
   // to UTC and then add the offset.
@@ -126,6 +135,33 @@ class PrayerTimes {
         CalendarUtil.resolveTimeByDateComponents(dateComponents),
         calculationParameters,
         utcOffset: utcOffset);
+  }
+
+  /// Times assembled from a published [row], presented like every other
+  /// constructor: host local by default, else UTC plus [utcOffset].
+  ///
+  /// The madhab comes from [parameters]. When its shadow factor differs from
+  /// [OfficialRow.asrShadow], Asr is the published Hanafi column if the row
+  /// has one, else the published Asr shifted by the solar difference between
+  /// the two shadow factors at the locality's reference point. [adjustments]
+  /// are added after that; the method adjustments in [parameters] are
+  /// ignored. It never falls back: a caller holding [NoLocality] or [NoRow]
+  /// calculates with the ordinary constructor.
+  factory PrayerTimes.official(OfficialRow row,
+          {required CalculationParameters parameters,
+          PrayerAdjustments? adjustments,
+          Duration? utcOffset}) =>
+      PrayerTimes._official(row, parameters, adjustments ?? PrayerAdjustments(),
+          utcOffset: utcOffset);
+
+  PrayerTimes._official(OfficialRow row, this.calculationParameters,
+      PrayerAdjustments adjustments,
+      {this.utcOffset})
+      : coordinates = row.locality.referencePoint,
+        _officialRow = row {
+    _dateComponents = row.date;
+    _source = PrayerTimesSource.official;
+    _assign(assembleOfficialDay(row, calculationParameters, adjustments));
   }
 
   PrayerTimes._(this.coordinates, DateTime _date, this.calculationParameters,
