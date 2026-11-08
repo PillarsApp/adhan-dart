@@ -70,7 +70,7 @@ Exactly one of `point` and `area` is present. A locality is in force on a date w
 
 A ring is a Google encoded polyline at precision 6, so each decoded value is a microdegree integer, latitude first. A ring has at least three vertices and every vertex is inside the `ref` ranges. The closing edge from the last vertex back to the first is implicit, so the encoder does not repeat the first vertex. The area is the even-odd fill of all rings together, so a hole is any ring inside another ring, and ring order carries no meaning.
 
-Every integer in the file fits in a signed 32-bit integer. Readers on a 32-bit target multiply microdegrees in 64-bit arithmetic, because a cross product of two microdegree differences does not fit in 32 bits.
+Every integer in the file fits in a signed 32-bit integer. Readers on a 32-bit target multiply microdegrees in 64-bit arithmetic, because a cross product of two microdegree differences does not fit in 32 bits. A reader whose integers carry 53 bits, such as Dart compiled to JavaScript, is exact only while every ring edge spans less than about 9 degrees in both latitude and longitude.
 
 ## Row lines
 
@@ -108,7 +108,7 @@ A decoder validates in two stages, so a process that only needs one row never pa
 
 **Decode.** `PublishedTimetable.decode` reads line 1 and the header, checks every header rule above, and scans every row line once. For a row line it checks the three-field shape, that `localityId` is in the header, that `firstDate` is a real date inside `coverage`, that `cells` starts with `4 × n` ASCII digits, and that the line has no CR. It does not decode cells. A failure throws `FormatException`.
 
-**Validate all rows.** `validateAllRows()` decodes every line once and checks that every minute is 0 to 2879, that the core columns strictly increase on every day in the order `fajr`, `sunrise`, `dhuhr`, `asr`, `maghrib`, `isha`, that no line crosses 1 January, and that no two lines of one locality overlap. A failure throws `FormatException`. A lookup on a file that was never validated decodes the covering line on first use and throws `FormatException` from the lookup if that line is malformed.
+**Validate all rows.** `validateAllRows()` decodes every line once and checks that every minute is 0 to 2879, that the core columns strictly increase on every day in the order `fajr`, `sunrise`, `dhuhr`, `asr`, `maghrib`, `isha`, that no line crosses 1 January or ends after `coverage`, and that no two lines of one locality overlap. A failure throws `FormatException`. A lookup on a file that was never validated decodes the covering line on first use and throws `FormatException` from the lookup if that line is malformed.
 
 The `test/published/vectors/malformed/` directory has one file per rule, and `index.json` names the stage that rejects each file.
 

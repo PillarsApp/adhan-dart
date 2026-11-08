@@ -613,7 +613,7 @@ Map<String, dynamic> _baseHeader() => {
       ],
     };
 
-const _baseRows = 'L1 2026-01-01 030006301220164018201950edeeded\n';
+const _baseRows = 'L1 2026-01-01 030006301220164018201950edeede\n';
 
 String _file(Object header, String rows, {String magic = 'OTT 1'}) =>
     '$magic\n${header is String ? header : jsonEncode(header)}\n$rows';
@@ -737,15 +737,15 @@ List<_Malformed> _malformed() {
   badRows(
       'row-unknown-locality.ott',
       'a row names a locality not in the header',
-      'L2 2026-01-01 030006301220164018201950edeeded\n');
+      'L2 2026-01-01 030006301220164018201950edeede\n');
   badRows('row-bad-date.ott', 'a row date is not a calendar day',
-      'L1 2026-02-30 030006301220164018201950edeeded\n');
+      'L1 2026-02-30 030006301220164018201950edeede\n');
   badRows('row-before-coverage.ott', 'a row starts before coverage',
-      'L1 2025-12-31 030006301220164018201950edeeded\n');
+      'L1 2025-12-31 030006301220164018201950edeede\n');
   badRows('row-after-coverage.ott', 'a row starts after coverage',
-      'L1 2027-01-01 030006301220164018201950edeeded\n');
+      'L1 2027-01-01 030006301220164018201950edeede\n');
   badRows('row-two-fields.ott', 'a row has two fields',
-      'L1 030006301220164018201950edeeded\n');
+      'L1 030006301220164018201950edeede\n');
   badRows('row-short-first-day.ott', 'the first day has fewer than 24 digits',
       'L1 2026-01-01 0300063012201640\n');
   badRows('row-nondigit-first-day.ott', 'the first day has a letter',
@@ -759,23 +759,23 @@ List<_Malformed> _malformed() {
   void badCells(String file, String reason, String rows) => validate
       .add(_Malformed(file, 'validate', reason, _file(_baseHeader(), rows)));
   badCells('cell-minute-60.ott', 'a reset cell has minute 60',
-      'L1 2026-01-01 030006301220164018201950~0560deeded\n');
+      'L1 2026-01-01 030006301220164018201950~0560deede\n');
   badCells('cell-hour-48.ott', 'a reset cell has hour 48',
       'L1 2026-01-01 030006301220164018201950ddddd~4800\n');
   badCells('cell-unknown-letter.ott', 'h is not a delta letter',
-      'L1 2026-01-01 030006301220164018201950hdeeded\n');
+      'L1 2026-01-01 030006301220164018201950hdeede\n');
   badCells('cell-truncated-day.ott', 'the second day has five cells',
       'L1 2026-01-01 030006301220164018201950edeed\n');
   badCells('cell-delta-below-zero.ott', 'a delta takes a column below 0',
-      'L1 2026-01-01 000006301220164018201950adeeded\n');
+      'L1 2026-01-01 000006301220164018201950adeede\n');
   badCells('first-day-minute-60.ott', 'the first day has minute 60',
-      'L1 2026-01-01 036006301220164018201950edeeded\n');
+      'L1 2026-01-01 036006301220164018201950edeede\n');
   badCells('core-order.ott', 'asr is before dhuhr',
-      'L1 2026-01-01 030006301640122018201950edeeded\n');
+      'L1 2026-01-01 030006301640122018201950edeede\n');
   badCells('row-crosses-year.ott', 'a line starting 2026-12-30 has three days',
-      'L1 2026-12-30 030006301220164018201950edeededededed\n');
+      'L1 2026-12-30 030006301220164018201950edeededddddd\n');
   badCells('rows-overlap.ott', 'two lines of one locality share 2026-01-02',
-      'L1 2026-01-01 030006301220164018201950edeeded\nL1 2026-01-02 030006301220164018201950edeeded\n');
+      'L1 2026-01-01 030006301220164018201950edeede\nL1 2026-01-02 030006301220164018201950edeede\n');
   return [...decode, ...validate];
 }
 
